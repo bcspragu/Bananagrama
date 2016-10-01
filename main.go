@@ -1,0 +1,93 @@
+// Copyright 2013 The Gorilla WebSocket Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package main
+
+import (
+	"flag"
+	"html/template"
+	"log"
+	"math/rand"
+	"net/http"
+	txt "text/template"
+	"time"
+
+	"github.com/gorilla/mux"
+	"github.com/gorilla/securecookie"
+)
+
+var (
+	addr    = flag.String("addr", ":8080", "http service address")
+	apiAddr = flag.String("api_addr", ":8081", "RPC server address")
+	env     = flag.String("env", "dev", "Which environment to run in")
+
+	templates        *template.Template
+	txtTmpl          *txt.Template
+	globalAIEndpoint *aiEndpoint
+	hub              *Hub
+	db               datastore
+	s                *securecookie.SecureCookie
+)
+
+func main() {
+	var err error
+
+	flag.Parse()
+	hub = newHub()
+	go hub.run()
+	templates = template.Must(template.New("templates").Funcs(template.FuncMap{
+		"loop": func(n int) []struct{} {
+			return make([]struct{}, n)
+		},
+	}).ParseGlob("templates/*"))
+	txtTmpl = txt.Must(txt.New("js").Funcs(txt.FuncMap{
+		"loop": func(n int) []struct{} {
+			return make([]struct{}, n)
+		},
+	}).ParseGlob("js/*"))
+
+	if err := loadPass(); err != nil {
+		panic(err)
+	}
+
+	if err := loadCode(); err != nil {
+		panic(err)
+	}
+
+	if s, err = initKeys(); err != nil {
+		panic(err)
+	}
+
+	db, err = initDB("bananagrama.db")
+	if err != nil {
+		panic(err)
+	}
+
+	rand.Seed(time.Now().UnixNano())
+
+	globalAIEndpoint, err = startAIEndpoint(*apiAddr)
+	if err != nil {
+		log.Fatal("AI RPC endpoint failed to start:", err)
+	}
+
+	r := mux.NewRouter()
+
+	r.HandleFunc("/", serveHome).Methods("GET")
+	r.HandleFunc("/pass", servePass).Methods("POST")
+	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		serveWs(hub, w, r)
+	})
+
+	if *env == "dev" {
+		http.Handle("/js/", http.StripPrefix("/js/", http.FileServer(http.Dir("./js"))))
+		http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("./css"))))
+	}
+
+	http.Handle("/", r)
+
+	err = http.ListenAndServe(*addr, nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
+}
