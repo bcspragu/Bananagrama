@@ -64,22 +64,25 @@ func (c *aiConnector) Connect(call potassium.Server_connect) error {
 	req := call.Params
 	resp := call.Results
 
-	// If a player is already connected, don't let them connect now
-	if c.player != "" {
-		resp.SetStatus(potassium.ConnectResponse_Status_yaDoneGoofed)
-		return nil
-	}
-
 	name, err := req.Name()
 	if err != nil {
 		return err
 	}
+
+	// If a player is already connected, don't let them connect now
+	if c.player != "" {
+		log.Printf("%s tried to connect again with name %s\n", c.player, name)
+		resp.SetStatus(potassium.ConnectResponse_Status_yaDoneGoofed)
+		return nil
+	}
+
 	// TODO(bsprague): Probably limit names to alphanumerics. Oh, and log when
 	// someone forces a non-success response
 
 	if len(name) > 20 {
 		// Despite my warnings, some asshat wanted to pick a long name. Well guess
 		// what, you don't get to play asshole.
+		log.Printf("%s is too long of a name\n", name)
 		resp.SetStatus(potassium.ConnectResponse_Status_nameTooLong)
 		// TODO(bsprague): IP ban their ass for not following basic instructions,
 		// or ban every prefix of this name. Probably not, but damn.
@@ -87,6 +90,7 @@ func (c *aiConnector) Connect(call potassium.Server_connect) error {
 	} else if len(name) == 0 {
 		// The player sent a blank name. Jesus Christ people, do I have to spell it
 		// out for you?
+		log.Println("Someone connected with a blank name")
 		resp.SetStatus(potassium.ConnectResponse_Status_yaDoneGoofed)
 		return nil
 	}
@@ -94,11 +98,13 @@ func (c *aiConnector) Connect(call potassium.Server_connect) error {
 	// Lock our connected list
 	c.e.mu.Lock()
 	if _, ok := c.e.connected[name]; ok {
+		log.Printf("Name %s is already connected\n", name)
 		resp.SetStatus(potassium.ConnectResponse_Status_nameAlreadyTaken)
 		return nil
 	}
 
 	if len(c.e.connected) >= MaxPlayers {
+		log.Printf("%s can't join because the game is full\n", name)
 		resp.SetStatus(potassium.ConnectResponse_Status_gameIsFull)
 		return nil
 	}
@@ -110,6 +116,9 @@ func (c *aiConnector) Connect(call potassium.Server_connect) error {
 	c.player = name
 	c.e.mu.Unlock()
 
+	log.Printf("Successfully connected player %s\n", name)
+	resp.SetStatus(potassium.ConnectResponse_Status_success)
+
 	return nil
 }
 
@@ -119,4 +128,5 @@ func (c *aiConnector) drop() {
 	c.e.mu.Lock()
 	delete(c.e.connected, c.player)
 	c.e.mu.Unlock()
+	log.Printf("Disconnected player %s\n", c.player)
 }
