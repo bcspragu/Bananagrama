@@ -12,15 +12,25 @@ const (
 
 type byX []Word
 
-func (x byX) Len() int           { return len(x) }
-func (x byX) Less(i, j int) bool { return x[i].Loc.X < x[j].Loc.Y }
-func (x byX) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
+func (x byX) Len() int { return len(x) }
+func (x byX) Less(i, j int) bool {
+	if x[i].Loc.X != x[j].Loc.X {
+		return x[i].Loc.X < x[j].Loc.X
+	}
+	return x[i].Loc.Y < x[j].Loc.Y
+}
+func (x byX) Swap(i, j int) { x[i], x[j] = x[j], x[i] }
 
 type byY []Word
 
-func (y byY) Len() int           { return len(y) }
-func (y byY) Less(i, j int) bool { return y[i].Loc.Y < y[j].Loc.Y }
-func (y byY) Swap(i, j int)      { y[i], y[j] = y[j], y[i] }
+func (y byY) Len() int { return len(y) }
+func (y byY) Less(i, j int) bool {
+	if y[i].Loc.Y != y[j].Loc.Y {
+		return y[i].Loc.Y < y[j].Loc.Y
+	}
+	return y[i].Loc.X < y[j].Loc.X
+}
+func (y byY) Swap(i, j int) { y[i], y[j] = y[j], y[i] }
 
 type Board struct {
 	Words []Word
@@ -59,36 +69,7 @@ func (w Word) CharLocs() []CharLoc {
 	return cls
 }
 
-// Which X coordinates do these words share?
-// again
-//     extra
-//   zit
-func (w Word) sharedX(o Word) []int {
-	xs := []int{}
-	// Iterate through the first word, see which indexes are contained by the second
-	// TODO(bsprague) There are likely more efficient interval calculation methods
-	for i := 0; i < len(w.Text); i++ {
-		if o.containsX(i + w.Loc.X) {
-			xs = append(xs, i+w.Loc.X)
-		}
-	}
-	return xs
-}
-
-func (w Word) containsX(i int) bool {
-	// If the given index is at or after the first letter, but is before the end,
-	// then it's contained
-	return i >= w.Loc.X && i < (w.Loc.X+len(w.Text))
-}
-
-func (w Word) letterAt(x int) string {
-	if x < w.Loc.X || x > (w.Loc.X+len(w.Text)-1) {
-		return ""
-	}
-	i := x - w.Loc.X
-	return w.Text[i : i+1]
-}
-
+// TODO(bsprague): Return some error types for invalid boards
 func (b *Board) Valid(letters []string) bool {
 	letterMap := make(map[Loc]string)
 
@@ -107,79 +88,72 @@ func (b *Board) Valid(letters []string) bool {
 	return true
 }
 
-func (b *Board) implicitWords() []string {
+type other struct {
+	Coor   int
+	Letter string
+}
+
+func (b *Board) findWords() []string {
+	strs := []string{}
 	// The algorithm:
-	// 1. Filter down to only one orientation
-	// 2. Bucket items by opposite axis (eg filter to horizontal and bucket by Y coordinate
-	// 3. Look for sequential indices, build words from overlap
-	// 4. Reset once overlap breaks
-	h, _ := b.byOrientation()
-
-	sort.Sort(byX(h))
-	hm := make(map[int][]Word)
-
-	for _, word := range h {
-		if ws, ok := hm[word.Loc.Y]; ok {
-			hm[word.Loc.Y] = append(ws, word)
-		} else {
-			hm[word.Loc.Y] = []Word{word}
-		}
-	}
-	keys := make([]int, len(hm))
-	i := 0
-	for y := range hm {
-		keys[i] = y
-		i++
-	}
-	sort.Ints(keys)
-	start := false
-	//sm := make(map[int][]string)
-	for i, cur := range keys[:len(keys)-1] {
-		next := keys[i+1]
-		// We've found words in adjacent rows
-		if next-cur == 1 {
-			// This is the first adjacent row
-			if !start {
-				//for x, s := range findOverlapX(hm[cur], hm[next]) {
-				// TODO(bsprague): Fill in this section, starting new words when
-				// necessary, and splitting words when necessary
-				//}
-			}
-		}
-	}
-
-	return []string{}
-}
-
-func findOverlapX(l1, l2 []Word) map[int]string {
-	m := make(map[int]string)
-	for _, w1 := range l1 {
-		for _, w2 := range l2 {
-			if w1.Loc.X > (w2.Loc.X + len(w2.Text) - 1) {
-				// Skip this one, we haven't reached the word yet
-				continue
-			}
-			if w2.Loc.X > (w1.Loc.X + len(w1.Text) - 1) {
-				// Skip this and all after, since we're sorted by X, none of these overlap
-				break
-			}
-			for _, x := range w1.sharedX(w2) {
-				// w1 and w2 overlap here, lets get their letters
-				m[x] = w1.letterAt(x) + w2.letterAt(x)
-			}
-		}
-	}
-	return m
-}
-
-func (b *Board) byOrientation() (h []Word, v []Word) {
+	// 1. Bucket letters by X, map to lists of (Y, letter)
+	xm := make(map[int][]CharLoc)
+	sort.Sort(byY(b.Words))
 	for _, word := range b.Words {
-		switch word.Orientation {
-		case Horizontal:
-			h = append(h, word)
-		case Vertical:
-			v = append(v, word)
+		for _, cl := range word.CharLocs() {
+			xm[cl.Loc.X] = append(xm[cl.Loc.X], cl)
 		}
 	}
-	return
+
+	ym := make(map[int][]CharLoc)
+	sort.Sort(byX(b.Words))
+	for _, word := range b.Words {
+		for _, cl := range word.CharLocs() {
+			ym[cl.Loc.Y] = append(ym[cl.Loc.Y], cl)
+		}
+	}
+
+	// Go down vertically, match up sequential CharLocs into words
+	for _, cls := range xm {
+		strs = append(strs, findWordsInSequence(cls, func(l Loc) int { return l.Y })...)
+	}
+
+	// Go horizontally, match up sequential CharLocs into words
+	for _, cls := range ym {
+		strs = append(strs, findWordsInSequence(cls, func(l Loc) int { return l.X })...)
+	}
+
+	return strs
+}
+
+func findWordsInSequence(cls []CharLoc, f func(Loc) int) []string {
+	strs := []string{}
+	started := false
+	w := ""
+	for i, cur := range cls[:len(cls)-1] {
+		next := cls[i+1]
+		// Sequential
+		if f(next.Loc)-f(cur.Loc) == 1 {
+			// Add this letter to the word
+			w += cur.Letter
+			started = true
+			if i == len(cls)-2 {
+				w += next.Letter
+			}
+		} else {
+			// If the next two aren't sequential, but we've started a word, that
+			// means the current letter is the last one in the word, so we should add
+			// it and reset
+			if started {
+				w += cur.Letter
+				strs = append(strs, w)
+				w = ""
+				started = false
+			}
+		}
+	}
+	if w != "" {
+		strs = append(strs, w)
+	}
+	return strs
 }

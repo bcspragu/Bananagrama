@@ -2,6 +2,7 @@ package engine
 
 import (
 	"reflect"
+	"sort"
 	"testing"
 )
 
@@ -32,6 +33,32 @@ func TestCharLocs(t *testing.T) {
 		got := tc.word.CharLocs()
 		if !reflect.DeepEqual(got, tc.want) {
 			t.Errorf("word %s: got %v, want %v", tc.word.Text, got, tc.want)
+		}
+	}
+}
+
+func TestFindWords(t *testing.T) {
+	// TODO(bsprague): Test a bunch of tricky edge-cases
+	testcases := []struct {
+		words []Word
+		want  []string
+	}{
+		{
+			words: []Word{{Horizontal, "cat", Loc{0, 0}}},
+			want:  []string{"cat"},
+		},
+		{
+			words: []Word{{Horizontal, "cat", Loc{0, 0}}, {Horizontal, "bad", Loc{1, 1}}, {Horizontal, "smell", Loc{1, 2}}},
+			want:  []string{"cat", "abs", "tam", "bad", "smell", "de"},
+		},
+	}
+
+	for _, tc := range testcases {
+		got := (&Board{Words: tc.words}).findWords()
+		sort.Strings(got)
+		sort.Strings(tc.want)
+		if !reflect.DeepEqual(got, tc.want) {
+			t.Errorf("got %v, want %v", got, tc.want)
 		}
 	}
 }
