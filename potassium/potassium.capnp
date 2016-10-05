@@ -90,7 +90,10 @@ struct PeelResponse {
     valid @1 :Void; # On success, nothing to send back
     invalidWord @2 :Tiles; # The words that aren't actually words
     notAllLetters @3 :Tiles; # The list of letters that weren't used
-    extraLetters @4 :Tiles; # The list of letters the player didn't have in their pile, but used anyway
+    extraLetters @4 :Tiles;
+    # The list of letters the player didn't have in their pile, but used
+    # anyway. If a player tries to toss some Unicode shit in their words,
+    # they'll get this error
   }
   # Huge disclosure: Depending on how lazy I am with my implementation, the
   # errors might not include everything wrong with your board, so just send in

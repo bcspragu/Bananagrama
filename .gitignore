@@ -3,3 +3,6 @@ code
 blockKey
 hashKey
 bananagrama.db
+
+# The dictionary can be found at https://www.wordgamedictionary.com/twl06/download/twl06.txt
+dict.txt

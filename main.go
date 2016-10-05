@@ -10,9 +10,11 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	txt "text/template"
 	"time"
 
+	"github.com/bcspragu/Bananagrama/engine"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
 )
@@ -28,6 +30,7 @@ var (
 	hub              *Hub
 	db               datastore
 	s                *securecookie.SecureCookie
+	dict             engine.Dictionary
 )
 
 func main() {
@@ -64,6 +67,12 @@ func main() {
 		panic(err)
 	}
 
+	f, err := os.Open("dict.txt")
+	if err != nil {
+		panic(err)
+	}
+
+	dict = engine.NewDictionary(f)
 	rand.Seed(time.Now().UnixNano())
 
 	globalAIEndpoint, err = startAIEndpoint(*apiAddr)
