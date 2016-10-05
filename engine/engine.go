@@ -23,7 +23,9 @@ const (
 
 const (
 	CharacterSetSize = 26
-	LetterOffset     = 'a'
+	// Because of how tricky this indexing stuff is, LetterOffset should only be
+	// used inside FreqList
+	LetterOffset = 'a'
 )
 
 type byX []Word
@@ -36,11 +38,31 @@ func (l Letter) isValid() bool {
 
 type FreqList [CharacterSetSize]int
 
-func (f FreqList) GetFreq(l Letter) int {
+func (f *FreqList) Freq(l Letter) int {
 	if l.isValid() {
-		return f[l]
+		return f[l-LetterOffset]
 	}
 	return 0
+}
+
+func (f *FreqList) Dec(l Letter) {
+	if l.isValid() {
+		f[l-LetterOffset]--
+	}
+}
+
+func (f *FreqList) DecIndex(i int) Letter {
+	if i >= 0 && i < len(f) {
+		f[i]--
+		return Letter(i + LetterOffset)
+	}
+	return '0' // return an invalid rune character so we know clearly something is wrong
+}
+
+func (f *FreqList) Set(l Letter, freq int) {
+	if l.isValid() {
+		f[l-LetterOffset] = freq
+	}
 }
 
 func (x byX) Len() int { return len(x) }
@@ -189,7 +211,7 @@ func (b *Board) Valid(letters FreqList) bool {
 func (b *Board) containsExactly(letters FreqList) bool {
 	cp := letters
 	for _, letter := range b.letterMap {
-		cp[letter-LetterOffset]--
+		cp.Dec(letter)
 	}
 	for _, freq := range cp {
 		if freq != 0 {
