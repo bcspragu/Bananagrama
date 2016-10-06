@@ -31,7 +31,9 @@ func (b *Bunch) Tile() Letter {
 	for i, freq := range b.tiles {
 		if freq > n {
 			b.count--
-			return b.tiles.DecIndex(i)
+			l := letter(i)
+			b.tiles.Dec(l)
+			return l
 		}
 		n -= freq
 	}

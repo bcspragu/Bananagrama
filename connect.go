@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net"
 	"sync"
 
 	"zombiezen.com/go/capnproto2/rpc"
 
+	"github.com/bcspragu/Bananagrama/engine"
 	"github.com/bcspragu/Bananagrama/potassium"
 )
 
@@ -14,17 +16,29 @@ const (
 	MaxPlayers = 8
 )
 
-type GamePlayer struct {
-	Player potassium.Player
-	Game   potassium.Game
-}
-
-// aiEndpoint listens for new connections
+// aiEndpoint listens for new connections, and handles the game
 type aiEndpoint struct {
+	bunch *engine.Bunch
+
 	// Fields below are protected by mu
 	mu sync.Mutex
 	// Map from username to the Player's AI
-	connected map[string]potassium.Player
+	connected map[string]*game
+}
+
+// sendNewTiles sends a tile to all players after a successful peel
+func (e *aiEndpoint) sendNewTiles(peeler string) {
+	for _, game := range e.connected {
+		// TODO(bsprague): Make sure we have enough letters first in the bunch,
+		// otherwise end the game. And log and keep track and stuff
+		go game.player.NewTile(context.Background(), func(req potassium.NewTileRequest) error {
+			tile := e.bunch.Tile()
+			req.SetLetter(tile.String())
+			game.tiles.Inc(tile)
+			req.SetPeeler(peeler)
+			return nil
+		})
+	}
 }
 
 func startAIEndpoint(addr string) (*aiEndpoint, error) {
@@ -32,7 +46,7 @@ func startAIEndpoint(addr string) (*aiEndpoint, error) {
 	if err != nil {
 		return nil, err
 	}
-	e := &aiEndpoint{connected: make(map[string]potassium.Player)}
+	e := &aiEndpoint{connected: make(map[string]*game), bunch: engine.NewBunch()}
 
 	// Listen for incoming connections
 	go e.listen(l)
@@ -117,13 +131,18 @@ func (c *aiConnector) Connect(call potassium.Server_connect) error {
 	player := req.Player()
 
 	// If we're here, we can totally add them
-	c.e.connected[name] = player
+	g := &game{
+		e:      c.e,
+		player: player,
+		name:   name,
+	}
+	c.e.connected[name] = g
 	c.player = name
 	c.e.mu.Unlock()
 
 	log.Printf("Successfully connected player %s\n", name)
 	resp.SetStatus(potassium.ConnectResponse_Status_success)
-	// TODO(bsprague): Set game
+	resp.SetGame(potassium.Game_ServerToClient(g))
 
 	return nil
 }

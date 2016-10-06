@@ -13,12 +13,20 @@ const (
 	Vertical
 )
 
-type BoardErrorType int
+type BoardStatus struct {
+	Code   BoardStatusCode
+	Errors []string
+}
+
+type BoardStatusCode int
 
 const (
-	Success BoardErrorType = iota
+	Success BoardStatusCode = iota
 	InvalidWord
 	DetachedBoard
+	NotAllLetters
+	ExtraLetters
+	InvalidBoard
 )
 
 const (
@@ -36,6 +44,10 @@ func (l Letter) isValid() bool {
 	return 'a' <= l && l <= 'z'
 }
 
+func (l Letter) String() string {
+	return string([]rune{rune(l)})
+}
+
 type FreqList [CharacterSetSize]int
 
 func (f *FreqList) Freq(l Letter) int {
@@ -51,12 +63,14 @@ func (f *FreqList) Dec(l Letter) {
 	}
 }
 
-func (f *FreqList) DecIndex(i int) Letter {
-	if i >= 0 && i < len(f) {
-		f[i]--
-		return Letter(i + LetterOffset)
+func (f *FreqList) Inc(l Letter) {
+	if l.isValid() {
+		f[l-LetterOffset]++
 	}
-	return '0' // return an invalid rune character so we know clearly something is wrong
+}
+
+func letter(i int) Letter {
+	return Letter(i + LetterOffset)
 }
 
 func (f *FreqList) Set(l Letter, freq int) {
@@ -175,9 +189,9 @@ func (b *Board) precompute() bool {
 	return true
 }
 
-// TODO(bsprague): Return some error types for invalid boards, oh and lowercase
-// words, and check that it only contains alphanumerics, maybe.
-func (b *Board) Valid(letters FreqList) bool {
+// TODO(bsprague): Lowercase words, and check that it only contains
+// alphanumerics, maybe.
+func (b *Board) Status(letters FreqList) BoardStatus {
 	// A board is considered valid if:
 	//   - the player used exactly the letters in their hand
 	//   - the words given don't overlap in conflicting ways
@@ -187,33 +201,55 @@ func (b *Board) Valid(letters FreqList) bool {
 	// If precompute failed, we weren't able to make our intermediate
 	// representation, meaning the given words can't form a valid board
 	if !b.precompute() {
-		return false
+		return BoardStatus{Code: InvalidBoard}
 	}
 
-	if !b.containsExactly(letters) {
-		return false
+	unused, unowned := b.leftover(letters)
+	if len(unused) > 0 {
+		return BoardStatus{Code: NotAllLetters, Errors: unused}
+	}
+
+	if len(unowned) > 0 {
+		return BoardStatus{Code: ExtraLetters, Errors: unowned}
 	}
 
 	// Check for real Scrabble words
 	for _, word := range b.findWords() {
 		if !b.Dictionary.HasWord(word) {
-			return false
+			return BoardStatus{Code: InvalidWord, Errors: []string{word}}
 		}
 	}
 
 	if !b.connected() {
-		return false
+		return BoardStatus{Code: DetachedBoard}
 	}
 
-	return true
+	return BoardStatus{Code: Success}
 }
 
-func (b *Board) containsExactly(letters FreqList) bool {
+func (b *Board) getDiff(letters FreqList) FreqList {
 	cp := letters
 	for _, letter := range b.letterMap {
 		cp.Dec(letter)
 	}
-	for _, freq := range cp {
+	return cp
+}
+
+func (b *Board) leftover(letters FreqList) (notUsed, notOwned []string) {
+	// If diff is greater than zero, it means they didn't use all of that letter in their hand
+	// If diff is less than zero, it means they used more than they had
+	for i, freq := range b.getDiff(letters) {
+		if freq > 0 {
+			notUsed = append(notUsed, letter(i).String())
+		} else if freq < 0 {
+			notOwned = append(notOwned, letter(i).String())
+		}
+	}
+	return notUsed, notOwned
+}
+
+func (b *Board) containsExactly(letters FreqList) bool {
+	for _, freq := range b.getDiff(letters) {
 		if freq != 0 {
 			return false
 		}

@@ -84,6 +84,7 @@ struct PeelResponse {
     detachedBoard @2; # Not all of the player's letters are connected
     notAllLetters @3; # The player isn't using all of their letters
     extraLetters @4; # The player is trying to play with letters they don't have
+    invalidBoard @5; # The player's words overlap in ways they can't, like two words with different letters overlapping
   }
 
   union {
