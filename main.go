@@ -6,6 +6,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"html/template"
 	"log"
 	"math/rand"
@@ -84,6 +85,7 @@ func main() {
 
 	r.HandleFunc("/", serveHome).Methods("GET")
 	r.HandleFunc("/pass", servePass).Methods("POST")
+	r.HandleFunc("/startGame", serveGame).Methods("GET")
 	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})
@@ -98,5 +100,15 @@ func main() {
 	err = http.ListenAndServe(*addr, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
+	}
+}
+
+func serveGame(w http.ResponseWriter, r *http.Request) {
+	if r.FormValue("key") == "" {
+		fmt.Fprint(w, "key not set")
+		return
+	}
+	if err := globalAIEndpoint.startGame(); err != nil {
+		fmt.Fprintf(w, "failed to start game: %v", err)
 	}
 }

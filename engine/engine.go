@@ -69,8 +69,29 @@ func (f *FreqList) Inc(l Letter) {
 	}
 }
 
+func (f *FreqList) AsList() []string {
+	s := make([]string, f.Count())
+	i := 0
+	for letterIndex, freq := range f {
+		l := letter(letterIndex).String()
+		for j := 0; j < freq; j++ {
+			s[i] = l
+			i++
+		}
+	}
+	return s
+}
+
 func letter(i int) Letter {
 	return Letter(i + LetterOffset)
+}
+
+func (f *FreqList) Count() int {
+	total := 0
+	for _, freq := range f {
+		total += freq
+	}
+	return total
 }
 
 func (f *FreqList) Set(l Letter, freq int) {
@@ -191,7 +212,7 @@ func (b *Board) precompute() bool {
 
 // TODO(bsprague): Lowercase words, and check that it only contains
 // alphanumerics, maybe.
-func (b *Board) Status(letters FreqList) BoardStatus {
+func (b *Board) ValidateBoard(letters FreqList) BoardStatus {
 	// A board is considered valid if:
 	//   - the player used exactly the letters in their hand
 	//   - the words given don't overlap in conflicting ways
@@ -345,4 +366,17 @@ func findWordsInSequence(cls []CharLoc, f func(Loc) int) []string {
 		}
 	}
 	return strs
+}
+
+func StartingTileCount(pc int) int {
+	var tc int
+	switch {
+	case pc < 4:
+		tc = 21
+	case pc < 6:
+		tc = 15
+	case pc < 8:
+		tc = 12
+	}
+	return tc * TileScalingFactor
 }

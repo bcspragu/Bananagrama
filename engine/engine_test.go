@@ -174,6 +174,34 @@ func TestContainsExactly(t *testing.T) {
 	}
 }
 
+func TestAsList(t *testing.T) {
+	testcases := []struct {
+		letters map[rune]int
+		want    []string
+	}{
+		{
+			letters: map[rune]int{'c': 1, 'a': 1, 't': 1},
+			want:    []string{"a", "c", "t"},
+		},
+		{
+			letters: map[rune]int{'h': 1, 'e': 1, 'l': 2, 'o': 1},
+			want:    []string{"e", "h", "l", "l", "o"},
+		},
+		{
+			letters: map[rune]int{'h': 2, 'e': 2, 'l': 4, 'o': 2},
+			want:    []string{"e", "e", "h", "h", "l", "l", "l", "l", "o", "o"},
+		},
+	}
+
+	for _, tc := range testcases {
+		fl := freqListFromMap(tc.letters)
+		got := fl.AsList()
+		if !reflect.DeepEqual(got, tc.want) {
+			t.Errorf("AsList(%v): got %v, want %v", tc.letters, got, tc.want)
+		}
+	}
+}
+
 func freqListFromMap(m map[rune]int) FreqList {
 	var f FreqList
 	for l, c := range m {

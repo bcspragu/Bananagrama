@@ -44,6 +44,9 @@ interface Player {
 
   dumpNotice @2 DumpNoticeRequest -> ();
   # Your notice that SOMEONE ELSE has dumped. You won't receive this call when you were the...uh...dumper.
+
+  gameOver @3 () -> ();
+  # The game is literally over, stop sending me things
 }
 
 struct SplitRequest {

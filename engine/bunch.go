@@ -21,6 +21,10 @@ type Bunch struct {
 	count int      // Number of tiles left
 }
 
+func (b *Bunch) Count() int {
+	return b.count
+}
+
 func (b *Bunch) Tile() Letter {
 	if b.count <= 0 {
 		return '0' // return an invalid rune character so we know clearly something is wrong

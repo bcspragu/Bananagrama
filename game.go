@@ -1,6 +1,8 @@
 package main
 
 import (
+	"sync"
+
 	"github.com/bcspragu/Bananagrama/engine"
 	"github.com/bcspragu/Bananagrama/potassium"
 	capnp "zombiezen.com/go/capnproto2"
@@ -22,34 +24,56 @@ var (
 	}
 )
 
+type player struct {
+	potassium.Player
+	name string
+}
+
 type game struct {
 	e *aiEndpoint
-	// TODO(bsprague): Synchronize on tiles
+
+	mu     sync.RWMutex
+	score  int
 	tiles  engine.FreqList
-	player potassium.Player
-	name   string
+	player *player
+}
+
+func (g *game) AddTile(l engine.Letter) {
+	g.mu.Lock()
+	g.tiles.Inc(l)
+	g.mu.Unlock()
+}
+
+func (g *game) DumpTile(l engine.Letter) {
+	g.mu.Lock()
+	g.tiles.Dec(l)
+	g.mu.Unlock()
 }
 
 func (g *game) Peel(call potassium.Game_peel) error {
 	req := call.Params
 	resp := call.Results
 
+	// Load board player sent us
 	wb, err := req.Board()
 	if err != nil {
 		return err
 	}
 
+	// Convert the board to a friendlier format
 	b, err := boardFromWire(wb)
 	if err != nil {
 		return err
 	}
 
-	status := b.Status(g.tiles)
-	if status.Code == engine.Success {
-		g.e.sendNewTiles(g.name)
-	}
+	// Check if the board they sent is valid
+	g.mu.RLock()
+	status := b.ValidateBoard(g.tiles)
+	g.mu.RUnlock()
+
+	// Convert the stgatus to the wire format
 	resp.SetStatus(engineStatusMap[status.Code])
-	// TODO(bsprague): Check more errors
+	// If our error code came with some errors, drop those bad boys into the response
 	if len(status.Errors) > 0 {
 		_, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
 		if err != nil {
@@ -71,6 +95,13 @@ func (g *game) Peel(call potassium.Game_peel) error {
 		case engine.InvalidWord:
 			resp.SetInvalidWord(tl)
 		}
+	}
+
+	// If the board was valid, increment the players score and let them know waz good
+	if status.Code == engine.Success {
+		// TODO(bsprague): Should we add the board/timestamp to the datastore?
+		// This can happen in the background, the whole game is asynchronous anyway
+		go g.e.addSuccessfulPeel(g.player.name)
 	}
 
 	return nil
