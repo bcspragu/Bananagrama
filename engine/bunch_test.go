@@ -36,7 +36,7 @@ func TestNewBunch(t *testing.T) {
 	}
 	b := NewBunch()
 	for letter, want := range wantDistribution {
-		got := b.tiles.Freq(letter)
+		got := b.Freq(letter)
 		if got != want {
 			t.Errorf("tiles[%c]: got %d, want %d", letter, got, want)
 		}

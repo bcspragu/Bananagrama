@@ -15,7 +15,10 @@ import (
 )
 
 const (
+	// How many people can join in a single game
 	MaxPlayers = 8
+	// How many tiles a player receives on a dump
+	DumpSize = 3
 )
 
 // aiEndpoint listens for new connections, and handles the game
@@ -27,27 +30,6 @@ type aiEndpoint struct {
 	totalPeels int
 	// Map from username to the Player's AI
 	connected map[string]*game
-}
-
-func (e *aiEndpoint) playersToWire() (capnp.TextList, error) {
-	e.mu.Lock()
-	defer e.mu.Unlock()
-	_, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
-	if err != nil {
-		return capnp.TextList{}, err
-	}
-	tl, err := capnp.NewTextList(seg, int32(len(e.connected)))
-	if err != nil {
-		return capnp.TextList{}, err
-	}
-
-	i := 0
-	for name := range e.connected {
-		tl.Set(i, name)
-		i++
-	}
-
-	return tl, nil
 }
 
 func (e *aiEndpoint) startGame() error {
@@ -82,13 +64,18 @@ func (e *aiEndpoint) startGame() error {
 				return err
 			}
 
-			players, err := e.playersToWire()
+			e.mu.Lock()
+			tl, err := req.NewPlayers(int32(len(e.connected)))
 			if err != nil {
 				return err
 			}
-			if err := req.SetPlayers(players); err != nil {
-				return err
+
+			i := 0
+			for name := range e.connected {
+				tl.Set(i, name)
+				i++
 			}
+			e.mu.Unlock()
 
 			return nil
 		})

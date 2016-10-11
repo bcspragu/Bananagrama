@@ -107,7 +107,70 @@ func (g *game) Peel(call potassium.Game_peel) error {
 	return nil
 }
 
+// Dump exchanges a player's letter for three from the bunch
 func (g *game) Dump(call potassium.Game_dump) error {
+	req := call.Params
+	resp := call.Results
+
+	// The letter the player wants to dump
+	l, err := req.Letter()
+	if err != nil {
+		return err
+	}
+
+	if len(l) != 1 {
+		resp.SetStatus(potassium.DumpResponse_Status_malformedRequest)
+		return nil
+	}
+
+	letter := engine.Letter(l[0])
+
+	// TODO(bsprague): This is big/annoying, but important one. Move
+	// synchronization of bunch things out of the actual bunch. We get a count
+	// here, and then we don't have a lock on the number of tiles before we end
+	// up writing to them. Clearly the synchronization needs to be happening at a
+	// higher level. Investigate what bunch-updating over channels would look
+	// like, probably like a func(*Bunch). The other option is just using the
+	// mutex at the aiendpoint level, or adding a new one.
+
+	// We don't have enough tiles to give them
+	if g.e.bunch.Count() < DumpSize {
+		resp.SetStatus(potassium.DumpResponse_Status_notEnoughTiles)
+		return nil
+	}
+
+	g.mu.RLock()
+	defer g.mu.RUnlock()
+	if g.tiles.Freq(letter) <= 0 {
+		// They don't actually even have this letter to give away
+		resp.SetStatus(potassium.DumpResponse_Status_letterNotInTiles)
+		return nil
+	}
+
+	// If we're here, it's probably safe to go ahead with the dump. We'll start
+	// with a write lock
+	g.mu.Lock()
+	// Take the shit letter from them
+	g.tiles.Dec(letter)
+	// Give them three tiles, before we throw their shit tile back in
+	letters := make([]engine.Letter, DumpSize)
+	for i := 0; i < DumpSize; i++ {
+		letters[i] = g.e.bunch.Tile()
+		g.tiles.Inc(letters[i])
+	}
+	// We put their letter back in the pot after we take out their shit letter
+	g.e.bunch.Inc(letter)
+
+	g.mu.Unlock()
+	tl, err := resp.NewLetters(DumpSize)
+	if err != nil {
+		return nil
+	}
+	for i, letter := range letters {
+		tl.Set(i, letter.String())
+	}
+	resp.SetStatus(potassium.DumpResponse_Status_success)
+
 	return nil
 }
 

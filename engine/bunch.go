@@ -15,10 +15,10 @@ const (
 )
 
 type Bunch struct {
+	FreqList
 	rand  *rand.Rand
 	mu    sync.Mutex
-	tiles FreqList // List of tiles that are left
-	count int      // Number of tiles left
+	count int // Number of tiles left
 }
 
 func (b *Bunch) Count() int {
@@ -32,11 +32,11 @@ func (b *Bunch) Tile() Letter {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	n := b.rand.Intn(b.count)
-	for i, freq := range b.tiles {
+	for i, freq := range b.FreqList {
 		if freq > n {
 			b.count--
 			l := letter(i)
-			b.tiles.Dec(l)
+			b.Dec(l)
 			return l
 		}
 		n -= freq
@@ -67,7 +67,7 @@ func NewBunch() *Bunch {
 	for freq, letters := range distribution {
 		for _, letter := range letters {
 			scaledFreq := freq * TileScalingFactor
-			b.tiles.Set(letter, scaledFreq)
+			b.Set(letter, scaledFreq)
 			b.count += scaledFreq
 		}
 	}

@@ -1643,6 +1643,7 @@ const (
 	DumpResponse_Status_success          DumpResponse_Status = 0
 	DumpResponse_Status_letterNotInTiles DumpResponse_Status = 1
 	DumpResponse_Status_notEnoughTiles   DumpResponse_Status = 2
+	DumpResponse_Status_malformedRequest DumpResponse_Status = 3
 )
 
 // String returns the enum's constant name.
@@ -1654,6 +1655,8 @@ func (c DumpResponse_Status) String() string {
 		return "letterNotInTiles"
 	case DumpResponse_Status_notEnoughTiles:
 		return "notEnoughTiles"
+	case DumpResponse_Status_malformedRequest:
+		return "malformedRequest"
 
 	default:
 		return ""
@@ -1670,6 +1673,8 @@ func DumpResponse_StatusFromString(c string) DumpResponse_Status {
 		return DumpResponse_Status_letterNotInTiles
 	case "notEnoughTiles":
 		return DumpResponse_Status_notEnoughTiles
+	case "malformedRequest":
+		return DumpResponse_Status_malformedRequest
 
 	default:
 		return 0
@@ -1914,122 +1919,686 @@ func (l Word_Orientation_List) Set(i int, v Word_Orientation) {
 	ul.Set(i, uint16(v))
 }
 
-const schema_f2768a70df34b76a = "x\xda\x8cW]l\x1cW\x15>\xe7\xdeY\xcf\xae\x7f" +
-	"\xb2{;k\xd2>\x84\x85\xca\x91\x1a\x0b[q\xdc\"" +
-	"b\x14\xd6v\x12RGN\xecqR\"\"@\x8cw" +
-	"n\xe2ufg\xd63\xb3\xf6:\xb4\xb5\x02\x8d\xdaF" +
-	"*\xd0\x8a\x9f\x18\xc5@U\x05Px@\xf4\x07B%" +
-	"\x10\x08\x09\x01j\xdaTDj\xa9\x90\xda\x97\x0a\x08\x02" +
-	"5\xd0<$\"\x1dt\xef\xec\xcc\xac\xd7\x1b\xda'\xdf" +
-	"\x9d9s\xce\xf9\xbe\xf3\x9ds\xae\xb7\xdf\xa4\xa3d(" +
-	"5\x95\x01\xd0\xadTG\xf0\xfb\x0f\xe7\xdf\xbe\xf2\x90\xff" +
-	"(\xb0\xcd\x08\xa0\xa8\x00\xc3O(\xfd\x08J\xf0\xd1\xa3" +
-	"\xbf\xe2_\xf1g\xbf\xda\xf4\xa6\xa6\x8c\x887'\x1f\xef" +
-	"\xcc\x1f\xb9\xe7\xdaY`\xbd$H\xe7\x8e=\xf0\xc03" +
-	"\x97\xde\x02\xc0\xe1\xcf+\x9d\xa8U\x84\xa9VV\xa6\x00" +
-	"\x03e\xd7\x1bo\xbd\xf9\xb1\xaf\x9dk\xf2qZ\x19\x17" +
-	">v\x1d;\xd5c<\x979\x0f,G\x83\xf9\x9f\xdf" +
-	"\xfbf\xf5\xcc\xe2\xbf\x01\xc4\xe7/j5\xe9bA\xd9" +
-	"\xa7\xad\x8aSp\xeb\xcf\x0b\xff:\xf2\x1b\xf7<\xb0-" +
-	"$x\xf5C/\xfd\xee\x0f\x1f?\xf0w\x11\xf0\x94r" +
-	"7jOJ\xeb'\x94o\x03\x06S\x0f\x7fa\xfb\xa6" +
-	"/\xed\xfe\x01\xe89\xc4\xc4o\x0a\x85\xc9\xdb\xcaU\xed" +
-	"\x9a\xb2\x19@\xbb\xa1,\x01\x06\x93\x13\x0f~\xdd\xad\xbf" +
-	"\xfb\xc3\x0d9\xf0\xd4\x05\xad\x92\x920R\x8fj\xbf\x10" +
-	"\xa7`h\xf63O]\xfe\xde\xc5\x1f5Ay:5" +
-	"#\xa0<vn\xd3w\xbfl\x9a\xcf\x02\xcb5\x87$" +
-	"2\xab\xd4MmUz\xfafj\x09\xf0\xd6\xd9w\xbe" +
-	"U\xdc\xf7\xa9_\xb7\x06\xbc\x96zQ\xbb!\xcc\x86\xaf" +
-	"\xa7T\xd4\xd6:D\xc4\xe5\xc9\xee\xfd\xef\xac~\xe3\xb7" +
-	"\xed\xfc\x9e\xee\xb8\xaa=\xd9!#t\x08(\xf4\xc6w" +
-	"~\xac]:\xfbJ;\xdc\xc3\x19\x95\xa0\xd6\xab\x0a\xe0" +
-	"[Ta}\x97\xfe\xdc\xee\xff\xbc\xbbv\x19X/B" +
-	"\xc3hY\xedD@\xed\x94Z\x04\x0c\xae\xbf\xb7\xfd/" +
-	"\xde\xcb\xaf\xfc\xa9\x19\xac*k?X\xbfx\xff\xec3" +
-	"\xb9+-IQa\xf2\xb8z\x07j\xab\xaaD\xab\xfe" +
-	"\x040xJ\xbd\xb2\xf6p\xfe\xc2\xeb\xed\x10\x8c\xa5o" +
-	"j\x07\xd2\xe24\x91\x169\x0d\x0e\xf9\xcf\xbf\xf4\xf2\xdf" +
-	"^\x07\xf6\x11\x92\xc0\x01\x1c>\x9f\x1eA\xed\x05i\xf9" +
-	"\xd3\xf4\x0a`\xd0\xf3\xc5\xd7^-\xaf\x9dxC\xaa!" +
-	".8\xe0\xf0\x8d\xf4\xdd\xa8e2\xc22\x95\x11\xf2\x8b" +
-	"\xb5\xa9\xe7\x90\xb4\xaaak\xe6\x826\x90\x11\xa4\xec\xcc" +
-	"\xfc\x150\xd1\xd5z\x0a\xf7\xa2\xaa j\xac\xf3\xaa\xb6" +
-	"\xa5s3\xc0\xf0\xd6\xce\x02\x02\x06\xf3\xec\x97w\xbev" +
-	"\xe1g\xffl\xe6p\xa1Kr\xb8\xdc%8\xfc\xc7\xa5" +
-	"\xeb\xec\x8f\xf5O\xdel\x01/c\xafv=\xab=\xdd" +
-	"%Nk]E\x18\x08\xaa\x8eox^\xb9F+\x83" +
-	"%\xa3jWG\xa6-c\x99\xbb\x83^\xd5*\xfb}" +
-	"3\xdc\xcb\xd6,\xdf\xbb\xad\x99\xcd\x97\x0e\x97-\xde7" +
-	"S\xe4^{\xc3#\x8ek\x0eN\xb9en\xfb\x86_" +
-	"vl\x80iD\xbd\x1b\x09\x00\xdb2\x0e\x80\xc8z\x8f" +
-	"\x02 al?\xc0J\xcd>a;Kv0\xe7\xb8" +
-	"\xe5\x93\x8e\xed\x035\xac`\x91\xbb~\xb9dX\x00\x10" +
-	"\x07\xe8h\xc9\xe4\xb8Q\xe1S\x8b\xdc\x159\x8bL " +
-	"2\x8c\xec\x8a\x87\xb8\xbb\xc8]\x11]\xa1)\x80\xb8{" +
-	"0\xaa9c\xe3@XJ])9\xb6\xcdK\xfe(" +
-	"N#\xb6\x81\xce\xb95\xc3\xbd\xaac{|\xf0\x90o" +
-	"\xa8~\xcd\x13^\xef\x94\x98\xc6BL;g%\xa6\xfb" +
-	"\\\x00\xa4lH\xfcQ\xd8\xc0<\x00\xa6\xd8\xb6y\x80" +
-	"\x15\xafV*q\xcf\x0b\xca\xf6\xa2a\x95\xcd#\xa0:" +
-	"\xae\x19\x98\xdc7Js\xdc\x84\xc2\xb8c\xb8f`;" +
-	"\xfe\x98eMr(\xf8>w\xbd\x80\xd7}\xd7\x98\xe4" +
-	">d\xe5\xcf\xc6\xc7\xe3\x90\x95\xd6Q\xaa$JuO" +
-	"\xadR\x15\xa9fE\xae\xba\x82\xcd\x12\xc6\x91\xe2!\xdf" +
-	"\xf0k\x9e\x9e\xa6\x0a\x80\x82\x00l\xdb\x08\x80\xdeGQ" +
-	"\xdfN\x101\x8f\xe2\xd9\xc08\x80~\x0fE}\x0f\xc1" +
-	"\xa2'\xbf\xc0l\xe2\x07\x10\xb3\x80+\x16\x97\x09\xe2&" +
-	"\xc0i\x8a\xd8\x0dD\x1c\xe3\x8c0\xca(\xbb\xcf\xa8p" +
-	"\xc1VZ\xd6 \xd22F=\xc0\x86\xfa\x81\xb0\xad*" +
-	"&\xb3\x02\xa3Ncw\x89w=j\xb6\xca\xb95\x8a" +
-	"Y\xb3V\xa9\xae\xaf\x91\xd2\"\x0aaq\xd0\xf1\xcb%" +
-	"\xde\x90\x05z\x1bI\xda\x1dV{\xa6\xc8\x17j\xdc\xf3" +
-	"\xc3\xe4bF\xfa\x13FXL\xc9H\x83\x92{\x09f" +
-	"m\xa3\xc2%\xden\xc0bU\xc6E\x16\x8d[!\x85" +
-	"v4\x14\xc3\x04E\xac\x9c$\"\x1a\xb9\x18\xadE\xb6" +
-	"\xb0\x03\x08\xe3\x82\x88h\x98a\xb4\x18\xd9g\x85P\x0f" +
-	"\xa8H\xe2\xa9\x88\xd1\x96`cG\x81\xb0\x9d*\xd2x" +
-	"\x96b\xb4\x0c\xd9\xc0~InAv\xf7(\xae4\xda" +
-	"w\x14\x83\x88)\xa0%\xf13\xea&\x00X\xcfp\xcc" +
-	"\xda!\xe1b\x86/d\xdbp\xb6\xa3\xc1\xd9h\x13g" +
-	"\xbb\x84\x8c>AQ?L\xb0\xe0\x97-\xde\xaa\x95\x95" +
-	"\x90\xbb\xdbJ\x88\xb6\xd6\xab\xd1\x82 u\x9d\x0c\xf1\x0f" +
-	"\xac\xeb\xfe\xa4\x88\x89\xaec?\xa1\xae\xb3\x82\x08d\xc9" +
-	"\xc2n)h\x9c\x94\x90\xb5\x94[\xdf\xb4\xe1\x1a\x15\x0f" +
-	"@W\xe2\xf0=\"|\x9a\xa2\x9e'X\x0c;%R" +
-	"\xccm'k<\xcf\x8a\xa1\xc3\x8d\x86{bq\xcfH" +
-	"\xe5\xa2,Cw\x1cu\xaf\x88:JQ\x9fl*\xc3" +
-	"\xc4~\x00\xfd~\x8a\xbaI\x90\x11\x92\x973\xcb\x10\x96" +
-	"\x9f\xa3\xa8\xcf\x11,\x0a\x10\xdc\x8c\xf3sy\x89\x97\x17" +
-	"\xb9\x09\x00-\x95\x09-7\"\x89%r0T\xd7m" +
-	"\x1ak\xe4}\x1a\xab\x85\xa8\xa2h\xfa\xff\xc7[\x8b," +
-	"\x06\x1b*\x10QC\x94\xf7\x85\x93y \x9c\xcc\xdb\xce" +
-	"\xc8\xc9\xbc\xed\xa8\x9c\xcc[\x9bG\xb2\xe8\xe8\xc3\x8e3" +
-	"\x09\xaac\x1f\x97\xbf\xc6,\x97\xa3a.\x1f6Np" +
-	"\x1b@\xb6\xc7\x84\xf7\xe9\x1aP\xcb\x0a\x96\x8d=\x8e\xcd" +
-	"\xf79\x90u\x8eq\xb3}\x9d\xda\xed\x8b\xf5;\xf0\x8c" +
-	"\xcc\xaa\xf7dS\x1e!\x01\x07\x1d\xf4'lA\xa4\x07" +
-	" \x16\xc2^\xdb\xa9\x1d\x87\xe2\x9c|\xd4f\xc2\x8a\x8d" +
-	"+{\"\xb9-\xe3l\x10\xad`P\xcb\x8e\xad\xe7\xe2" +
-	":\x18\xfdI\xed\xa32\xf0Y\x00\xdd\xa4\xa8W\x85H" +
-	"0\xa4\xafr\x07\x80>GQ\xf7\x092J\xf2H\x01" +
-	"\xd8\x82xhQ\xd4\xeb\x04\xb3>\xaf\xfbq}\x9c\xe6" +
-	"x\x98M\x92\x09\x1b\x0b\xeb\x98\x06\x82i@\\\x8eN" +
-	"\x1b\x15\x14\xad\xdad\x7f%\x17\xf2\xa4\xcf\xf31\x98\x87" +
-	"\x84~\xea\x14\xf5G\x08\xf6`\x10\x84pN\x89y\xf4" +
-	" E\xfd1\x82=\xe4\xbd \xc4sZ\x80|\x84\xa2" +
-	"\xfe}\x82=\xf4V\x10\x02Zs\x01\xf4s\x14\xf5\x8b" +
-	"\x04{\x94\xff\x06yT\x00\xd8\x0b\xf3\x00\xfa\xf3\x14\xf5" +
-	"\xcb\xcd\xb3\"\xce%\x84T\x90\xbb\x18:\xd6\xaf\xf4\xd6" +
-	"q\xd6\xb2\xd1[_\xaf_\xf0\xef;\x0b\xe5\xd8\x11\x9d" +
-	"\xd1v\xec\xecH\xc6NaV\xdc\x100\x97\\\x0e\x01" +
-	"1\xd7n5\x857\x8f\xf0\x9a\xb4\xc1S\x1f\xc1\xc2\x92" +
-	"\xe3\x9aqf\xb9\xe6\x7f\xc3\xc4\xc3\xff\x05\x00\x00\xff\xff" +
-	"j<\xea\x9f"
+type Peel struct{ capnp.Struct }
+
+// Peel_TypeID is the unique identifier for the type Peel.
+const Peel_TypeID = 0xcc92cfb307b2d7cf
+
+func NewPeel(s *capnp.Segment) (Peel, error) {
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 8, PointerCount: 3})
+	return Peel{st}, err
+}
+
+func NewRootPeel(s *capnp.Segment) (Peel, error) {
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 8, PointerCount: 3})
+	return Peel{st}, err
+}
+
+func ReadRootPeel(msg *capnp.Message) (Peel, error) {
+	root, err := msg.RootPtr()
+	return Peel{root.Struct()}, err
+}
+
+func (s Peel) String() string {
+	str, _ := text.Marshal(0xcc92cfb307b2d7cf, s.Struct)
+	return str
+}
+
+func (s Peel) Player() (string, error) {
+	p, err := s.Struct.Ptr(0)
+	return p.Text(), err
+}
+
+func (s Peel) HasPlayer() bool {
+	p, err := s.Struct.Ptr(0)
+	return p.IsValid() || err != nil
+}
+
+func (s Peel) PlayerBytes() ([]byte, error) {
+	p, err := s.Struct.Ptr(0)
+	return p.TextBytes(), err
+}
+
+func (s Peel) SetPlayer(v string) error {
+	t, err := capnp.NewText(s.Struct.Segment(), v)
+	if err != nil {
+		return err
+	}
+	return s.Struct.SetPtr(0, t.List.ToPtr())
+}
+
+func (s Peel) Board() (Board, error) {
+	p, err := s.Struct.Ptr(1)
+	return Board{Struct: p.Struct()}, err
+}
+
+func (s Peel) HasBoard() bool {
+	p, err := s.Struct.Ptr(1)
+	return p.IsValid() || err != nil
+}
+
+func (s Peel) SetBoard(v Board) error {
+	return s.Struct.SetPtr(1, v.Struct.ToPtr())
+}
+
+// NewBoard sets the board field to a newly
+// allocated Board struct, preferring placement in s's segment.
+func (s Peel) NewBoard() (Board, error) {
+	ss, err := NewBoard(s.Struct.Segment())
+	if err != nil {
+		return Board{}, err
+	}
+	err = s.Struct.SetPtr(1, ss.Struct.ToPtr())
+	return ss, err
+}
+
+func (s Peel) NewTiles() (Peel_Entry_List, error) {
+	p, err := s.Struct.Ptr(2)
+	return Peel_Entry_List{List: p.List()}, err
+}
+
+func (s Peel) HasNewTiles() bool {
+	p, err := s.Struct.Ptr(2)
+	return p.IsValid() || err != nil
+}
+
+func (s Peel) SetNewTiles(v Peel_Entry_List) error {
+	return s.Struct.SetPtr(2, v.List.ToPtr())
+}
+
+// NewNewTiles sets the newTiles field to a newly
+// allocated Peel_Entry_List, preferring placement in s's segment.
+func (s Peel) NewNewTiles(n int32) (Peel_Entry_List, error) {
+	l, err := NewPeel_Entry_List(s.Struct.Segment(), n)
+	if err != nil {
+		return Peel_Entry_List{}, err
+	}
+	err = s.Struct.SetPtr(2, l.List.ToPtr())
+	return l, err
+}
+
+func (s Peel) Timestamp() uint64 {
+	return s.Struct.Uint64(0)
+}
+
+func (s Peel) SetTimestamp(v uint64) {
+	s.Struct.SetUint64(0, v)
+}
+
+// Peel_List is a list of Peel.
+type Peel_List struct{ capnp.List }
+
+// NewPeel creates a new list of Peel.
+func NewPeel_List(s *capnp.Segment, sz int32) (Peel_List, error) {
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 8, PointerCount: 3}, sz)
+	return Peel_List{l}, err
+}
+
+func (s Peel_List) At(i int) Peel { return Peel{s.List.Struct(i)} }
+
+func (s Peel_List) Set(i int, v Peel) error { return s.List.SetStruct(i, v.Struct) }
+
+// Peel_Promise is a wrapper for a Peel promised by a client call.
+type Peel_Promise struct{ *capnp.Pipeline }
+
+func (p Peel_Promise) Struct() (Peel, error) {
+	s, err := p.Pipeline.Struct()
+	return Peel{s}, err
+}
+
+func (p Peel_Promise) Board() Board_Promise {
+	return Board_Promise{Pipeline: p.Pipeline.GetPipeline(1)}
+}
+
+type Peel_Entry struct{ capnp.Struct }
+
+// Peel_Entry_TypeID is the unique identifier for the type Peel_Entry.
+const Peel_Entry_TypeID = 0x91d57b12a6c06883
+
+func NewPeel_Entry(s *capnp.Segment) (Peel_Entry, error) {
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 2})
+	return Peel_Entry{st}, err
+}
+
+func NewRootPeel_Entry(s *capnp.Segment) (Peel_Entry, error) {
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 2})
+	return Peel_Entry{st}, err
+}
+
+func ReadRootPeel_Entry(msg *capnp.Message) (Peel_Entry, error) {
+	root, err := msg.RootPtr()
+	return Peel_Entry{root.Struct()}, err
+}
+
+func (s Peel_Entry) String() string {
+	str, _ := text.Marshal(0x91d57b12a6c06883, s.Struct)
+	return str
+}
+
+func (s Peel_Entry) Player() (string, error) {
+	p, err := s.Struct.Ptr(0)
+	return p.Text(), err
+}
+
+func (s Peel_Entry) HasPlayer() bool {
+	p, err := s.Struct.Ptr(0)
+	return p.IsValid() || err != nil
+}
+
+func (s Peel_Entry) PlayerBytes() ([]byte, error) {
+	p, err := s.Struct.Ptr(0)
+	return p.TextBytes(), err
+}
+
+func (s Peel_Entry) SetPlayer(v string) error {
+	t, err := capnp.NewText(s.Struct.Segment(), v)
+	if err != nil {
+		return err
+	}
+	return s.Struct.SetPtr(0, t.List.ToPtr())
+}
+
+func (s Peel_Entry) Letter() (string, error) {
+	p, err := s.Struct.Ptr(1)
+	return p.Text(), err
+}
+
+func (s Peel_Entry) HasLetter() bool {
+	p, err := s.Struct.Ptr(1)
+	return p.IsValid() || err != nil
+}
+
+func (s Peel_Entry) LetterBytes() ([]byte, error) {
+	p, err := s.Struct.Ptr(1)
+	return p.TextBytes(), err
+}
+
+func (s Peel_Entry) SetLetter(v string) error {
+	t, err := capnp.NewText(s.Struct.Segment(), v)
+	if err != nil {
+		return err
+	}
+	return s.Struct.SetPtr(1, t.List.ToPtr())
+}
+
+// Peel_Entry_List is a list of Peel_Entry.
+type Peel_Entry_List struct{ capnp.List }
+
+// NewPeel_Entry creates a new list of Peel_Entry.
+func NewPeel_Entry_List(s *capnp.Segment, sz int32) (Peel_Entry_List, error) {
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 0, PointerCount: 2}, sz)
+	return Peel_Entry_List{l}, err
+}
+
+func (s Peel_Entry_List) At(i int) Peel_Entry { return Peel_Entry{s.List.Struct(i)} }
+
+func (s Peel_Entry_List) Set(i int, v Peel_Entry) error { return s.List.SetStruct(i, v.Struct) }
+
+// Peel_Entry_Promise is a wrapper for a Peel_Entry promised by a client call.
+type Peel_Entry_Promise struct{ *capnp.Pipeline }
+
+func (p Peel_Entry_Promise) Struct() (Peel_Entry, error) {
+	s, err := p.Pipeline.Struct()
+	return Peel_Entry{s}, err
+}
+
+type Dump struct{ capnp.Struct }
+
+// Dump_TypeID is the unique identifier for the type Dump.
+const Dump_TypeID = 0xfec3c6a7865ad9d1
+
+func NewDump(s *capnp.Segment) (Dump, error) {
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 8, PointerCount: 2})
+	return Dump{st}, err
+}
+
+func NewRootDump(s *capnp.Segment) (Dump, error) {
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 8, PointerCount: 2})
+	return Dump{st}, err
+}
+
+func ReadRootDump(msg *capnp.Message) (Dump, error) {
+	root, err := msg.RootPtr()
+	return Dump{root.Struct()}, err
+}
+
+func (s Dump) String() string {
+	str, _ := text.Marshal(0xfec3c6a7865ad9d1, s.Struct)
+	return str
+}
+
+func (s Dump) Player() (string, error) {
+	p, err := s.Struct.Ptr(0)
+	return p.Text(), err
+}
+
+func (s Dump) HasPlayer() bool {
+	p, err := s.Struct.Ptr(0)
+	return p.IsValid() || err != nil
+}
+
+func (s Dump) PlayerBytes() ([]byte, error) {
+	p, err := s.Struct.Ptr(0)
+	return p.TextBytes(), err
+}
+
+func (s Dump) SetPlayer(v string) error {
+	t, err := capnp.NewText(s.Struct.Segment(), v)
+	if err != nil {
+		return err
+	}
+	return s.Struct.SetPtr(0, t.List.ToPtr())
+}
+
+func (s Dump) Dump() (string, error) {
+	p, err := s.Struct.Ptr(1)
+	return p.Text(), err
+}
+
+func (s Dump) HasDump() bool {
+	p, err := s.Struct.Ptr(1)
+	return p.IsValid() || err != nil
+}
+
+func (s Dump) DumpBytes() ([]byte, error) {
+	p, err := s.Struct.Ptr(1)
+	return p.TextBytes(), err
+}
+
+func (s Dump) SetDump(v string) error {
+	t, err := capnp.NewText(s.Struct.Segment(), v)
+	if err != nil {
+		return err
+	}
+	return s.Struct.SetPtr(1, t.List.ToPtr())
+}
+
+func (s Dump) Timestamp() uint64 {
+	return s.Struct.Uint64(0)
+}
+
+func (s Dump) SetTimestamp(v uint64) {
+	s.Struct.SetUint64(0, v)
+}
+
+// Dump_List is a list of Dump.
+type Dump_List struct{ capnp.List }
+
+// NewDump creates a new list of Dump.
+func NewDump_List(s *capnp.Segment, sz int32) (Dump_List, error) {
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 8, PointerCount: 2}, sz)
+	return Dump_List{l}, err
+}
+
+func (s Dump_List) At(i int) Dump { return Dump{s.List.Struct(i)} }
+
+func (s Dump_List) Set(i int, v Dump) error { return s.List.SetStruct(i, v.Struct) }
+
+// Dump_Promise is a wrapper for a Dump promised by a client call.
+type Dump_Promise struct{ *capnp.Pipeline }
+
+func (p Dump_Promise) Struct() (Dump, error) {
+	s, err := p.Pipeline.Struct()
+	return Dump{s}, err
+}
+
+type Replay struct{ capnp.Struct }
+
+// Replay_TypeID is the unique identifier for the type Replay.
+const Replay_TypeID = 0x87c008d7bed714b1
+
+func NewReplay(s *capnp.Segment) (Replay, error) {
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 3})
+	return Replay{st}, err
+}
+
+func NewRootReplay(s *capnp.Segment) (Replay, error) {
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 3})
+	return Replay{st}, err
+}
+
+func ReadRootReplay(msg *capnp.Message) (Replay, error) {
+	root, err := msg.RootPtr()
+	return Replay{root.Struct()}, err
+}
+
+func (s Replay) String() string {
+	str, _ := text.Marshal(0x87c008d7bed714b1, s.Struct)
+	return str
+}
+
+func (s Replay) InitialTiles() (Replay_Entry_List, error) {
+	p, err := s.Struct.Ptr(0)
+	return Replay_Entry_List{List: p.List()}, err
+}
+
+func (s Replay) HasInitialTiles() bool {
+	p, err := s.Struct.Ptr(0)
+	return p.IsValid() || err != nil
+}
+
+func (s Replay) SetInitialTiles(v Replay_Entry_List) error {
+	return s.Struct.SetPtr(0, v.List.ToPtr())
+}
+
+// NewInitialTiles sets the initialTiles field to a newly
+// allocated Replay_Entry_List, preferring placement in s's segment.
+func (s Replay) NewInitialTiles(n int32) (Replay_Entry_List, error) {
+	l, err := NewReplay_Entry_List(s.Struct.Segment(), n)
+	if err != nil {
+		return Replay_Entry_List{}, err
+	}
+	err = s.Struct.SetPtr(0, l.List.ToPtr())
+	return l, err
+}
+
+func (s Replay) Peels() (Peel_List, error) {
+	p, err := s.Struct.Ptr(1)
+	return Peel_List{List: p.List()}, err
+}
+
+func (s Replay) HasPeels() bool {
+	p, err := s.Struct.Ptr(1)
+	return p.IsValid() || err != nil
+}
+
+func (s Replay) SetPeels(v Peel_List) error {
+	return s.Struct.SetPtr(1, v.List.ToPtr())
+}
+
+// NewPeels sets the peels field to a newly
+// allocated Peel_List, preferring placement in s's segment.
+func (s Replay) NewPeels(n int32) (Peel_List, error) {
+	l, err := NewPeel_List(s.Struct.Segment(), n)
+	if err != nil {
+		return Peel_List{}, err
+	}
+	err = s.Struct.SetPtr(1, l.List.ToPtr())
+	return l, err
+}
+
+func (s Replay) Dumps() (Dump_List, error) {
+	p, err := s.Struct.Ptr(2)
+	return Dump_List{List: p.List()}, err
+}
+
+func (s Replay) HasDumps() bool {
+	p, err := s.Struct.Ptr(2)
+	return p.IsValid() || err != nil
+}
+
+func (s Replay) SetDumps(v Dump_List) error {
+	return s.Struct.SetPtr(2, v.List.ToPtr())
+}
+
+// NewDumps sets the dumps field to a newly
+// allocated Dump_List, preferring placement in s's segment.
+func (s Replay) NewDumps(n int32) (Dump_List, error) {
+	l, err := NewDump_List(s.Struct.Segment(), n)
+	if err != nil {
+		return Dump_List{}, err
+	}
+	err = s.Struct.SetPtr(2, l.List.ToPtr())
+	return l, err
+}
+
+// Replay_List is a list of Replay.
+type Replay_List struct{ capnp.List }
+
+// NewReplay creates a new list of Replay.
+func NewReplay_List(s *capnp.Segment, sz int32) (Replay_List, error) {
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 0, PointerCount: 3}, sz)
+	return Replay_List{l}, err
+}
+
+func (s Replay_List) At(i int) Replay { return Replay{s.List.Struct(i)} }
+
+func (s Replay_List) Set(i int, v Replay) error { return s.List.SetStruct(i, v.Struct) }
+
+// Replay_Promise is a wrapper for a Replay promised by a client call.
+type Replay_Promise struct{ *capnp.Pipeline }
+
+func (p Replay_Promise) Struct() (Replay, error) {
+	s, err := p.Pipeline.Struct()
+	return Replay{s}, err
+}
+
+type Replay_Entry struct{ capnp.Struct }
+
+// Replay_Entry_TypeID is the unique identifier for the type Replay_Entry.
+const Replay_Entry_TypeID = 0xfe64d60234157407
+
+func NewReplay_Entry(s *capnp.Segment) (Replay_Entry, error) {
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 2})
+	return Replay_Entry{st}, err
+}
+
+func NewRootReplay_Entry(s *capnp.Segment) (Replay_Entry, error) {
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 2})
+	return Replay_Entry{st}, err
+}
+
+func ReadRootReplay_Entry(msg *capnp.Message) (Replay_Entry, error) {
+	root, err := msg.RootPtr()
+	return Replay_Entry{root.Struct()}, err
+}
+
+func (s Replay_Entry) String() string {
+	str, _ := text.Marshal(0xfe64d60234157407, s.Struct)
+	return str
+}
+
+func (s Replay_Entry) Player() (string, error) {
+	p, err := s.Struct.Ptr(0)
+	return p.Text(), err
+}
+
+func (s Replay_Entry) HasPlayer() bool {
+	p, err := s.Struct.Ptr(0)
+	return p.IsValid() || err != nil
+}
+
+func (s Replay_Entry) PlayerBytes() ([]byte, error) {
+	p, err := s.Struct.Ptr(0)
+	return p.TextBytes(), err
+}
+
+func (s Replay_Entry) SetPlayer(v string) error {
+	t, err := capnp.NewText(s.Struct.Segment(), v)
+	if err != nil {
+		return err
+	}
+	return s.Struct.SetPtr(0, t.List.ToPtr())
+}
+
+func (s Replay_Entry) Frequency() (capnp.Int32List, error) {
+	p, err := s.Struct.Ptr(1)
+	return capnp.Int32List{List: p.List()}, err
+}
+
+func (s Replay_Entry) HasFrequency() bool {
+	p, err := s.Struct.Ptr(1)
+	return p.IsValid() || err != nil
+}
+
+func (s Replay_Entry) SetFrequency(v capnp.Int32List) error {
+	return s.Struct.SetPtr(1, v.List.ToPtr())
+}
+
+// NewFrequency sets the frequency field to a newly
+// allocated capnp.Int32List, preferring placement in s's segment.
+func (s Replay_Entry) NewFrequency(n int32) (capnp.Int32List, error) {
+	l, err := capnp.NewInt32List(s.Struct.Segment(), n)
+	if err != nil {
+		return capnp.Int32List{}, err
+	}
+	err = s.Struct.SetPtr(1, l.List.ToPtr())
+	return l, err
+}
+
+// Replay_Entry_List is a list of Replay_Entry.
+type Replay_Entry_List struct{ capnp.List }
+
+// NewReplay_Entry creates a new list of Replay_Entry.
+func NewReplay_Entry_List(s *capnp.Segment, sz int32) (Replay_Entry_List, error) {
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 0, PointerCount: 2}, sz)
+	return Replay_Entry_List{l}, err
+}
+
+func (s Replay_Entry_List) At(i int) Replay_Entry { return Replay_Entry{s.List.Struct(i)} }
+
+func (s Replay_Entry_List) Set(i int, v Replay_Entry) error { return s.List.SetStruct(i, v.Struct) }
+
+// Replay_Entry_Promise is a wrapper for a Replay_Entry promised by a client call.
+type Replay_Entry_Promise struct{ *capnp.Pipeline }
+
+func (p Replay_Entry_Promise) Struct() (Replay_Entry, error) {
+	s, err := p.Pipeline.Struct()
+	return Replay_Entry{s}, err
+}
+
+const schema_f2768a70df34b76a = "x\xda\x8cX\x7fl\x13\xf7\x15\x7f\xef\xce\xf69\x8e\x1d" +
+	"\xfb\xb8d\xb4\x7f\xb0,\x15H%j\" 0\xadL" +
+	"\xcc!\x90\xf1C\x01r\x01FA\xeb\xc4\xc5\xfeB\x0c" +
+	"\xe7;sw\x0e1-\xcdX\xdbQ\xd0~\x81\xa6\x8d" +
+	"N\xb0\x0dUmG&T\x01e\xa3HTL\x95\xaa" +
+	"1A\x01\x8d.-\x9a\xd4\xfe3mc\xda\xd4m\xed" +
+	"\x1fC\x83\x9b\xde\xf7\xec\xbb\x8b\xe3\x0c\xfe\xca\xd7w\xcf" +
+	"\xdf\xf7\xde\xe7}\xde\xe7=g\xc1\x8ah\xaf\xb00*" +
+	"5\x03\xa8\xdf\x8c\xc6\xdc\xdf~\xbe\xf5O\xb7\xf6;\x07" +
+	"A\x9e\x8d\x00\x11\x09\xa0\xa7\x10\xedD\x88\xb8gZ'" +
+	"\xdf\x9e\x8c_>\x08r\x06\xdd]\xbf^\xfcQ\xe9\xf0" +
+	"\xe8\xbf *J\x00\x8a\x1a\xbd\xa8l\x8d\xce\x06P\xb4" +
+	"\xe8\x1b\x80n\xc7\xb6\xb7\xd9\xf3\xce\xf0\xf7B\xb7t\xc5" +
+	"\x96\xd2-\xcf\x8f\\~m\xd63\xef\x1f\x01\xb9\x0d\xdd" +
+	"\xeb\x93g\xa5s\xd7\x8f^\x85\xa8@\xb7\xb4\xc5n+" +
+	"\x1d1:\xcd\x89\xed\x05t\xf7\x1dJ\xb4ny\xfc\x9f" +
+	"\xc7@n\x13\xdcxf\xc7\xe6\xcd\xaf\\\xfb\x18\x00{" +
+	"*\xb1\x04*\x87\xb8\xe5\x8b\xb1\x0d\x80nd\xd9\xed\x8f" +
+	"?z\xe2\xfb\xc7C\xfeN\xc6\xfa\xc8\xdf\xb2\x1d\x07R" +
+	"\xda\xb9\xa6WA\xce\x88A\xd4@_\xbf\xa8\x1c\xe1W" +
+	"|7\xb6J9O'\xf7\xde\x87{\xfe\xb1\xe57\xd6" +
+	"\xab \xcf\x11\xdc\x9b\x9f\xbb\xfa\xee\x95/\xae\xfb+9" +
+	"<\x11{\x0c\x95\xd3\xdc\xfaT\xec\xc7\x80\xee\x86\xe7\xbe" +
+	"\xb1\xa0\xe5\x99\x15\xaf\x81\x9a\xc10\x1aH&(\xddQ" +
+	"R\x12\xa1\xd1&Q\x1e\x03k\x9e\xfd\x815\xf6\xe9\xeb" +
+	"\xd3b8 M(\x87$\x9e\x86tPy\x9fN\xee" +
+	"\xc2\xe1\xaf\x1d\xbd\xf1\xb3\x0b\xbf\x08\xa5rI\x1a\xa2T" +
+	"^:\xde\xf2\xd3o\xe5\xf3g\xeb\x0a\xc0\xa1;%\xdd" +
+	"U\xce\xf3\x9b\xce\x90\xcb{\xc7>\xf9Qv\xd5W." +
+	"\xd7;L\xc5/*mq\xbaS\x8eK\xa8\xbcEG" +
+	"\xb72\x90\\\xfb\xc9\xcb?|\xa7\xd1\xbd'\xe3w\x94" +
+	"\xd3q\xee!N\xa9\xf8\x15\xab\xcb\x9b\xb3`^\xd3\x84" +
+	"\xd2\xd5Dy/i\xfa3\xa0+\xfe\xe7'\xbfT\xae" +
+	"\x1d\xbb\xde\x08\xa4\x9e\x8e\x84\x80JW\x82['\xe8\xea" +
+	"G\xd5s+\xfe\xfd\xe9\x89\x1b\xc4\x0c\xa8\x1a\x1dI$" +
+	"\x10Py9\x91\x05t?\xbb\xbf\xe0\x8f\xf6{\xd7\x7f" +
+	"\x1fB\xe6\xad\x04'U\xf7\xd8\x85\xd5\xc3\xafdn5" +
+	"\xa0f\xcf\xc9\xc4,T\xce$(\xbe\xd3\x09\xe2\xe6Q" +
+	"\xe9\xd6\x89\xe7Z'>h\x94\xee\xd6\xe6\xbb\x0ak\xa6" +
+	"\x93\xd6L1u/t\xde\xbc\xfa\xde_>\x00\xf9\x0b" +
+	"B\x90\x0e`\xcf\xa5\xe6\xa5\xa8\\\xe3\x96W\x9a\xc7\x01" +
+	"\xdd\xd4\xf6\xc9\x9b\x85\x13\xbbos\xea\xf8\xec\x00\xec\x91" +
+	"\x93\x8f\xa1\xd2\x91\xe4\xacN\xee\x04\x0c\x88\xacfP\xa8" +
+	"\xa7\xce\xe6\xe4\x84\xf2t\x92@)$\x09B\x9f\x84S" +
+	"!\xecG)\x82\xa8,O\xddQ\xd6\xa5f\x03\xf4l" +
+	"N\xb5#\xa0\xbbK\xbe\xf4\xc8\xe4\xc4\xaf\xfe\x1e\xc6\xf0" +
+	"d\x0b\xc7\xf0T\x0ba\xf8\xb7k\x9f\xc9\xbf\x1b\xfb\xf2" +
+	"\xdd\xba\xe4\xb9\xef+-g\x95\x9b-t\xba\xc6m%" +
+	"\xa7m\xb1\xf0\x87\xfc}\xc2;\xe8~\x0f\xa8{-w" +
+	"\x94\xa64\x9d\xa2i\x02\xea\xe6\x87\xdb\xbe\xfd\xfa\xbb\xef" +
+	"\xdc\xaf/57.\xa7'\x94\xfd\xdc\xb8\x92~\x03\xba" +
+	"\xdc\x92\xe9h\xb6](\x8b\xc5\xee\x9cV2JK\x07" +
+	"u\xad\xc2\xacn\xbb\xa4\x17\x9c\xb9C\xccN\x97u\xc7" +
+	"\xf6\xcd\xb0f\x96\x1db%]\xab\xa8\x11\x0c\x07\x87\x8b" +
+	"\xda\xfb\x0d\xc7\xaa\xa8I1\x02\x10A\x00\xb9\x7f\x17\x80" +
+	"\xbaRDu\xbb\x802b+\xd2\xc3\xa7\x17\x01\xa8O" +
+	"\x89\xa8:\x02\xca\x82\xd0\x8a\x02\x80\xbc\x87\x1e\xea\"\xaa" +
+	"/\x09\xe8\x16\x8c\x82S\xd0\xf4M\x90.\xe8\xcc\xc6\x16" +
+	"\xc0A\x111\x13\xf8\x02\xa4\x87\xed%\xc6\xf4\xd0k\xbf" +
+	"'\xaa\xaf\xf3\xe5b)\xf4\xda\x87\xc6{=c\xf6\x06" +
+	"\xdb\xbb\xa9\xa0\xb3\xb9CYfO\xc9_\xf0\x0d\x19\xd3" +
+	"\xbb\xfb\x0dG\xb4*\x83\x88j\xdc\xcfw\xfeR\x00u" +
+	"\xae\x88\xea\x82P\xbe]\xf4\xf0q\x11\xd5\xc5\x02fK" +
+	"\xdc\x07&A\xc0$`Vg\x8e\x13|\x9c\x1e\xd2\x16" +
+	"\xd3\xcawo\xb0\x0a\xccp4\xa7`\x1a\x00\xe40\xc9" +
+	"!\x9b\xd3G\x99\xc8m\xdb\x00P\x90\xe5\xb5\x00\xe3e" +
+	"c\xb7a\xee5\xdc\x11\xd3*\xec3\x0d\x07DMw" +
+	"G\x99\xe5\x14r\x9a\x0e\x00\xbe\x83X]\xce;\xb5\"" +
+	"\xdb0\xca,*:\xe5\x0c5C\xbf\xe4\x1b\x995\xca" +
+	",\xf2\x1e\x11\xa3\x00\xbe\x08b\xad\x1be\xb9\x0f\x049" +
+	"*\x8d\xe7L\xc3`9\xa7\x17\x07\xb1\x11\xc8\x8c\xe9C" +
+	"\xcc.\x99\x86\xcd\xba7:\x9a\xe4\x94m\xba\xf5\x11\x9e" +
+	"\xd3r/\xa7'\x87yNK,\x00\x14\xe5\x85\xf4'" +
+	"\"w\xed\x02\xc0\xa8<\x7f\x17\xc0\xb8]\xce\xe5\x98m" +
+	"\xbb\x05cT\xd3\x0b\xf9- \x99V\xde\xcd3G\xcb" +
+	"\x8d\xb0<\xb4\xf7\x99\x9a\x95w\x0d\xd3Y\xae\xeb\x03\x0c" +
+	"\xda\x09e\xdbec\x8e\xa5\x0d0\x07\xd2\xfcc\xf5\xcb" +
+	"}\x90\xe6\xd6\xd3\xca\xbc\xb2\\,Q\xa8i\x8a\x95\x93" +
+	"=\x10\x17\\\x9a\xdd\xe8hN\xd9\x9e\xa1\xfa~\xf1\xfb" +
+	"\xaa\xc5_)`\xd6\xe6\xdf\xc0tp\x0f \xa6\x01\xc7" +
+	"=\x1a\xf8\\%:\x84\x19\xea7^z\x95Vd\x1e" +
+	"\xe5\xa8\x065\x95\xc1\x9a:\xc9\x0b;A\x90\xe7I\x18" +
+	"\xa88\xd64P~\x94\xde\xa5\xa44uM/\xa6\xa9" +
+	";\xa6\xd6(RG\x0a\xb2Xo:\x85\x1c\xab\xd2\x02" +
+	"\x1b\xf4\xc2\x0a\xaf\xdaCY\xb6\xa7\xccl\xa7\xae\x1f:" +
+	"\x1f\xd0\x0fiC+2\xbf\x1b\xaa\xcd!\xd7\xa6&Q" +
+	"\xa1\x11\x0cY/@\xf2\x95\xe1@\xd4&'\xd6\xb6&" +
+	"\xd2\x13Af\x04Dm\xcc`m\x17\x92\xb7\x12Q\xd7" +
+	"I(\xf8\xf3\x0ak\xc3^^\xbe\x0d\x04\xf9I\x09E" +
+	"\x7f\xcaam\xa7\x91\xbb\xd6rp\xdb\xb9<\xf6\xe2x" +
+	"U(z\xd1\xad!\x05b\x8e>\xd6\xba\x09\x00\xa6\"" +
+	"\xec\xa3\xb6\x91\xae\x18b{\xd2\x0d0[T\xc5\xac7" +
+	"\x84\xd92\xa2\xd1\x97DT7\x09\xd8\xee\x84U\xb1\xca" +
+	"\x95q\x0f\xbb\x87\xa0\x105 's\xb0\x01\xfa\xca\x9d" +
+	"\xf1\xa3\xd0\xa8H_\x17Q\x1d\x09E\xc1(\xb4\xed\"" +
+	"\xaazH\xb9\x0bk\x01\xd4\x11\x11\xd5\x17\x04D\xb1\x15" +
+	"E\x00\xf9\xc0\x10m\xb1\"\xaa\xdf\x99&y\xed\xc3\xd4" +
+	"l\x98\x09&  f\x00\xdd*\x9a6\x00\x04\x9a\xed" +
+	"\xc7X\xd5l\xa7Pd\xb6\xa3\x15\x01K\xd8\x04\x026" +
+	"5\x12\xcd\x1a%\xab*\x03<\xdb`\x83x\xe8\xd6\xed" +
+	"\x0c\xe9\xb6\xdf\xba\xfe=^\xeb\xa6\xa9\xd6(\x07\xabe" +
+	"\x1dg\xfd\xa0\xa8syG\xcd\x1d\xd4,\xadh\x03\xa8" +
+	"\x11\xdf}\x8a\xdc\xc7ET[\x85\x07\xcf\x84z\xc9\xce" +
+	"z\x17N7\\\xe9\xf7\xef\x10oN\xe4L\x0bMg" +
+	"\xf2\xda+\xa2:\x10\xaa\xf1\x1a*\xe7j\x11\xd5|\xa8" +
+	"\xc6a6d)\x09\x96\xf7\xe3\xb3X\x8e\x15FY>" +
+	"T\xb7*\xf9<\xcb\xe9\x99\xf8]\xb0\xde+\xf9\x0c\xda" +
+	"\xf1\xc0Y:\x15\xa8,\xe9\xda\xff\xc3\xad\x8e\x16\xddU" +
+	"\x16\x90W/\xcb%\xde\xf0\xe9\xf2\x86\xcf\xfc\xc3|\xf8" +
+	"\xcc\xdf\xc6\x87\xcf\xbc\xf0\xd4!\xd1\xdad\x9a\x03 \x99" +
+	"\xc6N\xfei\xb9n1\xd4\xf2\x95M\xdanf\x00p" +
+	"\x05Xc\x7f\xb5\x0c\xa2\xae\xbb\x15m\xa5i\xb0U&" +
+	"\xa4\xcd\x1d,\xdf\xb8N\x8dFb\x86G5\xdf\x8b\xaa" +
+	"\xe30\x8f\xaac\x1f\x8fj\xce\xe1P8\x1e\x0e\xebM" +
+	"t\xd6\x18\xd5\x16\xa2\xd1\xd7o\x98\xe5\x9d\x90\x1d\xe1\x8f" +
+	"\xdc\xa2\xa6\xef0\xad\"\xc3\xbcG\x06'\xb4\x0d\x04\xe2" +
+	"@\xfb\x06o\x97\xe0'\x1f\x0e\xbb\xb5\x05\x04\xa4\x82i" +
+	"\x84E\xa23\xa0\x85\xaf\x11\xc3\x00j^D\xb5D\xfc" +
+	"A\x0f\xd9\xe2\xac\xaaF\xd0\xca'\x0a\x9eH\xec\x99U" +
+	"]\xf9\xc6\x04L;l\xcc\xf1Kg\x86\xfda:\x08" +
+	"\xc6\xeb9\x1c\xc38\x08\x18\x07\xc4J\xed\xd4xI\x9b" +
+	":\xbd\x83_\x95\x81\x04\xb4\xfa\xc9\xec'j\x8dy:" +
+	"\x96B\xd7\xf5\xd29@\x92\xf7\xac\xb7\x97\xa6\x84\xfb\xae" +
+	"\x97\xcf\x8b\x94\xe4\x0b\"\xaa?\x170%\xdes\xbd\x84" +
+	"NX\x00\xeaq\x11\xd5\x0b\x02\xa6\"\xffu[1\x02" +
+	" \x9f\xa7\x1d\xf8M\x11\xd5\x1ba\x19\xf1c\xf1Rj" +
+	"\xe7\x9b\x08\xc4\xa6.4\xf5b^\xb7\xcf\xd4\xbf\x9e\xba" +
+	"\xde\xcc4\x09\xa6*\x125MCEZ\x14(\xd2\x8c" +
+	"\x92=\x8d?\xde\xde\xe5-\x89\xd3n\x9a+`\xfb^" +
+	"\xd3\xca\x87V\xf2\xd0\xff\x12\xa6\xc4\xe8\x17\xd1\xfb\xa1\xd1" +
+	"\xdd\x9f\xa6\xf1\xf40\xfa@\x83\xe7\x09\x11\xd5\xd5\xd3\x06" +
+	"\x8f\xbb\xc3\"\xe2\x1b9\xc0J-\x82\xc8\x8cS\x92z" +
+	"\xf2a\xd4\xb2\xb3\xfa\x03gP@\xac\x8a\xe5:\x8aa" +
+	"@D\xf5\xa9i1\xf0\xa5\xcb\x0f\xa8\xc10\xfb_\x00" +
+	"\x00\x00\xff\xff{\xd4\xeaP"
 
 func init() {
 	schemas.Register(schema_f2768a70df34b76a,
 		0x87747dd4e5141ec8,
+		0x87c008d7bed714b1,
 		0x8e62748365be5a21,
+		0x91d57b12a6c06883,
 		0x98f12857140a897a,
 		0x9c8f2cdfe0da3d04,
 		0xa509b3610d81663d,
@@ -2040,6 +2609,7 @@ func init() {
 		0xb26464829e0e9c88,
 		0xc03e473f96f00098,
 		0xc39499f04a0c4c79,
+		0xcc92cfb307b2d7cf,
 		0xcf98cd13ab9af903,
 		0xd09df4f343b35119,
 		0xd3cfce73dc30fef5,
@@ -2050,5 +2620,7 @@ func init() {
 		0xe0cda35555661008,
 		0xe94d36c9c6cc16d1,
 		0xedb6aad718bd116a,
-		0xfa3b78ca11f5cdeb)
+		0xfa3b78ca11f5cdeb,
+		0xfe64d60234157407,
+		0xfec3c6a7865ad9d1)
 }

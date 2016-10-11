@@ -110,6 +110,7 @@ struct DumpResponse {
     success @0;
     letterNotInTiles @1; # The player didn't have the tile they tried to return in their hand
     notEnoughTiles @2; # There are less than three tiles in the pot
+    malformedRequest @3; # There wasn't exactly one letter in the request
   }
   letters @1 :Tiles; # The tiles to send back to the player, on success
 }
@@ -137,4 +138,42 @@ struct Word {
   y @3 :UInt32;
   # The x and y coordinates of the first letter in the word. We need 32-bits to
   # be safe, because we're playing with 144,000 tiles
+}
+
+# All the types down here are used for persistence in the DB
+struct Peel {
+  # The representation of a player peeling
+  player @0 :Text;
+  # The player who peeled successfully
+  board @1 :Board;
+  # The board of the peeler
+  newTiles @2 :List(Entry);
+  # The tiles returned to everyone
+  struct Entry {
+    player @0 :Text;
+    letter @1 :Text;
+  }
+  timestamp @3 :UInt64;
+}
+
+struct Dump {
+  # The representation of a player dumping
+  player @0 :Text;
+  # The player who dumped
+  dump @1 :Tiles;
+  # The tiles that were dumped
+  timestamp @2 :UInt64;
+}
+
+struct Replay {
+  initialTiles @0 :List(Entry);
+  # The tiles returned to everyone
+  struct Entry {
+    player @0 :Text;
+    frequency @1 :List(Int32);
+    # A list with 26 elements, one for each letter of the alphabet. The value
+    # at each index represents how many of that letter the player has in their hand
+  }
+  peels  @1 :List(Peel);
+  dumps @2 :List(Dump);
 }
