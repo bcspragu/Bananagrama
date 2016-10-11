@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"sync"
 
 	"github.com/bcspragu/Bananagrama/engine"
@@ -99,9 +100,60 @@ func (g *game) Peel(call potassium.Game_peel) error {
 
 	// If the board was valid, increment the players score and let them know waz good
 	if status.Code == engine.Success {
-		// TODO(bsprague): Should we add the board/timestamp to the datastore?
 		// This can happen in the background, the whole game is asynchronous anyway
-		go g.e.addSuccessfulPeel(g.player.name)
+		go func() {
+			newTiles, err := g.e.addSuccessfulPeel(g.player.name)
+			if err != nil {
+				log.Println("saving peel: error adding peel and updating tiles: %v", err)
+				return
+			}
+
+			// TODO(bsprague): Generate potassium.Peel here
+			_, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
+			if err != nil {
+				log.Println("saving peel: error making message: %v", err)
+				return
+			}
+
+			// Create the replay
+			p, err := potassium.NewRootPeel(seg)
+			if err != nil {
+				log.Println("saving peel: error making root peel: %v", err)
+				return
+			}
+
+			err = p.SetPlayer(g.player.name)
+			if err != nil {
+				log.Println("saving peel: error setting player name: %v", err)
+				return
+			}
+
+			err = p.SetBoard(wb)
+			if err != nil {
+				log.Println("saving peel: error setting board: %v", err)
+				return
+			}
+
+			tl, err := p.NewNewTiles(int32(len(newTiles)))
+			if err != nil {
+				log.Println("saving peel: error making new tile list: %v", err)
+				return
+			}
+
+			i := 0
+			for player, letter := range newTiles {
+				e := tl.At(i)
+				e.SetPlayer(player)
+				e.SetLetter(letter.String())
+				i++
+			}
+
+			err = db.addPeel(p)
+			if err != nil {
+				log.Println("saving peel: error persisting peel to db: %v", err)
+				return
+			}
+		}()
 	}
 
 	return nil
@@ -109,6 +161,10 @@ func (g *game) Peel(call potassium.Game_peel) error {
 
 // Dump exchanges a player's letter for three from the bunch
 func (g *game) Dump(call potassium.Game_dump) error {
+	// TODO(bsprague): Check all of this locking stuff
+	g.e.mu.Lock()
+	defer g.e.mu.Unlock()
+
 	req := call.Params
 	resp := call.Results
 
@@ -124,14 +180,6 @@ func (g *game) Dump(call potassium.Game_dump) error {
 	}
 
 	letter := engine.Letter(l[0])
-
-	// TODO(bsprague): This is big/annoying, but important one. Move
-	// synchronization of bunch things out of the actual bunch. We get a count
-	// here, and then we don't have a lock on the number of tiles before we end
-	// up writing to them. Clearly the synchronization needs to be happening at a
-	// higher level. Investigate what bunch-updating over channels would look
-	// like, probably like a func(*Bunch). The other option is just using the
-	// mutex at the aiendpoint level, or adding a new one.
 
 	// We don't have enough tiles to give them
 	if g.e.bunch.Count() < DumpSize {
@@ -170,6 +218,8 @@ func (g *game) Dump(call potassium.Game_dump) error {
 		tl.Set(i, letter.String())
 	}
 	resp.SetStatus(potassium.DumpResponse_Status_success)
+
+	// TODO(bsprague): Write this to the db
 
 	return nil
 }

@@ -3,7 +3,6 @@ package engine
 import (
 	"log"
 	"math/rand"
-	"sync"
 	"time"
 )
 
@@ -17,7 +16,6 @@ const (
 type Bunch struct {
 	FreqList
 	rand  *rand.Rand
-	mu    sync.Mutex
 	count int // Number of tiles left
 }
 
@@ -29,8 +27,6 @@ func (b *Bunch) Tile() Letter {
 	if b.count <= 0 {
 		return '0' // return an invalid rune character so we know clearly something is wrong
 	}
-	b.mu.Lock()
-	defer b.mu.Unlock()
 	n := b.rand.Intn(b.count)
 	for i, freq := range b.FreqList {
 		if freq > n {

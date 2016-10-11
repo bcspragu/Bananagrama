@@ -85,7 +85,7 @@ func (e *aiEndpoint) startGame() error {
 }
 
 // addSuccessfulPeel sends a tile to all players after a successful peel
-func (e *aiEndpoint) addSuccessfulPeel(peeler string) {
+func (e *aiEndpoint) addSuccessfulPeel(peeler string) (map[string]engine.Letter, error) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
@@ -93,27 +93,37 @@ func (e *aiEndpoint) addSuccessfulPeel(peeler string) {
 	e.totalPeels++
 	e.connected[peeler].score += e.totalPeels
 
+	scores := make(map[string]int)
 	// This was the final peel!
 	if e.bunch.Count() < len(e.connected) {
-		// TODO(bsprague) Add other endgame stuff (ie datastore things)
 		for _, game := range e.connected {
+			scores[game.player.name] = game.score
 			// Tell everyone we're done here
 			go game.player.GameOver(context.Background(), func(req potassium.Player_gameOver_Params) error { return nil })
 		}
-		return
+		if err := db.finishGame(scores); err != nil {
+			log.Printf("failed to save player scores %v to db: %v", scores, err)
+		}
+		return nil, nil
 	}
+
+	newTiles := make(map[string]engine.Letter)
+	// If we're here, it wasn't the final peel
 	for _, game := range e.connected {
-		// TODO(bsprague): Log stuff, add
 		// Give each player a new tile
+		tile := e.bunch.Tile()
+		// TODO(bsprague): Probably sync on an error channel
 		go game.player.NewTile(context.Background(), func(req potassium.NewTileRequest) error {
 			req.SetPeeler(peeler)
 
-			tile := e.bunch.Tile()
 			req.SetLetter(tile.String())
 			game.tiles.Inc(tile) // Add the tile to their hand
 			return nil
 		})
+		newTiles[game.player.name] = tile
 	}
+
+	return newTiles, nil
 }
 
 func startAIEndpoint(addr string) (*aiEndpoint, error) {

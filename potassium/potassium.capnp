@@ -166,9 +166,9 @@ struct Dump {
 }
 
 struct Replay {
-  initialTiles @0 :List(Entry);
-  # The tiles returned to everyone
-  struct Entry {
+  initialTiles @0 :List(TileFreq);
+  # The tiles everyone started with
+  struct TileFreq {
     player @0 :Text;
     frequency @1 :List(Int32);
     # A list with 26 elements, one for each letter of the alphabet. The value
@@ -176,4 +176,13 @@ struct Replay {
   }
   peels  @1 :List(Peel);
   dumps @2 :List(Dump);
+
+  startTime @3 :UInt64;
+  endTime @4 :UInt64;
+  finalScores @5 :List(Score);
+  # The tiles returned to everyone
+  struct Score {
+    player @0 :Text;
+    score @1 :UInt32;
+  }
 }

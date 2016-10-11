@@ -25,7 +25,10 @@ type datastore interface {
 	startGame(playerFreq map[string]engine.FreqList) (matchID, error)
 	addPeel(potassium.Peel) error
 	addDump(potassium.Dump) error
-	finishGame() error
+	finishGame(playerScores map[string]int) error
+
+	lookupGame(id matchID) (potassium.Replay, error)
+	matchIDs() ([]matchID, error)
 }
 
 // For my own sanity, we store the whole game in-memory until we're ready to
@@ -40,6 +43,7 @@ type dbImpl struct {
 	// DB with finishGame()
 	nextID matchID
 	game   potassium.Replay
+	msg    *capnp.Message
 	peels  []potassium.Peel
 	dumps  []potassium.Dump
 }
@@ -81,12 +85,12 @@ func (db *dbImpl) startGame(playerFreq map[string]engine.FreqList) (matchID, err
 	db.mu.Lock()
 	if db.matchGoing {
 		db.mu.Unlock()
-		return "", errors.New("gobots: game in progress, we only do one at a time")
+		return "", errors.New("game in progress, we only do one at a time")
 	}
 	db.matchGoing = true
 	db.mu.Unlock()
 
-	_, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
+	msg, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
 	if err != nil {
 		return "", err
 	}
@@ -96,6 +100,8 @@ func (db *dbImpl) startGame(playerFreq map[string]engine.FreqList) (matchID, err
 	if err != nil {
 		return "", err
 	}
+
+	r.SetStartTime(uint64(time.Now().UnixNano()))
 
 	// Create the initial tile entries
 	it, err := r.NewInitialTiles(int32(len(playerFreq)))
@@ -120,20 +126,31 @@ func (db *dbImpl) startGame(playerFreq map[string]engine.FreqList) (matchID, err
 	}
 
 	db.game = r
+	db.msg = msg
 	return db.nextID, nil
 }
 
 func (db *dbImpl) addPeel(peel potassium.Peel) error {
+	peel.SetTimestamp(uint64(time.Now().UnixNano()))
 	db.peels = append(db.peels, peel)
 	return nil
 }
 
 func (db *dbImpl) addDump(dump potassium.Dump) error {
+	dump.SetTimestamp(uint64(time.Now().UnixNano()))
 	db.dumps = append(db.dumps, dump)
 	return nil
 }
 
-func (db *dbImpl) finishGame() error {
+func (db *dbImpl) finishGame(playerScores map[string]int) error {
+	db.mu.Lock()
+	if !db.matchGoing {
+		db.mu.Unlock()
+		return errors.New("game not in progress, certainly can't finish it")
+	}
+	db.mu.Unlock()
+
+	// Copy over the peels into our persistent data structure
 	pl, err := db.game.NewPeels(int32(len(db.peels)))
 	if err != nil {
 		return err
@@ -146,6 +163,7 @@ func (db *dbImpl) finishGame() error {
 		}
 	}
 
+	// Copy over the dumps into our persistent data structure
 	dl, err := db.game.NewDumps(int32(len(db.dumps)))
 	if err != nil {
 		return err
@@ -158,10 +176,82 @@ func (db *dbImpl) finishGame() error {
 		}
 	}
 
-	err = db.Update(func(tx *bolt.Tx) error {
+	fsl, err := db.game.NewFinalScores(int32(len(playerScores)))
+	if err != nil {
+		return err
+	}
 
+	i := 0
+	for player, score := range playerScores {
+		rs := fsl.At(i)
+		rs.SetPlayer(player)
+		rs.SetScore(uint32(score))
+		i++
+	}
+
+	db.game.SetEndTime(uint64(time.Now().UnixNano()))
+
+	var nextID matchID
+	err = db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket(GameBucket)
+		dat, err := db.msg.Marshal()
+		if err != nil {
+			return err
+		}
+		err = b.Put([]byte(db.nextID), dat)
+		if err != nil {
+			return err
+		}
+		nID, err := b.NextSequence()
+		if err != nil {
+			return err
+		}
+
+		nextID = matchID(strconv.FormatUint(nID, 10))
 		return nil
 	})
 
+	db.mu.Lock()
+	db.matchGoing = false
+	db.nextID = nextID
+	db.msg = nil
+	db.mu.Unlock()
 	return err
+}
+
+func (db *dbImpl) lookupGame(id matchID) (potassium.Replay, error) {
+	var r potassium.Replay
+	err := db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket(GameBucket)
+		data := b.Get([]byte(id))
+		if len(data) == 0 {
+			return errGameNotFound
+		}
+
+		msg, err := capnp.Unmarshal(data)
+		if err != nil {
+			return err
+		}
+		r, err = potassium.ReadRootReplay(msg)
+		return err
+	})
+
+	return r, err
+}
+
+func (db *dbImpl) matchIDs() ([]matchID, error) {
+	var ids []matchID
+	db.View(func(tx *bolt.Tx) error {
+		// Assume bucket exists and has keys
+		b := tx.Bucket(GameBucket)
+
+		c := b.Cursor()
+
+		for k, _ := c.First(); k != nil; k, _ = c.Next() {
+			ids = append(ids, matchID(k))
+		}
+
+		return nil
+	})
+	return ids, nil
 }
