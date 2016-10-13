@@ -29,6 +29,8 @@ type datastore interface {
 
 	lookupGame(id matchID) (potassium.Replay, error)
 	matchIDs() ([]matchID, error)
+
+	Close() error
 }
 
 // For my own sanity, we store the whole game in-memory until we're ready to

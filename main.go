@@ -67,6 +67,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer db.Close()
 
 	f, err := os.Open("dict.txt")
 	if err != nil {
