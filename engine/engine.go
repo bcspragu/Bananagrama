@@ -57,6 +57,12 @@ func (f *FreqList) Freq(l Letter) int {
 	return 0
 }
 
+func (f *FreqList) Add(o FreqList) {
+	for letterIndex, freq := range o {
+		f[letterIndex] += freq
+	}
+}
+
 func (f *FreqList) Dec(l Letter) {
 	if l.isValid() {
 		f[l-LetterOffset]--

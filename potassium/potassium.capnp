@@ -56,10 +56,10 @@ struct SplitRequest {
 }
 
 struct NewTileRequest {
-  letter @0 :Text;
-  # The letter, be sure to add this to your pile
-  peeler @1 :Text;
-  # Name of the player who peeled, this can be you if you just peeled successfully
+  letters @0 :Tiles;
+  # The new letters, be sure to add these to your pile. The current setting is to return 100 tiles
+  peelers @1 :List(Text);
+  # Name of the players who peeled, you can be one of them if you just peeled successfully
 }
 
 struct DumpNoticeRequest {
@@ -142,18 +142,23 @@ struct Word {
 
 # All the types down here are used for persistence in the DB
 struct Peel {
-  # The representation of a player peeling
-  player @0 :Text;
-  # The player who peeled successfully
-  board @1 :Board;
-  # The board of the peeler
-  newTiles @2 :List(Entry);
-  # The tiles returned to everyone
-  struct Entry {
+  # The representation of players peeling successfully
+
+  validBoards @0 :List(PlayerBoard);
+  # The boards successfully submitted along with who submitted them
+  struct PlayerBoard {
     player @0 :Text;
-    letter @1 :Text;
+    # The player who peeled successfully
+    board @1 :Board;
   }
-  timestamp @3 :UInt64;
+  # The board of the peeler
+  newTiles @1 :List(PlayerTile);
+  # The tiles returned to everyone
+  struct PlayerTile {
+    player @0 :Text;
+    letters @1 :Tiles;
+  }
+  timestamp @2 :UInt64;
 }
 
 struct Dump {

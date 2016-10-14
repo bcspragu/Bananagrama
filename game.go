@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"sync"
 
 	"github.com/bcspragu/Bananagrama/engine"
@@ -72,7 +72,7 @@ func (g *game) Peel(call potassium.Game_peel) error {
 	status := b.ValidateBoard(g.tiles)
 	g.mu.RUnlock()
 
-	// Convert the stgatus to the wire format
+	// Convert the status to the wire format
 	resp.SetStatus(engineStatusMap[status.Code])
 	// If our error code came with some errors, drop those bad boys into the response
 	if len(status.Errors) > 0 {
@@ -86,77 +86,40 @@ func (g *game) Peel(call potassium.Game_peel) error {
 		}
 
 		for i, wordErrs := range status.Errors {
-			tl.Set(i, wordErrs)
+			err = tl.Set(i, wordErrs)
+			if err != nil {
+				return fmt.Errorf("receiving peel: error setting errors %v: %v", wordErrs, err)
+			}
 		}
 		switch status.Code {
 		case engine.NotAllLetters:
-			resp.SetNotAllLetters(tl)
+			err = resp.SetNotAllLetters(tl)
 		case engine.ExtraLetters:
-			resp.SetExtraLetters(tl)
+			err = resp.SetExtraLetters(tl)
 		case engine.InvalidWord:
-			resp.SetInvalidWord(tl)
+			err = resp.SetInvalidWord(tl)
+		}
+
+		if err != nil {
+			return fmt.Errorf("receiving peel: error setting response errors: %v", err)
 		}
 	}
 
 	// If the board was valid, increment the players score and let them know waz good
 	if status.Code == engine.Success {
-		// This can happen in the background, the whole game is asynchronous anyway
-		go func() {
-			newTiles, err := g.e.addSuccessfulPeel(g.player.name)
-			if err != nil {
-				log.Println("saving peel: error adding peel and updating tiles: %v", err)
-				return
-			}
-
-			// TODO(bsprague): Generate potassium.Peel here
-			_, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
-			if err != nil {
-				log.Println("saving peel: error making message: %v", err)
-				return
-			}
-
-			// Create the replay
-			p, err := potassium.NewRootPeel(seg)
-			if err != nil {
-				log.Println("saving peel: error making root peel: %v", err)
-				return
-			}
-
-			err = p.SetPlayer(g.player.name)
-			if err != nil {
-				log.Println("saving peel: error setting player name: %v", err)
-				return
-			}
-
-			err = p.SetBoard(wb)
-			if err != nil {
-				log.Println("saving peel: error setting board: %v", err)
-				return
-			}
-
-			tl, err := p.NewNewTiles(int32(len(newTiles)))
-			if err != nil {
-				log.Println("saving peel: error making new tile list: %v", err)
-				return
-			}
-
-			i := 0
-			for player, letter := range newTiles {
-				e := tl.At(i)
-				e.SetPlayer(player)
-				e.SetLetter(letter.String())
-				i++
-			}
-
-			err = db.addPeel(p)
-			if err != nil {
-				log.Println("saving peel: error persisting peel to db: %v", err)
-				return
-			}
-		}()
+		// Send the peel data over for persistence/sending to clients
+		g.e.peelChan <- &peelInfo{
+			player: g.player.name,
+			board:  wb,
+		}
 	}
 
 	return nil
+}
+
+type peelInfo struct {
+	player string
+	board  potassium.Board
 }
 
 // Dump exchanges a player's letter for three from the bunch
@@ -188,12 +151,13 @@ func (g *game) Dump(call potassium.Game_dump) error {
 	}
 
 	g.mu.RLock()
-	defer g.mu.RUnlock()
 	if g.tiles.Freq(letter) <= 0 {
 		// They don't actually even have this letter to give away
 		resp.SetStatus(potassium.DumpResponse_Status_letterNotInTiles)
+		g.mu.RUnlock()
 		return nil
 	}
+	g.mu.RUnlock()
 
 	// If we're here, it's probably safe to go ahead with the dump. We'll start
 	// with a write lock
@@ -212,10 +176,13 @@ func (g *game) Dump(call potassium.Game_dump) error {
 	g.mu.Unlock()
 	tl, err := resp.NewLetters(DumpSize)
 	if err != nil {
-		return nil
+		return err
 	}
 	for i, letter := range letters {
-		tl.Set(i, letter.String())
+		err = tl.Set(i, letter.String())
+		if err != nil {
+			return fmt.Errorf("receiving dump: error setting new letters: %v", err)
+		}
 	}
 	resp.SetStatus(potassium.DumpResponse_Status_success)
 

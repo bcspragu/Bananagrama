@@ -23,6 +23,28 @@ func (b *Bunch) Count() int {
 	return b.count
 }
 
+func (b *Bunch) TileN(n int) FreqList {
+	var f FreqList
+	if b.count < n {
+		return f // return an empty FreqList character so we know clearly something is wrong
+	}
+
+	for i := 0; i < n; i++ {
+		n := b.rand.Intn(b.count)
+		for j, freq := range b.FreqList {
+			if freq > n {
+				b.count--
+				l := letter(j)
+				b.Dec(l)
+				f.Inc(l)
+				break
+			}
+			n -= freq
+		}
+	}
+	return f
+}
+
 func (b *Bunch) Tile() Letter {
 	if b.count <= 0 {
 		return '0' // return an invalid rune character so we know clearly something is wrong

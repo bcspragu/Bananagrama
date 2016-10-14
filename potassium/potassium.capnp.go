@@ -876,50 +876,54 @@ func (s NewTileRequest) String() string {
 	return str
 }
 
-func (s NewTileRequest) Letter() (string, error) {
+func (s NewTileRequest) Letters() (capnp.TextList, error) {
 	p, err := s.Struct.Ptr(0)
-	return p.Text(), err
+	return capnp.TextList{List: p.List()}, err
 }
 
-func (s NewTileRequest) HasLetter() bool {
+func (s NewTileRequest) HasLetters() bool {
 	p, err := s.Struct.Ptr(0)
 	return p.IsValid() || err != nil
 }
 
-func (s NewTileRequest) LetterBytes() ([]byte, error) {
-	p, err := s.Struct.Ptr(0)
-	return p.TextBytes(), err
+func (s NewTileRequest) SetLetters(v capnp.TextList) error {
+	return s.Struct.SetPtr(0, v.List.ToPtr())
 }
 
-func (s NewTileRequest) SetLetter(v string) error {
-	t, err := capnp.NewText(s.Struct.Segment(), v)
+// NewLetters sets the letters field to a newly
+// allocated capnp.TextList, preferring placement in s's segment.
+func (s NewTileRequest) NewLetters(n int32) (capnp.TextList, error) {
+	l, err := capnp.NewTextList(s.Struct.Segment(), n)
 	if err != nil {
-		return err
+		return capnp.TextList{}, err
 	}
-	return s.Struct.SetPtr(0, t.List.ToPtr())
+	err = s.Struct.SetPtr(0, l.List.ToPtr())
+	return l, err
 }
 
-func (s NewTileRequest) Peeler() (string, error) {
+func (s NewTileRequest) Peelers() (capnp.TextList, error) {
 	p, err := s.Struct.Ptr(1)
-	return p.Text(), err
+	return capnp.TextList{List: p.List()}, err
 }
 
-func (s NewTileRequest) HasPeeler() bool {
+func (s NewTileRequest) HasPeelers() bool {
 	p, err := s.Struct.Ptr(1)
 	return p.IsValid() || err != nil
 }
 
-func (s NewTileRequest) PeelerBytes() ([]byte, error) {
-	p, err := s.Struct.Ptr(1)
-	return p.TextBytes(), err
+func (s NewTileRequest) SetPeelers(v capnp.TextList) error {
+	return s.Struct.SetPtr(1, v.List.ToPtr())
 }
 
-func (s NewTileRequest) SetPeeler(v string) error {
-	t, err := capnp.NewText(s.Struct.Segment(), v)
+// NewPeelers sets the peelers field to a newly
+// allocated capnp.TextList, preferring placement in s's segment.
+func (s NewTileRequest) NewPeelers(n int32) (capnp.TextList, error) {
+	l, err := capnp.NewTextList(s.Struct.Segment(), n)
 	if err != nil {
-		return err
+		return capnp.TextList{}, err
 	}
-	return s.Struct.SetPtr(1, t.List.ToPtr())
+	err = s.Struct.SetPtr(1, l.List.ToPtr())
+	return l, err
 }
 
 // NewTileRequest_List is a list of NewTileRequest.
@@ -1925,12 +1929,12 @@ type Peel struct{ capnp.Struct }
 const Peel_TypeID = 0xcc92cfb307b2d7cf
 
 func NewPeel(s *capnp.Segment) (Peel, error) {
-	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 8, PointerCount: 3})
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 8, PointerCount: 2})
 	return Peel{st}, err
 }
 
 func NewRootPeel(s *capnp.Segment) (Peel, error) {
-	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 8, PointerCount: 3})
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 8, PointerCount: 2})
 	return Peel{st}, err
 }
 
@@ -1944,76 +1948,53 @@ func (s Peel) String() string {
 	return str
 }
 
-func (s Peel) Player() (string, error) {
+func (s Peel) ValidBoards() (Peel_PlayerBoard_List, error) {
 	p, err := s.Struct.Ptr(0)
-	return p.Text(), err
+	return Peel_PlayerBoard_List{List: p.List()}, err
 }
 
-func (s Peel) HasPlayer() bool {
+func (s Peel) HasValidBoards() bool {
 	p, err := s.Struct.Ptr(0)
 	return p.IsValid() || err != nil
 }
 
-func (s Peel) PlayerBytes() ([]byte, error) {
-	p, err := s.Struct.Ptr(0)
-	return p.TextBytes(), err
+func (s Peel) SetValidBoards(v Peel_PlayerBoard_List) error {
+	return s.Struct.SetPtr(0, v.List.ToPtr())
 }
 
-func (s Peel) SetPlayer(v string) error {
-	t, err := capnp.NewText(s.Struct.Segment(), v)
+// NewValidBoards sets the validBoards field to a newly
+// allocated Peel_PlayerBoard_List, preferring placement in s's segment.
+func (s Peel) NewValidBoards(n int32) (Peel_PlayerBoard_List, error) {
+	l, err := NewPeel_PlayerBoard_List(s.Struct.Segment(), n)
 	if err != nil {
-		return err
+		return Peel_PlayerBoard_List{}, err
 	}
-	return s.Struct.SetPtr(0, t.List.ToPtr())
+	err = s.Struct.SetPtr(0, l.List.ToPtr())
+	return l, err
 }
 
-func (s Peel) Board() (Board, error) {
+func (s Peel) NewTiles() (Peel_PlayerTile_List, error) {
 	p, err := s.Struct.Ptr(1)
-	return Board{Struct: p.Struct()}, err
-}
-
-func (s Peel) HasBoard() bool {
-	p, err := s.Struct.Ptr(1)
-	return p.IsValid() || err != nil
-}
-
-func (s Peel) SetBoard(v Board) error {
-	return s.Struct.SetPtr(1, v.Struct.ToPtr())
-}
-
-// NewBoard sets the board field to a newly
-// allocated Board struct, preferring placement in s's segment.
-func (s Peel) NewBoard() (Board, error) {
-	ss, err := NewBoard(s.Struct.Segment())
-	if err != nil {
-		return Board{}, err
-	}
-	err = s.Struct.SetPtr(1, ss.Struct.ToPtr())
-	return ss, err
-}
-
-func (s Peel) NewTiles() (Peel_Entry_List, error) {
-	p, err := s.Struct.Ptr(2)
-	return Peel_Entry_List{List: p.List()}, err
+	return Peel_PlayerTile_List{List: p.List()}, err
 }
 
 func (s Peel) HasNewTiles() bool {
-	p, err := s.Struct.Ptr(2)
+	p, err := s.Struct.Ptr(1)
 	return p.IsValid() || err != nil
 }
 
-func (s Peel) SetNewTiles(v Peel_Entry_List) error {
-	return s.Struct.SetPtr(2, v.List.ToPtr())
+func (s Peel) SetNewTiles(v Peel_PlayerTile_List) error {
+	return s.Struct.SetPtr(1, v.List.ToPtr())
 }
 
 // NewNewTiles sets the newTiles field to a newly
-// allocated Peel_Entry_List, preferring placement in s's segment.
-func (s Peel) NewNewTiles(n int32) (Peel_Entry_List, error) {
-	l, err := NewPeel_Entry_List(s.Struct.Segment(), n)
+// allocated Peel_PlayerTile_List, preferring placement in s's segment.
+func (s Peel) NewNewTiles(n int32) (Peel_PlayerTile_List, error) {
+	l, err := NewPeel_PlayerTile_List(s.Struct.Segment(), n)
 	if err != nil {
-		return Peel_Entry_List{}, err
+		return Peel_PlayerTile_List{}, err
 	}
-	err = s.Struct.SetPtr(2, l.List.ToPtr())
+	err = s.Struct.SetPtr(1, l.List.ToPtr())
 	return l, err
 }
 
@@ -2030,7 +2011,7 @@ type Peel_List struct{ capnp.List }
 
 // NewPeel creates a new list of Peel.
 func NewPeel_List(s *capnp.Segment, sz int32) (Peel_List, error) {
-	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 8, PointerCount: 3}, sz)
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 8, PointerCount: 2}, sz)
 	return Peel_List{l}, err
 }
 
@@ -2046,51 +2027,47 @@ func (p Peel_Promise) Struct() (Peel, error) {
 	return Peel{s}, err
 }
 
-func (p Peel_Promise) Board() Board_Promise {
-	return Board_Promise{Pipeline: p.Pipeline.GetPipeline(1)}
-}
+type Peel_PlayerBoard struct{ capnp.Struct }
 
-type Peel_Entry struct{ capnp.Struct }
+// Peel_PlayerBoard_TypeID is the unique identifier for the type Peel_PlayerBoard.
+const Peel_PlayerBoard_TypeID = 0xf2aacc8390e9079d
 
-// Peel_Entry_TypeID is the unique identifier for the type Peel_Entry.
-const Peel_Entry_TypeID = 0x91d57b12a6c06883
-
-func NewPeel_Entry(s *capnp.Segment) (Peel_Entry, error) {
+func NewPeel_PlayerBoard(s *capnp.Segment) (Peel_PlayerBoard, error) {
 	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 2})
-	return Peel_Entry{st}, err
+	return Peel_PlayerBoard{st}, err
 }
 
-func NewRootPeel_Entry(s *capnp.Segment) (Peel_Entry, error) {
+func NewRootPeel_PlayerBoard(s *capnp.Segment) (Peel_PlayerBoard, error) {
 	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 2})
-	return Peel_Entry{st}, err
+	return Peel_PlayerBoard{st}, err
 }
 
-func ReadRootPeel_Entry(msg *capnp.Message) (Peel_Entry, error) {
+func ReadRootPeel_PlayerBoard(msg *capnp.Message) (Peel_PlayerBoard, error) {
 	root, err := msg.RootPtr()
-	return Peel_Entry{root.Struct()}, err
+	return Peel_PlayerBoard{root.Struct()}, err
 }
 
-func (s Peel_Entry) String() string {
-	str, _ := text.Marshal(0x91d57b12a6c06883, s.Struct)
+func (s Peel_PlayerBoard) String() string {
+	str, _ := text.Marshal(0xf2aacc8390e9079d, s.Struct)
 	return str
 }
 
-func (s Peel_Entry) Player() (string, error) {
+func (s Peel_PlayerBoard) Player() (string, error) {
 	p, err := s.Struct.Ptr(0)
 	return p.Text(), err
 }
 
-func (s Peel_Entry) HasPlayer() bool {
+func (s Peel_PlayerBoard) HasPlayer() bool {
 	p, err := s.Struct.Ptr(0)
 	return p.IsValid() || err != nil
 }
 
-func (s Peel_Entry) PlayerBytes() ([]byte, error) {
+func (s Peel_PlayerBoard) PlayerBytes() ([]byte, error) {
 	p, err := s.Struct.Ptr(0)
 	return p.TextBytes(), err
 }
 
-func (s Peel_Entry) SetPlayer(v string) error {
+func (s Peel_PlayerBoard) SetPlayer(v string) error {
 	t, err := capnp.NewText(s.Struct.Segment(), v)
 	if err != nil {
 		return err
@@ -2098,48 +2075,152 @@ func (s Peel_Entry) SetPlayer(v string) error {
 	return s.Struct.SetPtr(0, t.List.ToPtr())
 }
 
-func (s Peel_Entry) Letter() (string, error) {
+func (s Peel_PlayerBoard) Board() (Board, error) {
 	p, err := s.Struct.Ptr(1)
-	return p.Text(), err
+	return Board{Struct: p.Struct()}, err
 }
 
-func (s Peel_Entry) HasLetter() bool {
+func (s Peel_PlayerBoard) HasBoard() bool {
 	p, err := s.Struct.Ptr(1)
 	return p.IsValid() || err != nil
 }
 
-func (s Peel_Entry) LetterBytes() ([]byte, error) {
-	p, err := s.Struct.Ptr(1)
+func (s Peel_PlayerBoard) SetBoard(v Board) error {
+	return s.Struct.SetPtr(1, v.Struct.ToPtr())
+}
+
+// NewBoard sets the board field to a newly
+// allocated Board struct, preferring placement in s's segment.
+func (s Peel_PlayerBoard) NewBoard() (Board, error) {
+	ss, err := NewBoard(s.Struct.Segment())
+	if err != nil {
+		return Board{}, err
+	}
+	err = s.Struct.SetPtr(1, ss.Struct.ToPtr())
+	return ss, err
+}
+
+// Peel_PlayerBoard_List is a list of Peel_PlayerBoard.
+type Peel_PlayerBoard_List struct{ capnp.List }
+
+// NewPeel_PlayerBoard creates a new list of Peel_PlayerBoard.
+func NewPeel_PlayerBoard_List(s *capnp.Segment, sz int32) (Peel_PlayerBoard_List, error) {
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 0, PointerCount: 2}, sz)
+	return Peel_PlayerBoard_List{l}, err
+}
+
+func (s Peel_PlayerBoard_List) At(i int) Peel_PlayerBoard { return Peel_PlayerBoard{s.List.Struct(i)} }
+
+func (s Peel_PlayerBoard_List) Set(i int, v Peel_PlayerBoard) error {
+	return s.List.SetStruct(i, v.Struct)
+}
+
+// Peel_PlayerBoard_Promise is a wrapper for a Peel_PlayerBoard promised by a client call.
+type Peel_PlayerBoard_Promise struct{ *capnp.Pipeline }
+
+func (p Peel_PlayerBoard_Promise) Struct() (Peel_PlayerBoard, error) {
+	s, err := p.Pipeline.Struct()
+	return Peel_PlayerBoard{s}, err
+}
+
+func (p Peel_PlayerBoard_Promise) Board() Board_Promise {
+	return Board_Promise{Pipeline: p.Pipeline.GetPipeline(1)}
+}
+
+type Peel_PlayerTile struct{ capnp.Struct }
+
+// Peel_PlayerTile_TypeID is the unique identifier for the type Peel_PlayerTile.
+const Peel_PlayerTile_TypeID = 0x848d7f1593ddbc01
+
+func NewPeel_PlayerTile(s *capnp.Segment) (Peel_PlayerTile, error) {
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 2})
+	return Peel_PlayerTile{st}, err
+}
+
+func NewRootPeel_PlayerTile(s *capnp.Segment) (Peel_PlayerTile, error) {
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 2})
+	return Peel_PlayerTile{st}, err
+}
+
+func ReadRootPeel_PlayerTile(msg *capnp.Message) (Peel_PlayerTile, error) {
+	root, err := msg.RootPtr()
+	return Peel_PlayerTile{root.Struct()}, err
+}
+
+func (s Peel_PlayerTile) String() string {
+	str, _ := text.Marshal(0x848d7f1593ddbc01, s.Struct)
+	return str
+}
+
+func (s Peel_PlayerTile) Player() (string, error) {
+	p, err := s.Struct.Ptr(0)
+	return p.Text(), err
+}
+
+func (s Peel_PlayerTile) HasPlayer() bool {
+	p, err := s.Struct.Ptr(0)
+	return p.IsValid() || err != nil
+}
+
+func (s Peel_PlayerTile) PlayerBytes() ([]byte, error) {
+	p, err := s.Struct.Ptr(0)
 	return p.TextBytes(), err
 }
 
-func (s Peel_Entry) SetLetter(v string) error {
+func (s Peel_PlayerTile) SetPlayer(v string) error {
 	t, err := capnp.NewText(s.Struct.Segment(), v)
 	if err != nil {
 		return err
 	}
-	return s.Struct.SetPtr(1, t.List.ToPtr())
+	return s.Struct.SetPtr(0, t.List.ToPtr())
 }
 
-// Peel_Entry_List is a list of Peel_Entry.
-type Peel_Entry_List struct{ capnp.List }
+func (s Peel_PlayerTile) Letters() (capnp.TextList, error) {
+	p, err := s.Struct.Ptr(1)
+	return capnp.TextList{List: p.List()}, err
+}
 
-// NewPeel_Entry creates a new list of Peel_Entry.
-func NewPeel_Entry_List(s *capnp.Segment, sz int32) (Peel_Entry_List, error) {
+func (s Peel_PlayerTile) HasLetters() bool {
+	p, err := s.Struct.Ptr(1)
+	return p.IsValid() || err != nil
+}
+
+func (s Peel_PlayerTile) SetLetters(v capnp.TextList) error {
+	return s.Struct.SetPtr(1, v.List.ToPtr())
+}
+
+// NewLetters sets the letters field to a newly
+// allocated capnp.TextList, preferring placement in s's segment.
+func (s Peel_PlayerTile) NewLetters(n int32) (capnp.TextList, error) {
+	l, err := capnp.NewTextList(s.Struct.Segment(), n)
+	if err != nil {
+		return capnp.TextList{}, err
+	}
+	err = s.Struct.SetPtr(1, l.List.ToPtr())
+	return l, err
+}
+
+// Peel_PlayerTile_List is a list of Peel_PlayerTile.
+type Peel_PlayerTile_List struct{ capnp.List }
+
+// NewPeel_PlayerTile creates a new list of Peel_PlayerTile.
+func NewPeel_PlayerTile_List(s *capnp.Segment, sz int32) (Peel_PlayerTile_List, error) {
 	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 0, PointerCount: 2}, sz)
-	return Peel_Entry_List{l}, err
+	return Peel_PlayerTile_List{l}, err
 }
 
-func (s Peel_Entry_List) At(i int) Peel_Entry { return Peel_Entry{s.List.Struct(i)} }
+func (s Peel_PlayerTile_List) At(i int) Peel_PlayerTile { return Peel_PlayerTile{s.List.Struct(i)} }
 
-func (s Peel_Entry_List) Set(i int, v Peel_Entry) error { return s.List.SetStruct(i, v.Struct) }
+func (s Peel_PlayerTile_List) Set(i int, v Peel_PlayerTile) error {
+	return s.List.SetStruct(i, v.Struct)
+}
 
-// Peel_Entry_Promise is a wrapper for a Peel_Entry promised by a client call.
-type Peel_Entry_Promise struct{ *capnp.Pipeline }
+// Peel_PlayerTile_Promise is a wrapper for a Peel_PlayerTile promised by a client call.
+type Peel_PlayerTile_Promise struct{ *capnp.Pipeline }
 
-func (p Peel_Entry_Promise) Struct() (Peel_Entry, error) {
+func (p Peel_PlayerTile_Promise) Struct() (Peel_PlayerTile, error) {
 	s, err := p.Pipeline.Struct()
-	return Peel_Entry{s}, err
+	return Peel_PlayerTile{s}, err
 }
 
 type Dump struct{ capnp.Struct }
@@ -2579,158 +2660,161 @@ func (p Replay_Score_Promise) Struct() (Replay_Score, error) {
 	return Replay_Score{s}, err
 }
 
-const schema_f2768a70df34b76a = "x\xda\x8cXml\x14\xe7\x11\x9e\xd9\xbd\xcb\xde\xd9>" +
-	"\xdfm\xd6\x94\xf0\x83^\x89\x88\x1a\xa3\xd8\x02;T\x0d" +
-	"-=\xe3@\xc0\xc8\x01\xd66EE\xa1e}\xf7\x1a" +
-	"\x1f\xec\xed\x9ew\xd7\xc6&!.\x0d)\x09\xea\x17\xa8" +
-	"i\xa1\x82~(\"i\xdcF\x11_)A\"\x02E" +
-	"Di\x04\x01T\x10\x1f\xa2J\xd2\x065\xa1j\x95\xa6" +
-	"\xe4GQa\xaby\xf7nw}g\x17~y?\xe6" +
-	"\xde\x99y\xe6\x99gf=\xfb\xd5h\x9b0'\xfa\x9d" +
-	"Z\x00uk\xf4\x1e\xf7\x9d/6\\;\xbf\xd9\xd9\x06" +
-	"\xf2T\x04\x88H\x00\xad/Dg!D\xdc\xfd\x0d\x17" +
-	"\xdf\xbc\x18;\xbe\x0d\xd4\x14\x0a\xee\xfa?<\xfc~q" +
-	"\xfb\xd0g\x10%\x1bes\xf4\xa8\xf2l\xf4\xcb\x00\xad" +
-	"{\xa3\xab\x10\xd0\x9d\xb1\xfaM\xf6\x8c\xd3\xfb\xa3\xd09" +
-	"s\xa5yt\xce3\xfd\xc7_\xba\xf7\xc9\x0b;@\x9e" +
-	"\x82\xee\x99\x8b\x07\xa4\x83gv\x9e\x82\xa8@\xc7L\x97" +
-	"\xae(\x8d\x12]= m\x04t7=_\xd3\xb0\xea" +
-	"\xc1\x7f\xed\x02y\x8a\xe0\xc6R}+W\xbex\xfa\x03" +
-	"\x00l\xdd\"\xd5\xa0\xb2\x83[\xfePZ\x0e\xe8F\xe6" +
-	"_\xf9\xe0\xfd\x87~\xbc'\xe4\xef\x15\xa9\x9d\xfc\xcd\xef" +
-	"\xdb\x92\xd0\x0e\xc6\xf7\x81\x9c\x12\x83\xb0\x81~~T\xd9" +
-	"\xcd\x8fxAZ\xac\x1c\xa3+\xf7\xd6\xe5\x81\x7f\xae:" +
-	"a\xed\x03y\xba\xe0\x9e\xfb\xc2\xa9\xb7\xff\xf8\x95\xc7?" +
-	"!\x87\xfb\xa4\xfbQ9\xcc\xad\xf7K?\x07t\x97?" +
-	"\xfd\xed\xd9\xf5O>\xfa\x12\xc1\x81!8\x90L\xe2\xb1" +
-	"\xeb\xca\x94\xd8T\xca(Fytv<\xf5\x13k\xf8" +
-	"\xc6\xcbU1<\x1f\x1bSv\xc4x\x1a\xb1m\xca\x9f" +
-	"\xe9\xca\x9d\xd3\xfb\xcd\x9dg\x7fu\xe4\xb7\xa1TN\xc6" +
-	"\xba(\x95\xe7\xf6\xd4\xff\xf2{\xb9\xdc\x01\x90Sa\x97" +
-	"\x1c\xba\xfd\xb1\x9b\xca1~\xd2\x1b\xe4\xf2\xd6\xaeO\x7f" +
-	"\x96Y\xfc\x8d\xe3\x95\x0e\xa7\xc4\x8f*\xd3\xe3t\xe6\xb4" +
-	"\xb8\x84\xca\x09\xbatG:\xeb\x96~\xba\xfb\xa7oM" +
-	"t\xee+\xf1\xeb\xca\xe18\xf7\x10\xa7T\xfc\x8aU\xe4" +
-	"-\x92IS\xcd\x982\xb7\x86\xf2\x9e_\xf37@W" +
-	"\xfc\xcf/~\xa7\x9c\xdeuf\"\x90Z\x1bk\x05T" +
-	"\xe6\xd6r\xebZ:z\x9az\xf0\xd1\x7f\xdf\xd8{\x96" +
-	"\x98\x01%\xa3\xdd\xb55\x08\xa8\xfc\xa66\x03\xe8~~" +
-	"{\xf6U\xfb\xbd3\x7f\x0a!s\xa2\x96\x93\xaay\xf8" +
-	"\xc8\x92\xde\x17S\xe7+2\x109\x0fj\xefE\xe5\x8d" +
-	"Z\x8a\xefp\xedk\x80\xeeN\xe9\xfc\xde\xa7\x1b\xc6." +
-	"M\x94\xaeVwS)\xd4\xd1U\xbe\x8ebj\x9e\xe3" +
-	"\x1c:\xf5\xde\xc7\x97@\xfe\x92\x10\xa4\x03\xd8z\xb2n" +
-	"\x1e*\x17\xb8\xe5\xb9\xbaQ@7\xb1\xf6\xe2\xb9\xfc\xde" +
-	"\x0dW8u|v\x00\xb6NK\xdc\x8fJc\x82\xb3" +
-	":\xb1\x0e0 rE'q\xea\xacI\x8c),A" +
-	"\xa0\x0c$\x08\xc2\xe65\xef\xbe\xfe\xf0g\x7f\xfd\x0b\xe5" +
-	"\x1c\xf4 \x0f\xb6\xb5\xa3^@ee=\xfdL\xad\xa7" +
-	"h}\xc6\x8e\xc7{\x11J\x11D\xe5D\xfdu\xe5t" +
-	"\xfdT\x80\xd6\x0b\xf5ij\xd2\xf5\xf2\xb1\xfb.\x8e\xbd" +
-	"\xfe\x8f0\xe03R\x1c\xf0\xc6\x14\x01~|F\xe3\xd7" +
-	"\x9f\xd8\xfd\xc8\x0dP\xa7b\xd8;\x8f\xb4#u]Y" +
-	"\x99\xe2\xceS\xe4\xfc\xef\xa7?\x97\xdf\x1d\xfe\xda\xcd\x0a" +
-	"X\xb9\xed\xab\xa9\x03\xcaan\xbb\x9f\x1f|\xee\xf2\xea" +
-	"\xef\xbf\xfc\xf6[\xb7+\x89\xc1k\xf0ajL\xf9\x84" +
-	"\x1b_K\xbd\x06Mn\xd1t4\xdb\xce\x0f\x8a\x85\xe6" +
-	"\xacV4\x8a\xf3V\xe8\xda\x08\xb3\x9a\xed\xa2\x9ewf" +
-	"v1;9\xa8;\xb6o\x86e\xb3L\x17+\xea\xda" +
-	"\x88\x1a\xc30\x8c\xf1\xa5AZr\xbc\xc5\xed\xc9\xeb\xec" +
-	"1\x8b\x0d\x00@\xba;kZL\xbdO\x8c\x00D\x10" +
-	"@\xde\xbd\x1e@\xdd%\xa2zH@\x19\xb1\x01\xe9\xe1" +
-	"\xfe\x16\x00\xf5\xf7\"\xaa\xef\x08(\x0bB\x03\x0a\x00\xf2" +
-	"Izx\\D\xf5\xaa\x80(6\xa0\x08 _\xee\x02" +
-	"P/\x89\xa8~$\xa0\x1c\xc1\x06\x8c\x00\xc8\x1f\xb6\x03" +
-	"\xa8WET?\x16P\x8e\x8a\x0d\x18\x05\x90\xaf\xf5\x02" +
-	"\xa8\x1f\x89\xd8\x85\x02\xbay#\xef\xe45\xbd\x07\x92y" +
-	"\x9d\xd9X\x0f\xb8BDL\x05)\x00\xd2\xc3t\x911" +
-	"=\xf4\xdao\xcc\xd2\xeb\xdc`\xa1\x18z\xed#\xee\xbd" +
-	"vmG\xb3\x9c\x9e|\x01\x90a\x1c\x04\x8c\x03\x8e2" +
-	"#\xd7\x93/\xf8\xf7n_\xde\xd0\xf4\xee\xac\x09\x92\x15" +
-	"\x0e\xc4\x87\xaft\xd4d\xf51\xd8F\x02wfW\x86" +
-	"\xd9\xe3*$\xf8\x86\x8c\xe9\xcd\x8b\x0cG\xb4FV " +
-	"\xaa1\x1f\xf8\xc6y\x00\xeaL\x11\xd5\xd9!\xe0\x9b\xe8" +
-	"\xe1\x83\"\xaa\x0f\x0b\x98)r\x1fX\x07\x02\xd6\x01f" +
-	"t\xe68\xc1muH\xabL+\xd7\xbc\xdc\xca3\xc3" +
-	"\xd1\x9c\xbci\x00\x90\xc3:^\xbb\xe9\xed\x94\x89<e" +
-	"5\x00\x0a\xb2\xbc\x14`t\xd0\xd8`\x98\x1b\x0d\xb7\xdf" +
-	"\xb4\xf2\x9bL\xc3\x01Q\xd3\xdd!f9\xf9\xac\xa6\x03" +
-	"\x80\xef\xe0\x9e\x8a\x9c\xd7i\x05\xb6|\x88YDK\xca" +
-	"\x19\xca\x86>)\xbb\x995\xc4,\xf2\x1e\x11\xa3\x00\xbe" +
-	"\xa8cY]d\xb9\x1d\x049*\x8dfM\xc3`Y" +
-	"\xa7\x0dW\xe0D 3\xa6w1\xbbh\x1a6k\xee" +
-	"v4\xc9\x19\xb4\xe9\xd4\xfbxN\x0b\xbc\x9c\x1e\xe9\xe5" +
-	"9\xcd\xb5\x00P\x94\xe7\xd0\x9f\x88\xdc\xb4\x1e\x00\xa3r" +
-	"\xe3z\x80Q{0\x9be\xb6\xed\xe6\x8d!M\xcf\xe7" +
-	"V\x81dZ97\xc7\x1c-\xdb\xcfr\x90n75" +
-	"+\xe7\x1a\xa6\xb3@\xd7;\x19\xa4\x09e\xdbe\xc3\x8e" +
-	"\xa5u2\x07\x92\xfc\xb6\xf4\xe3vHr\xeb\xaa2/" +
-	"\x1c,\x14)\xd4$\xc5\xaaF0,\x968/\xd3\xed" +
-	"h\xce\xa0=I\xf5\xfd\xe2\xb7\x97\x8a\xbfP\xc0\x8c\xcd" +
-	"\x7f\x81\xc9\xe0\x1c@L\x02\x8ez4\xf0\xb9Jt\x08" +
-	"3\xd4\x97\x86\xe4b\xad\xc0<\xcaQ\x0d\xcaB\x88e" +
-	"\x01\x95\xe7\xcc\x02A~@\xc2`*aY\xd3\xe5i" +
-	"\xf4.!%\xa9\x01\xdb0I\x8d6\xbeF\x91\x0aR" +
-	"\x90\xc52\xd3\xc9gY\x89\x168A/<\xeaU\xbb" +
-	"+\xc3\x06\x06\x99\xedT\xf4\xc3\xac;\xf4C\xd2\xd0\x0a" +
-	"\xcc\xef\x86Rs\xc8\xe5-\x80\xa80\x11\x0c\x19/@" +
-	"\xf2\x95\xe2@\x947\x01,\xef\x81\xf2@\x0b\x082#" +
-	" \xcac\x13\xcb\xbb\x9d\xfc-\"\xea\xe3\x12\x0a\xfe\xfc" +
-	"\xc5\xf2\xf2\"/X\x0d\x82\xfc\x88\x84\xa2?\xb5\xb1\xbc" +
-	"\xa3\xc9MK9\xb8i.\xe0m8Z\x12\x8a6t" +
-	"\xcbH\x81\x98\xa5\xdbr7\x01\xc0x\x84}\xd4\xba\xe9" +
-	"\x88.6\x90\x9c\x00\xb3\x96\x12fm!\xcc\xe6\x13\x8d" +
-	"\xbe*\xa2\xda#`\xda\x09\x0bl\x89+\xa3\x1evw" +
-	"A!j@N\xe6`\xa3\xc5\x96\xf4\"\xc3\xb1F\xd4" +
-	"\x94\x1f\x85FEzBD\xb5?\x14\x05\xa3\xd0\xd6\x8a" +
-	"\xa8\xea\xa1\x11\x92_\x0a\xa0\xf6\x8b\xa8n\x0dF\xc8\x16" +
-	"\x1a!\xdf\x15Q\xfdA\x95\xe4\xa5{\xa9\xd90\x15\xcc" +
-	"]@L\x01\xba%4m\x00\x084\xdb\x8f\xb1\xa4\xd9" +
-	"N\xbe\xc0lG+\x00\x16}\xb9\xaf\x92\x982%K" +
-	"*\x03<\xdb`#\xba\xeb\xd6\x9d\x15\xd2m\xbfu\xfd" +
-	"s\xbc\xd6MR\xadQ\x0eV\xe5\x0a\xce\xfaAQ\xe7" +
-	"\xf2\x8e\x9a\xb9B\xb3\xb4\x82\x0d\xa0F|\xf7\x09r\x1f" +
-	"\x13Qm\x10\xee<\x13*%;\xe3\x1dXm\xb8\xd0" +
-	"\xef\xdf.\xde\x9c\xc8\x99V\xe7{]D^\xdbDT" +
-	";C5\xee\xa0r.\x11Q\xcd\x85j\x1cfC\x86" +
-	"\x92`9?>\x8beY~\x88\xe5Bu+\x91\xcf" +
-	"\xb3\xac\xce\xc4\xef\x82e^\xc9'\xd1\x8e;\xce\xd2\xf1" +
-	"@eH\xd7\xfe\x1fn\x15\xb4h.\xb1\x80\xbczY" +
-	"\xce\xf5\x86O\x937|\x1a\xb7\xf3\xe1\xd3\xb8\x9a\x0f\x9f" +
-	"\x07\xc2S\x87D\xab\xc74;A2\x8du\xfcn\x81" +
-	"n1\xd4r#=\xda\x06f\x00p\x05\xe8\xb0\x1f\x1b" +
-	"\x04Q\xd7\xdd\x11m\xa1i\xb0\xc5&$\xcd>\x96\x9b" +
-	"\xb8N\x13\x8d\xc4\x14\x8f\xaa\xd1\x8bj\xc6v\x1e\xd5\x8c" +
-	"M<\xaa\xe9\xdbC\xe1x8,3\xd1\xe90J-" +
-	"D\xa3o\x91a\x0e\xae\x83L?\x7f\xe4\x164\xbd\xcf" +
-	"\xb4\x0a\x0cs\x1e\x19\x9c\xd06\x10\x88\x03\xed\x1b\xbc]" +
-	"\x82OX\xecu\xcb\x0b\x08Hy\xd3\x08\x8b\xc4\xac\x80" +
-	"\x16\xbeF\xd0N\x98\x13Q-\x12\x7f\xd0C\xb6po" +
-	"I#\x1c\x01eQ\xf0Db\x80\x1e\xea\"\xaa\xc3\x02" +
-	"&\x1d6\xec\xf8\xa53\xc3\xfe0\x19\x04\xe3\xf5\x1c\x0e" +
-	"c\x0c\x04\x8c\x01\xe2H\xf9\xaa\x1aUo\x8bn\xf6\xf7" +
-	"\xe4\xbba\x17\xc9\xd6C\"\xaaK\xaad\xcb\xed\xb3\x08" +
-	"6#\x0b8R\xa6y\xa4Bc\x85\xca\x1d'X\x1c" +
-	"\x82\x0f\xf4@}\x1a\xfc`6S0\xc3\x9e\x84&\xd0" +
-	"u\xbdh\xb6\x90\xda>%\xa2\xfa\x9c\x80\x09\xe1\xb6\xeb" +
-	"A\xf9,\xe1\xbbUD\xf5\xd7\x02&\xc4[\xae\x87\xe5" +
-	"^\x0b@\xdd#\xa2zD\xc0D\xe4\xbf\xae\xb7\xb4\x1f" +
-	"\xa6\xef\x80C\"\xaag\xc3\x0a\xe6\xc7\xe2\xa1\x99\xe6K" +
-	"\x10\xdc3~\x97\xaa\x9c#\x15\xabT\xe5\xeb\xf1\x9b\xd5" +
-	"dCh\xbc\x18R\xbfN(\x86-\x81\x18N:-" +
-	"\xaa0/\x95\xbb;I\xdfB\x93\xd7\xda/u\xcb\xa4" +
-	"Ky\xda\xa6#\xaa\x88\xe57\x89\xb7\\z\x9bpU" +
-	"\xcc3\x05Lo4\xad\\\xe8\xbb#\xf4\x0f\xa0IF" +
-	"2\x09\xc0\xddH3\xb5\xdbB\x11\xd5\xb5\x02bI\x99" +
-	"\xd7t\x85\x94y|\x1e|\xc3\xab,\xc5\x04\x03\xf4\x7f" +
-	"\x01\x00\x00\xff\xff\xf6_AX"
+const schema_f2768a70df34b76a = "x\xda\x8cXml\x14\xe7\x11\x9e\xd9\xbd\xf3\xde\xd9>" +
+	"\xdf\xbdYS\xc2\x0f\xd7%\"Jl\x05\x0b\xec\xa4*" +
+	"n\xe9\x19\x03\xe1C\x0exmS\x84\x15\xaa\xac\xef^" +
+	"\xc3\xc1\xdd\xeeyw\xcf\xd84\x89\x9b\x86\x16\x82\x946" +
+	"\xd0\xa6\x85\x0a\xf7C\x11M\xe5\xb6\x8a\x024\xa1\xa8\x89" +
+	"@Q\xa2\x10\xe1\x00*\x11\x10\x11%\xb4\xa0\x06\xaaT" +
+	"\x81\xc2\x0fPa\xab\xf7\xdd\xdb\x0f\x9f\xcf\xc5\xbf|\xbb" +
+	";\xfb\xce3\xcf\xcc<3\xeby\x97\xc2m\xc2\xfc\xf0" +
+	"\x9bU\x00\xca\x8ep\x85\x8d\x7f\xfd\xe4\xa73F^\xdc" +
+	"\x06d\x06\xda'\xcf\x1e\x90\x0e\x9e\xdc}\x02\xc2\x82\x04" +
+	"\xd0r,,\xa0<\x1e\x96\x00\xe4\xe3\xe1-\x80\xf6\xfb" +
+	"_\xad\xbd|\xe6\x19k;\x90\x99\x08\x10b6\x8fU" +
+	"4\"\x84\xec\xd7k\xcf\xbe}6rt;(\x09\x14" +
+	"\xecMo>\xfai~\xe7\xe0u\x083\x1b\xb9\xae\xe2" +
+	"\x88\xfc`\xc5C\x00-\x0b+\xd6\"\xa0=\xbb\xf7m" +
+	"\xfa\xbc\xd5\xf7\xe3\xc09\x1fI\xad\xec\x9c\xad/T\xd6" +
+	"\xae}\xf8\xda\x1e 3\x04;\x92\xe8_\xb3\xe6\x95\xf1" +
+	"\xcf\x00\xb0\xe5-\xa9\x12\xe5q\x89c\x91V\x03\xda\xa1" +
+	"\x85\x1f\x7f\xf6\xe9#?\xd9\x178\xe3\xb2\xd4\xce\xceX" +
+	"\xd8\xff\\L=\x18\xdd\x0f$!\xfaP\x80\xbd~D" +
+	"\xfe\x88\x1fqZZ&\xdfb\xbf\xec;\xe7\x07\xfe\xbd" +
+	"\xf6\x98\xb1\x1fH\x9d`\x9f\xfe\xca\x89\xf7\x8e\x7f\xfd\x89" +
+	"+\xcc\xe1E\xe9\x01\x94\xafq\xeb/\xa4_\x00\xda\xab" +
+	"\x9f\xfd\xee\xbc\x9a\xef-\xfe\x1d\x0b\x11\x03!\"3Y" +
+	"\x1a\xb9*+\x91\x99\x00\xf2\xba\x08c\xaac\xc5\xd3/" +
+	"\x19C7^\x9d\x84\xe1\xdd\xc8\x98<\x1e\xe1aD\xb6" +
+	"\xcb\xb3\xa2\x0c\xc3\xfc\xbe\xef\xec>\xf5\xeb\xc3\xbf\x0f\x84" +
+	"\x82\xd1.\x16\xca\x8e}5\xbf\xfaA:}\x00H\"" +
+	"\xe8R\xe0\xa8\"\xb7\xe5[\xfc\xa4\x9b\xcc\xe5\x9d=_" +
+	"\xfe<\xb9\xec\xdbGK\x1d*\xd1#\xf2:\xe6\xa6e" +
+	"MTB\xf9\x0e\xf78\xdcQ\xbd\xf2\xcb\xbd?{\xa7" +
+	"\xdc\xb9\x97\xa3W\xe5kQ\xee!\xcaB\xf1\x8a\xa2$" +
+	"nn\x9c\xa9\x1c\x93\x07*\x1f\x02\x90_\xac|\x0d\xd0" +
+	"\x16o\xfd\xf2\x0f\xf2\xf8\x9e\x93\xe5HjQ\xaa\x04\x94" +
+	"\xd7W1\x96h\x15;z\x96rp\xf1\x7fn\x8c\x9e" +
+	"b\xc5\x07E\xa3cU\x95\x08(\x1f\xafJ\x02\xda7" +
+	"\xef\xce\xbb`~x\xf2o\x01f\xaeT\xf1Bi\x1a" +
+	":\xbc\xbc\xef\x95\xc4\x99\x92\x08Dfr\xba\xea>\x94" +
+	"/V1|\x9fT1T\xbb\xa53\xa3\xcf\xd6\x8e\x9d" +
+	"+\x17\xee\x0b\xd5\xb7\xe5\x97\xab\xd9\xaf]\xd5\x0cS\xd3" +
+	"|\xeb\xd0\x89\x0f??\x07\xe4k\x82\x1f\x0e`K," +
+	"\xd6\x8ar]\x8cY\xce\x8a\x8d\x00\xda\xb1\xa7\xce\x9e\xce" +
+	"\x8cn\xfe\x98\x97\x8eW\x1d\x80-j\xec\x01\x94\x07\xb8" +
+	"e.\xb6\x01\xd0/\xe4\x92\xee\xe0\xa5\xb3?6&\xff" +
+	")\xc6H\xf9K\xec\x9f\x0c\xc0\xfa\x0f\xdex\xf4\xfa?" +
+	"\xfe\xceb\xf6\xfb\xca\xe9\xc8]5\x02\xca\xa35\xec\xb5" +
+	"\xbd5\x0c\xadW\xb1\x13\xf9^\x8aR\x08Q\x8e\xc6\xaf" +
+	"\xca3\xe23\x01Z\xea\xe2\xf5\xac\xf16\x91\xb7\xee?" +
+	";\xf6\xc6\x17A\xc23\x09N\xf8@\x82\x11>*]" +
+	"y\xe9\xf9\x13c\xd7\xcb\xc9\xc1\xaeD%\xca\xbfM0" +
+	"\xe7\xa3\x09\xe6\xfc\xe8\xec\x86o=\xb9w\xc1\x0dPf" +
+	"b\x10*\x0f\xebV\xe2\xaa\x1c&\xec\x17\x12f\xfc\xaf" +
+	"\xf1\x9b\xe4\x83\xa1o\xde.\xc9\x01\xb7]O\x0e\xc8\x94" +
+	"\xdb\xaa\x84\xa18}\xbe\xf7G\xaf\xbe\xf7\xce\xdd\xb2%" +
+	"\xb7\x8b\x8c\xc9{\xb9\xf1\xcb\xe45\x98k\xe7uK5" +
+	"\xcdLA\xcc5\xa5\xd4\xbc\x96o\xed\xa44\xdb\xd4\x99" +
+	"U\x87\xa9\xd1\x93\xc9R\xe8DT\"b\x08 \x84\x00" +
+	"\xa4\xa1\x15@\x99#\xa22O@\x82X\x8b\xec\xe6\xdc" +
+	"v\x00\xe5a\x11\x95%\x02&\xf3\xfcU\xac\x06\x01\xab" +
+	"\x01G\xb2\xd4\xb2\xa8ab\x0d`\xa7\x88\xfcv\x0d`" +
+	"\x19\xb7\xfc\xb5&3\x9f\xcdXs\xba\xa8\x19/d-" +
+	"\xd33C\xd7,\xd9E\x99\x03%\x82\xc1TGW\xfa" +
+	"l\x92h\xb3\xcd\x80?n\xd0\x01\x00\xa8\xefN\xe9\x06" +
+	"U\xee\xf7\"\xd8\xbb\x09@\xd9#\xa2r(\x10\xc1\xeb" +
+	"\xcd\x00\xca\x1fET\xde\x17\x90\x08B-\x0a\x00\xe4]" +
+	"v\xf3\xa8\x88\xca\x05\x01Q\xacE\x11\x80\x9c\xef\x02P" +
+	"\xce\x89\xa8\\\x12\x90\x84\xb0\x16C\x00\xe4\"\x8b\xff\x82" +
+	"\x88\xca\xe7\x02\x92\xb0X\x8ba\x00r\xb9\x0f@\xb9$" +
+	"b\x17\x0ahg\xb4\x8c\x95Q\xb3=\x10\xcfd\xa9G" +
+	"F\xc2\x0f\x01\x90\xdd\xac\xcfS\x9a\x0d<\xf6J\xa8\xf8" +
+	"8]\xc8\xe5\x03\x8f\xbdD;\x8fm\xd3R\x0d\xab'" +
+	"\x93\x03\xa4\x18\x05\x01\xa3\x80#TK\xf7dr\xde\xb5" +
+	"\xdd\x9f\xd1\xd4lwJ\x07\xc9\x08\x02\xf1\xe8+\x1e5" +
+	"U~4\xba\x85\x91;\xa7+I\xcd\x09\x19\xf2\x0c\xd7" +
+	"\xeaF\xbai\xb5\x91\xa1\x9a\xa5Z\x19]\x03^A\xd5" +
+	"\x9c\xd1\xbavv>\x99\xd1\x0b\x80\x02!+\x01F\x0a" +
+	"\xdafM\xdf\xa2\xd9\x1bu#\xb3U\xd7,\x10\xd5\xac" +
+	"=H\x0d+\x93R\xb3\x00\xe09\xa8(A\xb2A\xcd" +
+	"\xd1\xd5\x83\xd4`\xc5\xc2\x90\x80k\xe8\x95J75\x06" +
+	"\xa9\xc1\xbc\x87\xc40\x807\x0e\xd0\xd5%B\xdaA " +
+	"ai$\xa5k\x1aMYm\xd8\x89X\xbe#\xba\xa8" +
+	"\x99\xd75\x936u[\xaad\x15Lv\xea\xfd<\xa6" +
+	"ENL\x0b\xfaxL\x8f\x19\x00(\x92\xf9\xecO\x88" +
+	"\xcc\xdd\x04\x80a\xd2\xb0\x09`\xc4,\xa4R\xd44\xed" +
+	"\x8c6\xa8f3\xe9\xb5 \xe9F\xdaNSKMm" +
+	"\xa4i\xa8o\xd7U#mk\xba\xb5(\x9b\xed\xa0P" +
+	"\xcf\xdb\xc6\xa6C\x96\xa1vP\x0b\xe2\xfc\xb2\xf8r;" +
+	"\xc4\xb9\xb5\x0bUp\xa1.)\xe4\xf2\x0cj\x9caU" +
+	"B\x18\x94YlMv[\xaaU0\xa7h\xe7\xb2\xdd" +
+	"l\xf270\xee\x9f\x03\x88\xf1{\xf7\xb5\xd7\xb0\xf1e" +
+	"j\x8e:\x1a\xc2r\xe0J(\xba\xd2K\xe67\x82@" +
+	"\x1e\x94\xd0\x9fg\xe8N\x032\x8b=\x8bIq\xd6\x16" +
+	"m\x18g\xe5?1G\xa1\x92\xa2`\x16\xabt+\x93" +
+	"\xa2\xc5\xb2@s2I\x8b\x9dlw%\xe9@\x81\x9a" +
+	"V\x89\xc05\x96\x13\xb8\xd6\"%\x8f\x0a\x18\xd7\xd4\x1c" +
+	"u\xe5\xcdU;\xe2\xee\x0f\xac\x14\xca\xd1\x90t\x002" +
+	"_\x09N\x84\xbbC\xa0\xbb\x15\x92\x81f\x10\x08eD" +
+	"\xb8\x03\x17\xddM\x8f\xacc\x85\xfa\x84\x84\x827\xb9\xd1" +
+	"]{\xc8\xa2^\x10\xc8\x02\x09Eo\xde\xa3\xbb\xdd\x91" +
+	"\xb9+9\xb9\xf5\\V\xdbp\xa4\xd8\xbemh\xbbL" +
+	"\x81\x98b\x97n7\x01\xc0D\x86=\xd6\xba\xd9\x11]" +
+	"t ^\x86\xb3\xe6\"gm\x01\xce\x16\xb22\xfa\x86" +
+	"\x88J\x8f\x80\xf5VP\xf6\x8a\xb52\xe2p7\x8d\x12" +
+	"b\x0d\xc8\x15\xdf\x9f\xaf\xd1\xbe\xc0\xee\x1d\xed\xb5\x1dz" +
+	"\xdbu\x90X_\xb8\xe3\x0b\xc4,U\xaa=\x9cK\x99" +
+	"$/\x11Qy*\x80s\xfdJ\x00\xe5I\x11\x95!" +
+	"\x01\xb1\xa8\xfc\x05\xa6\xf2\x96\x88\xca\xf7\x05\xb4\x9d\x8e\xd3" +
+	"U\x90\x8ct@1=,E\xc5,Rk\x02\x80o" +
+	"\xe4a,\x1aY\x99\x1c5-5\x07\x98\xf7\x14y\x92" +
+	"\xde\xb8\xf5Y\x94\x1c\xe0}\xec/V\xd3\xee\xe3F\xbf" +
+	"h\xfd>\xf6\xceq\xfa8\xce\x12\x8f\xc4\xdf\xb8K\x0a" +
+	"\xd8\x03\xc5\xda\x98\xb7\xd7\x9cN\xd5Ps&\x80\x12\xf2" +
+	"\xdc\xc7\x98\xfb\x88\x88J\xad\x80IG\x19\xdc\x0e\x99r" +
+	"\x92x\xfa\x9dt\x0e\x9cl\xb8\xc4k\xe6.\xde\xa9\xc8" +
+	"\xcb.\x90N\xe6\xb5MD\xa5#\x90\xce\x15,\x9d\xcb" +
+	"ET\xd2\x81I\xae\xb6\x16s\xbcQ\xc0$\x0b\x82\xa6" +
+	"=|\x06M\xd1\xcc M\x07\xf2V\xacD\xc7rr" +
+	"$^K\xacrR>\x85\x90\xb4\xdf\xa3)\xa6\x90\xd0" +
+	"\x11&v\xd3\xd9\x98J\xca\xa4\xa9X\x15\x0c\x85\x13\xf5" +
+	"c\xced\x9a\xebL\xa6\x86\x9d|25\xf4\xf2\xc9\xf4" +
+	"`p$1E\xeb\xd1\xf5\x0e\x90tm\x03\xbfZ\x94" +
+	"5(\xaa\xe9\xe1\x1eu3\xd5\x00\xb8<\xac0\x1f/" +
+	"\x80\x98\xcd\xda\xc3\xea\x12]\xa3\xcbt\x88\xeb\xfd4]" +
+	">o\xe5\xe6e\x82\xa3jpP\xcd\xde\xc9Q\xcd\xde" +
+	"\xcaQ\xd5\xed\x0c\xc0qxY\xa5\xa3\xb5B+\xb6\x14" +
+	"\x9b\x8bK5\xbd\xb0\x01\x92\x1b\xf9-;\xa7f\xfbu" +
+	"#G1\xed\x14\x87\x15X\x15|\xe5`\xcb\x08o\x1f" +
+	"\xff\xcb\x18\xfblw;\x01)\xa3kJ\xc2K\x99\xda" +
+	"\xe8\x97\x89\x9b1\xca4#-\xa2\x92g\xf5\x84\x0e\xb3" +
+	"\xb9\xfb\x00\x94\x8d\"*\x96\x80D\x14\x9c\xd5p\x80\xdd" +
+	"\xcc:B\x12\xb7\xe8\x90\xe5\x15\x8e\x1e\xf4\x87q\x1f\x8c" +
+	"\xd3\x838\x84\x11\x100\x02\x88\xc3\xee\xaf\xc9\xac:\x8b" +
+	"o\x93\xb7\xdaNg/g2\xf6\x88\x88\xca\xf2I{" +
+	"\xb9\xddo0\xda\xb4\x14\xe0\xb0[i\xa1\x92J\x13J" +
+	"\x17 \x7f\xab\xf0\xbf\xfb}5\xaa\xf5\xc0<\xc3\xc0\x0c" +
+	"\x89\xa8l\x130\x86\xb6\xed\xa0y\x8eM\x89\xa7ET" +
+	"v\x08\x18\x13\xee\xda\x0e\x95?d\xfcn\x13Q\xf9\x8d" +
+	"\x801\xf1\x8e\xedp9j\x00(\xfbDT\x0e\x0b\x18" +
+	"\x0b\xfd\xd7v\xf6\xec?\xb3\xd5\xfd\x90\x88\xca\xa9\xa0\xa2" +
+	"yX\x1c6\xeb\xb9^C\xc5\xc4E\xab\xb4\x9bJ\xf6" +
+	"\xac\xd2\xc7\x13\xd7\xae{\xb6\"\x17G\xd6\xb7e\xc5\xb1" +
+	"\xd9\x17\xc7\xfa>\xb6\xb7a\xc2\xff\x9e\x03\xc4\x04\xe0\xff" +
+	"\xfd\x0c\xe3\x9b!L+\xe1\xcd\x01\xc9\x9f\x98\xf0{z" +
+	"\x16J\x0a\xad;\xce>\x9c\xa6v:\x1d\x9f&;b" +
+	"RI{\xed\xe9\xec\xbc\xce\x82>\x89\xad9\x02\xd6o" +
+	"\xd1'\x8c\xdc\xc0\x7f\xb4\xa6\xd8\x14\x98\xf4LgH4" +
+	"\xfa\x8b\x80;\xf3\xd7w\x05f\xc4\xc48\xf8\xe2YZ" +
+	"\x04eF\xf9\xff\x02\x00\x00\xff\xff%_\x83\xa2"
 
 func init() {
 	schemas.Register(schema_f2768a70df34b76a,
+		0x848d7f1593ddbc01,
 		0x87747dd4e5141ec8,
 		0x87c008d7bed714b1,
 		0x8e62748365be5a21,
-		0x91d57b12a6c06883,
 		0x98f12857140a897a,
 		0x9c8f2cdfe0da3d04,
 		0xa509b3610d81663d,
@@ -2753,6 +2837,7 @@ func init() {
 		0xe2e3f234b6ca5d2e,
 		0xe94d36c9c6cc16d1,
 		0xedb6aad718bd116a,
+		0xf2aacc8390e9079d,
 		0xf439995c3c2921c0,
 		0xfa3b78ca11f5cdeb,
 		0xfec3c6a7865ad9d1)
