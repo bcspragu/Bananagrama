@@ -24,5 +24,6 @@ It looks kind of like normal Bananagrams, with the following modifications:
 
 
 \* Set by `TileScalingFactor` in `engine/bunch.go`
+
 \*\* Set by `PeelSize` in `connect.go`
 // TODO(bsprague): Add the rules and stuff, like 144,000 tiles and whatnot
