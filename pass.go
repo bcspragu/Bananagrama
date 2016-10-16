@@ -4,23 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
-	"strings"
 )
 
-var password string
 var gameJS string
-
-func loadPass() error {
-	pass, err := ioutil.ReadFile("password")
-	if err != nil {
-		return fmt.Errorf("Error reading password: %s", err)
-	}
-
-	password = strings.TrimSpace(string(pass))
-	return nil
-}
 
 func servePass(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")

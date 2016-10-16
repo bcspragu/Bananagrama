@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var code string
+var code, password string
 
 func loadCode() error {
 	c, err := ioutil.ReadFile("code")
@@ -15,5 +15,15 @@ func loadCode() error {
 	}
 
 	code = strings.TrimSpace(string(c))
+	return nil
+}
+
+func loadPass() error {
+	pass, err := ioutil.ReadFile("password")
+	if err != nil {
+		return fmt.Errorf("Error reading password: %s", err)
+	}
+
+	password = strings.TrimSpace(string(pass))
 	return nil
 }

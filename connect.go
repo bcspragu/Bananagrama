@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"log"
 	"net"
+	"sort"
 	"sync"
 	"time"
 
@@ -14,6 +16,17 @@ import (
 	"github.com/bcspragu/Bananagrama/engine"
 	"github.com/bcspragu/Bananagrama/potassium"
 )
+
+// baseAction is the base of every message we send to the client over
+// WebSockets
+type baseAction struct {
+	Action string `json:"action"`
+}
+
+type playersAction struct {
+	baseAction
+	HTML string `json:"html"`
+}
 
 const (
 	// How many people can join in a single game
@@ -40,6 +53,19 @@ type aiEndpoint struct {
 	totalPeels  int
 	// Map from username to the Player's AI
 	connected map[string]*game
+}
+
+func (e *aiEndpoint) connectedPlayers() []string {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	p := make([]string, len(e.connected))
+	i := 0
+	for player := range e.connected {
+		p[i] = player
+		i++
+	}
+	sort.Strings(p)
+	return p
 }
 
 // Instead of recording a peel every time it happens,
@@ -274,7 +300,6 @@ func (e *aiEndpoint) handleConn(c net.Conn) {
 type aiConnector struct {
 	e    *aiEndpoint
 	game *game
-	// The player connected via this connection
 }
 
 func (c *aiConnector) Connect(call potassium.Server_connect) error {
@@ -347,6 +372,8 @@ func (c *aiConnector) Connect(call potassium.Server_connect) error {
 	c.game = g
 
 	log.Printf("Successfully connected player %s\n", name)
+	// Send the player list to web clients
+	go sendPlayers()
 	resp.SetStatus(potassium.ConnectResponse_Status_success)
 	return resp.SetGame(potassium.Game_ServerToClient(g))
 }
@@ -355,9 +382,15 @@ func (c *aiConnector) drop() {
 	// Since we only allow one player to connect per connection, we know exactly
 	// who to remove
 	c.e.mu.Lock()
-	delete(c.e.connected, c.game.player.name)
+	// Only delete them if they successfully connected
+	if c.game != nil && c.game.player != nil {
+		if _, ok := c.e.connected[c.game.player.name]; ok {
+			delete(c.e.connected, c.game.player.name)
+			log.Printf("Disconnected player %s\n", c.game.player.name)
+			go sendPlayers()
+		}
+	}
 	c.e.mu.Unlock()
-	log.Printf("Disconnected player %s\n", c.game.player.name)
 }
 
 // This only happens for the initial request
@@ -381,4 +414,20 @@ func tilesToWire(tiles engine.FreqList) (capnp.TextList, error) {
 	}
 
 	return tl, nil
+}
+
+func sendPlayers() {
+	var buf bytes.Buffer
+	err := templates.ExecuteTemplate(&buf, "player_list.html", globalAIEndpoint.connectedPlayers())
+	if err != nil {
+		log.Printf("error rendering player list: %v", err)
+	}
+
+	err = hub.broadcastJSON(playersAction{
+		baseAction: baseAction{Action: "players"},
+		HTML:       buf.String(),
+	})
+	if err != nil {
+		log.Printf("error sending player list: %v", err)
+	}
 }

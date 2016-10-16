@@ -85,8 +85,7 @@ func main() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", serveHome).Methods("GET")
-	r.HandleFunc("/pass", servePass).Methods("POST")
-	r.HandleFunc("/startGame", serveGame).Methods("GET")
+	r.HandleFunc("/startGame", startGame).Methods("GET")
 	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})
@@ -104,8 +103,8 @@ func main() {
 	}
 }
 
-func serveGame(w http.ResponseWriter, r *http.Request) {
-	if r.FormValue("key") == "" {
+func startGame(w http.ResponseWriter, r *http.Request) {
+	if r.PostFormValue("password") == password {
 		fmt.Fprint(w, "key not set")
 		return
 	}

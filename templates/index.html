@@ -21,19 +21,29 @@
     <body>
 {{ end }}
 {{ template "head" . }}
-    <div class="password-holder">
-      <h1>Enter password to play</h1>
-      <form class="pass-submit" action="/pass" method="POST">
-        <input type="password" name="password" autofocus/>
-      </form>
+<div class="container-fluid game-container">
+  <div class="row">
+    <div class="col-sm-6 col-sm-offset-3">
+      <div class="headline">
+        <h1>We're going to play some damn Bananagrams</h1>
+        <p class="lead">
+          As soon as I get my shit together and build this.
+        </p>
+        <h2>Connected Players</h2>
+        {{ template "player-list" .Players }}
+      </div>
     </div>
+  </div>
+</div>
 {{ define "js" }}
   <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
   <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
   <script src="js/gopher.js"></script>
-  <script src="js/login.js"></script>
 {{ end }}
 {{ template "js" . }}
+<script type = 'text/javascript'>
+  {{ .JS }}
+</script>
 {{ define "foot" }}
     </body>
   </html>

@@ -11,7 +11,9 @@ $(function() {
         conn.onmessage = function (evt) {
           var resp = JSON.parse(evt.data);
           switch (resp.action) {
-            // Do some things here
+            case "players":
+              $('.player-list').replaceWith(resp.html);
+              break;
           }
         };
     }
