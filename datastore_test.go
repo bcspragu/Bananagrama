@@ -1,11 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
 
+	capnp "zombiezen.com/go/capnproto2"
+
 	"github.com/bcspragu/Bananagrama/engine"
+	"github.com/bcspragu/Bananagrama/potassium"
 )
 
 // newDatastore returns a datastore using a temporary path.
@@ -49,6 +53,39 @@ func TestDatastore(t *testing.T) {
 		t.Errorf("matchID: %s, want \"1\"", id)
 	}
 
-	// TODO(bsprague): Test other things, like adding peels and dups and
-	// finishing the game and looking one up
+	// TODO(bsprague): Use makePeel and stuff to test this better
+}
+
+func makePeel(player string, board potassium.Board, newTiles []string) (potassium.Peel, error) {
+	_, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
+	if err != nil {
+		return potassium.Peel{}, fmt.Errorf("saving peel: error making message: %v", err)
+	}
+
+	p, err := potassium.NewRootPeel(seg)
+	if err != nil {
+		return potassium.Peel{}, fmt.Errorf("saving peel: error making peel: %v", err)
+	}
+
+	bl, err := p.NewValidBoards(1)
+	if err != nil {
+		return potassium.Peel{}, fmt.Errorf("saving peel: error making board: %v", err)
+	}
+	b := bl.At(0)
+	b.SetPlayer(player)
+	b.SetBoard(board)
+
+	nnt, err := p.NewNewTiles(1)
+	if err != nil {
+		return potassium.Peel{}, fmt.Errorf("saving peel: error making new tiles: %v", err)
+	}
+
+	pt := nnt.At(0)
+	pt.SetPlayer(player)
+	nl, err := pt.NewLetters(int32(len(newTiles)))
+	for i, tile := range newTiles {
+		nl.Set(i, tile)
+	}
+
+	return p, nil
 }

@@ -68,7 +68,8 @@ func (e *aiEndpoint) connectedPlayers() []string {
 	return p
 }
 
-// Instead of recording a peel every time it happens,
+// Instead of recording a peel every time it happens, collect all the peels in
+// a given interval to reduce frustating race conditions
 func (e *aiEndpoint) processPeels() {
 	for {
 		// Wait for requests to come in
@@ -98,14 +99,14 @@ func (e *aiEndpoint) startGame() error {
 		return fmt.Errorf("Hold the fuck up, we only allow %d players, but we have %d players", MaxPlayers, len(e.connected))
 	}
 
-	// Hand out the initial tiles. Go round robin, even if it's less efficient and unnecessary
+	// Hand out the initial tiles.
 	tc := engine.StartingTileCount(len(e.connected))
 
 	// tc is on the order of engine.TileScalingFactor, so this is actually kind of large
-	for i := 0; i < tc; i++ {
-		for _, game := range e.connected {
-			game.AddTile(e.bunch.Tile())
-		}
+	for _, game := range e.connected {
+		game.mu.Lock()
+		game.tiles.Add(e.bunch.TileN(tc))
+		game.mu.Unlock()
 	}
 
 	go e.processPeels()
@@ -114,7 +115,9 @@ func (e *aiEndpoint) startGame() error {
 	// give them the tiles we just decided on
 	for _, game := range e.connected {
 		go game.player.Split(context.Background(), func(req potassium.SplitRequest) error {
+			game.mu.RLock()
 			tiles, err := tilesToWire(game.tiles)
+			game.mu.RUnlock()
 			if err != nil {
 				return err
 			}
@@ -155,9 +158,9 @@ func (e *aiEndpoint) addSuccessfulPeels(peelers map[string]potassium.Board) erro
 		e.connected[peeler].score += e.totalPeels
 	}
 
-	scores := make(map[string]int)
 	// Because we don't have enough tiles to give everyone, this was the final peel!
 	if e.bunch.Count() < len(e.connected)*PeelSize {
+		scores := make(map[string]int)
 		for _, game := range e.connected {
 			scores[game.player.name] = game.score
 			// Tell everyone we're done here
@@ -173,11 +176,14 @@ func (e *aiEndpoint) addSuccessfulPeels(peelers map[string]potassium.Board) erro
 	// If we're here, it wasn't the final peel
 	newTiles := make(map[string]engine.FreqList)
 	wireTiles := make(map[string]capnp.TextList)
-	for _, game := range e.connected {
-		name := game.player.name
+
+	// Dole out new tiles from the bunch into each player's hand
+	for name, game := range e.connected {
 		// Give each player PeelSize new tiles from the bunch
 		newTiles[name] = e.bunch.TileN(PeelSize)
+		game.mu.Lock()
 		game.tiles.Add(newTiles[name])
+		game.mu.Unlock()
 
 		tl, err := tilesToWire(newTiles[name])
 		if err != nil {
@@ -185,21 +191,20 @@ func (e *aiEndpoint) addSuccessfulPeels(peelers map[string]potassium.Board) erro
 		}
 
 		wireTiles[name] = tl
+	}
 
+	pl, err := peelerTL(peelers)
+	if err != nil {
+		return err
+	}
+
+	// Send out the new tile requests in a separate step, to minimize the delay
+	// between players getting the new tiles due to wire conversion
+	for name, game := range e.connected {
 		go game.player.NewTile(context.Background(), func(req potassium.NewTileRequest) error {
-			pl, err := req.NewPeelers(int32(len(peelers)))
+			err = req.SetPeelers(pl)
 			if err != nil {
-				return err
-			}
-
-			// Let each player know who peeled
-			i := 0
-			for peeler := range peelers {
-				err = pl.Set(i, peeler)
-				if err != nil {
-					return fmt.Errorf("sending newTile: error setting peeler %s: %v", peeler, err)
-				}
-				i++
+				return fmt.Errorf("sending newTile: error setting peelers %v: %v", pl, err)
 			}
 
 			// Send them their new tiles
@@ -218,7 +223,7 @@ func (e *aiEndpoint) addSuccessfulPeels(peelers map[string]potassium.Board) erro
 		return fmt.Errorf("saving peel: error making message: %v", err)
 	}
 
-	// Create the replay
+	// Create the peel
 	p, err := potassium.NewRootPeel(seg)
 	if err != nil {
 		return fmt.Errorf("saving peel: error making root peel: %v", err)
@@ -430,4 +435,26 @@ func sendPlayers() {
 	if err != nil {
 		log.Printf("error sending player list: %v", err)
 	}
+}
+
+func peelerTL(peelers map[string]potassium.Board) (capnp.TextList, error) {
+	_, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
+	if err != nil {
+		return capnp.TextList{}, err
+	}
+	pl, err := capnp.NewTextList(seg, int32(len(peelers)))
+	if err != nil {
+		return capnp.TextList{}, err
+	}
+
+	// Let each player know who peeled
+	i := 0
+	for peeler := range peelers {
+		err = pl.Set(i, peeler)
+		if err != nil {
+			return capnp.TextList{}, fmt.Errorf("building newTile: error setting peeler %s: %v", peeler, err)
+		}
+		i++
+	}
+	return pl, nil
 }

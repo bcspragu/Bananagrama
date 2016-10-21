@@ -151,9 +151,10 @@ struct Peel {
     # The player who peeled successfully
     board @1 :Board;
   }
-  # The board of the peeler
+
   newTiles @1 :List(PlayerTile);
   # The tiles returned to everyone
+
   struct PlayerTile {
     player @0 :Text;
     letters @1 :Tiles;

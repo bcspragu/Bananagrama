@@ -26,3 +26,30 @@ It looks kind of like normal Bananagrams, with the following modifications:
 \* Set by `TileScalingFactor` in `engine/bunch.go`
 
 \*\* Set by `PeelSize` in `connect.go`
+
+## To Play
+
+1. AIs are run locally and connect to the Bananagrams server, hosted...somewhere.
+1. AIs communicate with the server using the [Cap'n
+   Proto](https://capnproto.org/) serialization format/RPC protocol
+1. To implement a bot, implement the `Player` interface found in the
+   [potassium.capnp](https://github.com/bcspragu/Bananagrama/blob/master/potassium/potassium.capnp)
+   schema file, which looks like:
+
+```capnproto
+interface Player {
+  # Interface that a competitor implements.
+
+  split @0 SplitRequest -> ();
+  # The server calls split when it's time to play, and gives each player a bunch of tiles and a list of opponents
+
+  newTile @1 NewTileRequest -> ();
+  # The server calls newTile when someone has called PEEL successfully, letter is the new tile you've been given
+
+  dumpNotice @2 DumpNoticeRequest -> ();
+  # Your notice that SOMEONE ELSE has dumped. You won't receive this call when you were the...uh...dumper.
+
+  gameOver @3 () -> ();
+  # The game is literally over, stop sending me things
+}
+```

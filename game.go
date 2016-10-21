@@ -39,18 +39,6 @@ type game struct {
 	player *player
 }
 
-func (g *game) AddTile(l engine.Letter) {
-	g.mu.Lock()
-	g.tiles.Inc(l)
-	g.mu.Unlock()
-}
-
-func (g *game) DumpTile(l engine.Letter) {
-	g.mu.Lock()
-	g.tiles.Dec(l)
-	g.mu.Unlock()
-}
-
 func (g *game) Peel(call potassium.Game_peel) error {
 	req := call.Params
 	resp := call.Results
@@ -186,7 +174,29 @@ func (g *game) Dump(call potassium.Game_dump) error {
 	}
 	resp.SetStatus(potassium.DumpResponse_Status_success)
 
-	// TODO(bsprague): Write this to the db
+	// Save the dump to the DB
+	_, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
+	if err != nil {
+		return fmt.Errorf("saving peel: error making message: %v", err)
+	}
+
+	// Create the dump
+	d, err := potassium.NewRootDump(seg)
+	if err != nil {
+		return fmt.Errorf("saving dump: error making message: %v", err)
+	}
+
+	err = d.SetPlayer(g.player.name)
+	if err != nil {
+		return fmt.Errorf("saving dump: error setting player name: %v", err)
+	}
+
+	err = d.SetDump(tl)
+	if err != nil {
+		return fmt.Errorf("saving dump: error setting dump tile list: %v", err)
+	}
+
+	go db.addDump(d)
 
 	return nil
 }
