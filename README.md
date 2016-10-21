@@ -36,7 +36,7 @@ It looks kind of like normal Bananagrams, with the following modifications:
    [potassium.capnp](https://github.com/bcspragu/Bananagrama/blob/master/potassium/potassium.capnp)
    schema file, which looks like:
 
-```Cap'n Proto
+```capnproto
 interface Player {
   # Interface that a competitor implements.
 
