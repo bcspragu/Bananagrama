@@ -43,6 +43,14 @@ func (g *game) Peel(call potassium.Game_peel) error {
 	req := call.Params
 	resp := call.Results
 
+	g.e.mu.Lock()
+	if !g.e.gameStarted {
+		resp.SetStatus(potassium.PeelResponse_Status_gameNotStarted)
+		g.e.mu.Unlock()
+		return nil
+	}
+	g.e.mu.Unlock()
+
 	// Load board player sent us
 	wb, err := req.Board()
 	if err != nil {
@@ -112,12 +120,16 @@ type peelInfo struct {
 
 // Dump exchanges a player's letter for three from the bunch
 func (g *game) Dump(call potassium.Game_dump) error {
-	// TODO(bsprague): Check all of this locking stuff
 	g.e.mu.Lock()
 	defer g.e.mu.Unlock()
 
 	req := call.Params
 	resp := call.Results
+
+	if !g.e.gameStarted {
+		resp.SetStatus(potassium.DumpResponse_Status_gameNotStarted)
+		return nil
+	}
 
 	// The letter the player wants to dump
 	l, err := req.Letter()

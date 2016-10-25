@@ -88,6 +88,7 @@ struct PeelResponse {
     notAllLetters @3; # The player isn't using all of their letters
     extraLetters @4; # The player is trying to play with letters they don't have
     invalidBoard @5; # The player's words overlap in ways they can't, like two words with different letters overlapping
+    gameNotStarted @6; # The game hasn't started yet
   }
 
   union {
@@ -111,6 +112,7 @@ struct DumpResponse {
     letterNotInTiles @1; # The player didn't have the tile they tried to return in their hand
     notEnoughTiles @2; # There are less than three tiles in the pot
     malformedRequest @3; # There wasn't exactly one letter in the request
+    gameNotStarted @4; # The game hasn't started yet
   }
   letters @1 :Tiles; # The tiles to send back to the player, on success
 }

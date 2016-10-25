@@ -53,3 +53,8 @@ interface Player {
   # The game is literally over, stop sending me things
 }
 ```
+
+1. As part of connecting to the server, players will receive references to a
+   `Game` object, which they can use to send PEEL and DUMP requests
+1. A useless example bot (written in Go) can be found in
+   [bananabots/](https://github.com/bcspragu/Bananagrama/blob/master/bananabots/main.go)
