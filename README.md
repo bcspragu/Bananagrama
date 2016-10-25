@@ -36,23 +36,23 @@ It looks kind of like normal Bananagrams, with the following modifications:
    [potassium.capnp](https://github.com/bcspragu/Bananagrama/blob/master/potassium/potassium.capnp)
    schema file, which looks like:
 
-```capnproto
-interface Player {
-  # Interface that a competitor implements.
+    ```capnproto
+    interface Player {
+      # Interface that a competitor implements.
 
-  split @0 SplitRequest -> ();
-  # The server calls split when it's time to play, and gives each player a bunch of tiles and a list of opponents
+      split @0 SplitRequest -> ();
+      # The server calls split when it's time to play, and gives each player a bunch of tiles and a list of opponents
 
-  newTile @1 NewTileRequest -> ();
-  # The server calls newTile when someone has called PEEL successfully, letter is the new tile you've been given
+      newTile @1 NewTileRequest -> ();
+      # The server calls newTile when someone has called PEEL successfully, letter is the new tile you've been given
 
-  dumpNotice @2 DumpNoticeRequest -> ();
-  # Your notice that SOMEONE ELSE has dumped. You won't receive this call when you were the...uh...dumper.
+      dumpNotice @2 DumpNoticeRequest -> ();
+      # Your notice that SOMEONE ELSE has dumped. You won't receive this call when you were the...uh...dumper.
 
-  gameOver @3 () -> ();
-  # The game is literally over, stop sending me things
-}
-```
+      gameOver @3 () -> ();
+      # The game is literally over, stop sending me things
+    }
+    ```
 
 1. As part of connecting to the server, players will receive references to a
    `Game` object, which they can use to send PEEL and DUMP requests
