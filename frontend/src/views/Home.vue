@@ -1,14 +1,19 @@
 <template>
-  <Grid/>
+  <div>
+    <Board/>
+    <UnusedLetters/>
+  </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import Grid from '@/components/Grid.vue'; // @ is an alias to /src
+import Board from '@/components/Board.vue'; // @ is an alias to /src
+import UnusedLetters from '@/components/UnusedLetters.vue'; // @ is an alias to /src
 
 @Component({
   components: {
-    Grid,
+    Board,
+    UnusedLetters,
   },
 })
 export default class Home extends Vue {}

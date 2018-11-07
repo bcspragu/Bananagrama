@@ -1,22 +1,17 @@
 <template>
-  <div>
-    <div id="grid"></div>
-    <div id="letters"></div>
-  </div>
+  <div id="grid"></div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Vue } from 'vue-property-decorator';
 import * as d3 from 'd3';
 import {BaseType, Selection} from 'd3';
 
 import Cell from '@/data';
 
 @Component
-export default class Grid extends Vue {
+export default class Board extends Vue {
   private selected: SVGElement | null = null;
-  private letters: string[] = ['a', 'b', 'c'];
-  private d3Letters: Selection<BaseType, any, HTMLElement, any> = d3.selectAll('div');
 
   private created(): void {
     window.addEventListener('keydown', (e) => {
@@ -25,12 +20,6 @@ export default class Grid extends Vue {
   }
 
   private mounted(): void {
-
-    this.d3Letters = d3.select('#letters')
-      .append('svg')
-      .attr('width', '510px')
-      .attr('height', '51px');
-
     const gridData = this.gridData();
 
     const grid = d3.select('#grid')
@@ -78,33 +67,6 @@ export default class Grid extends Vue {
       .attr('y', (d: any) => d.y + d.height / 2)
       .attr('text-anchor', 'middle')
       .attr('alignment-baseline', 'middle');
-
-    this.renderLetters();
-  }
-
-  private renderLetters(): void {
-    const letter = this.d3Letters.selectAll('.letter')
-      .data(this.letters)
-      .enter().append('g')
-      .attr('class', 'letter');
-    
-    const width = 60;
-
-    letter.append('rect')
-      .attr('x', (d: any, i: number) => {
-        return i * width;
-      })
-      .attr('width', 50)
-      .attr('height', 50)
-      .style('fill', '#fff')
-      .style('stroke', '#222');
-
-    letter.append('text')
-      .attr('x', (d: any, i: number) => i * width + 25)
-      .attr('y', (d: any, i: number) => 25)
-      .attr('text-anchor', 'middle')
-      .attr('alignment-baseline', 'middle')
-      .text((d: any) => d);
   }
 
   private gridData(): Cell[][] {
