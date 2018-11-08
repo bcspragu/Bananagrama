@@ -3,7 +3,6 @@ export default interface Cell {
   y: number;
   row: number;
   column: number;
-  width: number;
-  height: number;
-  click: number;
+  size: number;
+  letter: string;
 }

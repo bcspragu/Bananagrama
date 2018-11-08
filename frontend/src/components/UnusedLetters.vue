@@ -27,16 +27,32 @@ export default class UnusedLetters extends Vue {
     }
 
     window.addEventListener('keydown', (e) => {
+      if (e.keyCode === 27) {
+        this.clearSelected();
+        return;
+      }
       if (e.keyCode < 65 || e.keyCode > 90) {
         return;
       }
-      const letter = e.key.toUpperCase();
-      const index = this.letters.map((x) => x.letter + (x.selected ? '1' : '0')).indexOf(letter + '0');
-      if (index > -1) {
-        this.letters[index].selected = true;
-        this.renderLetters();
-      }
+      this.selectIfExists(e.key.toUpperCase());
     });
+  }
+
+  private selectIfExists(letter: string): void {
+    const index = this.letters.map((x) => x.letter + (x.selected ? '1' : '0')).indexOf(letter + '0');
+    if (index > -1) {
+      this.letters[index].selected = true;
+      this.renderLetters();
+    }
+  }
+
+  private clearSelected(): void {
+    for (const letter in this.letters) {
+      if (this.letters.hasOwnProperty(letter)) {
+        this.letters[letter].selected = false;
+      }
+    }
+    this.renderLetters();
   }
 
   private mounted(): void {
@@ -49,36 +65,31 @@ export default class UnusedLetters extends Vue {
   }
 
   private renderLetters(): void {
-    console.log(this.letters);
-    const letters = this.board.selectAll('.letter')
-      .data(this.letters) => x.letter)
-      .enter().append('g')
-      .attr('class', 'letter');
-
-    letters.exit().remove();
-
-
     const size = 50;
     const margin = 10;
 
+    const letters = this.board.selectAll('.letter')
+      .data(this.letters)
+      .enter().append('g');
+
     letters.append('rect')
-      .attr('x', (d: any, i: number) => {
-        return (i % 8) * (size + margin);
-      })
-      .attr('y', (d: any, i: number) => {
-        return Math.floor(i / 8) * (size + margin);
-      })
-      .attr('width', size)
-      .attr('height', size)
-      .style('stroke', '#222')
-      .style('fill', (d: any) => d.selected ? '#faa' : '#fff');
+        .attr('x', (d: any, i: number) => {
+          return (i % 8) * (size + margin);
+        })
+        .attr('y', (d: any, i: number) => {
+          return Math.floor(i / 8) * (size + margin);
+        })
+        .attr('width', size)
+        .attr('height', size)
+        .style('stroke', '#222')
+        .style('fill', (d: any) => d.selected ? '#faa' : '#fff');
 
     letters.append('text')
-      .attr('x', (d: any, i: number) => (i % 8) * (size + margin) + size / 2)
-      .attr('y', (d: any, i: number) => Math.floor(i / 8) * (size + margin) + size / 2)
-      .attr('text-anchor', 'middle')
-      .attr('alignment-baseline', 'middle')
-      .text((d: any) => d.letter);
+        .attr('x', (d: any, i: number) => (i % 8) * (size + margin) + size / 2)
+        .attr('y', (d: any, i: number) => Math.floor(i / 8) * (size + margin) + size / 2)
+        .attr('text-anchor', 'middle')
+        .attr('alignment-baseline', 'middle')
+        .text((d: any) => d.letter);
   }
 }
 </script>
