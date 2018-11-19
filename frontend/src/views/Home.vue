@@ -1,7 +1,9 @@
 <template>
-  <div>
-    <Board/>
+  <div class="board">
+    <Board ref="board"/>
     <UnusedLetters/>
+    <input v-model="word">
+    <button @click="sendToBoard">Send</button>
   </div>
 </template>
 
@@ -16,5 +18,17 @@ import UnusedLetters from '@/components/UnusedLetters.vue'; // @ is an alias to 
     UnusedLetters,
   },
 })
-export default class Home extends Vue {}
+export default class Home extends Vue {
+  private word: string = '';
+
+  private sendToBoard(): void {
+    (this.$refs.board as Board).placeWord(this.word);
+  }
+}
 </script>
+
+<style scoped>
+.board {
+  height: 100%;
+}
+</style>

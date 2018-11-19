@@ -1,5 +1,7 @@
 <template>
+  <div>
     <div id="letters"></div>
+  </div>
 </template>
 
 <script lang="ts">
@@ -14,7 +16,6 @@ interface Letters {
 
 @Component
 export default class UnusedLetters extends Vue {
-
   private letters: Letters[] = [];
   private board: Selection<BaseType, any, HTMLElement, any> = d3.selectAll('div');
 
@@ -68,7 +69,7 @@ export default class UnusedLetters extends Vue {
     const size = 50;
     const margin = 10;
 
-    const letters = this.board.selectAll('.letter')
+    const letters = this.board.selectAll('g')
       .data(this.letters)
       .enter().append('g');
 
@@ -93,3 +94,15 @@ export default class UnusedLetters extends Vue {
   }
 }
 </script>
+
+<style>
+#letters {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+}
+</style>
