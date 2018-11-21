@@ -20,7 +20,7 @@ export default class UnusedLetters extends Vue {
   private board: Selection<BaseType, any, HTMLElement, any> = d3.selectAll('div');
 
   private created(): void {
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 20; i++) {
       this.letters.push({
         letter: String.fromCharCode(Math.floor(Math.random() * 26) + 65),
         selected: false,
@@ -59,14 +59,14 @@ export default class UnusedLetters extends Vue {
   private mounted(): void {
     this.board = d3.select('#letters')
       .append('svg')
-      .attr('width', '500px')
-      .attr('height', '150px');
+      .attr('width', '650px')
+      .attr('height', '250px');
 
     this.renderLetters();
   }
 
   private renderLetters(): void {
-    const size = 50;
+    const size = 55;
     const margin = 10;
 
     const letters = this.board.selectAll('g')
@@ -75,10 +75,10 @@ export default class UnusedLetters extends Vue {
 
     letters.append('rect')
         .attr('x', (d: any, i: number) => {
-          return (i % 8) * (size + margin);
+          return (i % 10) * (size + margin);
         })
         .attr('y', (d: any, i: number) => {
-          return Math.floor(i / 8) * (size + margin);
+          return Math.floor(i / 10) * (size + margin);
         })
         .attr('width', size)
         .attr('height', size)
@@ -86,8 +86,8 @@ export default class UnusedLetters extends Vue {
         .style('fill', (d: any) => d.selected ? '#faa' : '#fff');
 
     letters.append('text')
-        .attr('x', (d: any, i: number) => (i % 8) * (size + margin) + size / 2)
-        .attr('y', (d: any, i: number) => Math.floor(i / 8) * (size + margin) + size / 2)
+        .attr('x', (d: any, i: number) => (i % 10) * (size + margin) + size / 2)
+        .attr('y', (d: any, i: number) => Math.floor(i / 10) * (size + margin) + size / 2)
         .attr('text-anchor', 'middle')
         .attr('alignment-baseline', 'middle')
         .text((d: any) => d.letter);
@@ -97,6 +97,7 @@ export default class UnusedLetters extends Vue {
 
 <style>
 #letters {
+  margin-top: 1rem;
   -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
      -khtml-user-select: none; /* Konqueror HTML */

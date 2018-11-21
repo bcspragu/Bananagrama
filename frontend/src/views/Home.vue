@@ -3,7 +3,8 @@
     <Board ref="board"/>
     <UnusedLetters/>
     <input v-model="word">
-    <button @click="sendToBoard">Send</button>
+    <button @click="getSuggestions">Suggest</button>
+    <button @click="place">Place</button>
   </div>
 </template>
 
@@ -21,8 +22,38 @@ import UnusedLetters from '@/components/UnusedLetters.vue'; // @ is an alias to 
 export default class Home extends Vue {
   private word: string = '';
 
-  private sendToBoard(): void {
-    (this.$refs.board as Board).placeWord(this.word);
+  private mounted(): void {
+    document.addEventListener('keyup', (e) => {
+      // Left
+      if (e.keyCode === 37) {
+        this.next();
+        return;
+      }
+
+      // Right
+      if (e.keyCode === 39) {
+        this.prev();
+        return;
+      }
+
+      e.stopPropagation();
+    });
+  }
+
+  private getSuggestions(): void {
+    (this.$refs.board as Board).suggestPlacement(this.word);
+  }
+
+  private place(): void {
+    (this.$refs.board as Board).placeCurrentWord();
+  }
+
+  private prev(): void {
+    (this.$refs.board as Board).prevSuggestion();
+  }
+
+  private next(): void {
+    (this.$refs.board as Board).nextSuggestion();
   }
 }
 </script>

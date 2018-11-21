@@ -4,6 +4,7 @@ export interface Cell {
   row: number;
   column: number;
   letter: string;
+  suggestion: boolean;
 }
 
 // Suggestion where to place a word.

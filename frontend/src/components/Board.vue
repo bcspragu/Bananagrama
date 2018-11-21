@@ -13,6 +13,12 @@ import {Cell, Orientation, Word, Placement, Match} from '@/data';
 @Component
 export default class Board extends Vue {
   private placedWords: Word[] = [];
+
+  // Temporary variables used for suggestions.
+  private currentWord = '';
+  private lastFits: Placement[] = [];
+  private fitIndex = 0;
+
   // Specify a sane default size in case we can't get the page size for some
   // reason.
   private sizeX = 750;
@@ -20,27 +26,49 @@ export default class Board extends Vue {
   private margin = 2;
   private grid: Selection<any, any, any, any> = d3.select('#grid');
 
-  public placeWord(word: string): void {
-    if (this.boardEmpty()) {
-      this.placedWords = [{word, x: 0, y: 0, orientation: Orientation.Horizontal}];
-      this.renderBoard();
+  public placeCurrentWord(): void {
+    const fit = this.currentFit;
+    this.normalizeAndAdd({word: this.currentWord, x: fit.x, y: fit.y, orientation: fit.orientation});
 
-      return;
-    }
+    this.currentWord = '';
+    this.lastFits = [];
+    this.fitIndex = 0;
 
-    const fits = this.findFits(word);
-    if (fits.length === 0) {
-      console.log('no fits found');
-      return;
-    }
-
-    // Add a random fit to the board.
-    const fit = fits[Math.floor(Math.random() * fits.length)];
-    this.normalizeAndAdd({word, x: fit.x, y: fit.y, orientation: fit.orientation});
     this.renderBoard();
   }
 
-  public normalizeAndAdd(word: Word): void {
+  public suggestPlacement(word: string): void {
+    this.fitIndex = 0;
+    this.currentWord = word;
+
+    if (this.boardEmpty) {
+      this.lastFits = [{x: 0, y: 0, orientation: Orientation.Horizontal}];
+      this.renderBoard();
+      return;
+    }
+
+    this.lastFits = this.findFits(word);
+    this.renderBoard();
+  }
+
+  public nextSuggestion(): void {
+    this.selectSuggestion(1);
+  }
+
+  public prevSuggestion(): void {
+    this.selectSuggestion(this.lastFits.length - 1);
+  }
+
+  private selectSuggestion(offset: number): void {
+    if (this.lastFits.length === 0) {
+      return;
+    }
+
+    this.fitIndex = (this.fitIndex + 1) % this.lastFits.length;
+    this.renderBoard();
+  }
+
+  private normalizeAndAdd(word: Word): void {
     let offsetX = 0;
     let offsetY = 0;
     if (word.x < 0) {
@@ -57,15 +85,44 @@ export default class Board extends Vue {
     }
   }
 
-  private boardEmpty(): boolean {
+  private removeLastAndNormalize(): void {
+    this.placedWords.splice(-1);
+    if (this.placedWords.length === 0) {
+      return;
+    }
+
+    let offsetX = this.placedWords[0].x;
+    let offsetY = this.placedWords[0].y;
+
+    for (const word of this.placedWords) {
+      if (word.x < offsetX) {
+        offsetX = word.x;
+      }
+      if (word.y < offsetY) {
+        offsetY = word.y;
+      }
+    }
+
+    for (const word of this.placedWords) {
+      word.x -= offsetX;
+      word.y -= offsetY;
+    }
+  }
+
+  get boardEmpty(): boolean {
     return this.placedWords.length === 0;
   }
 
+  get currentFit(): Placement | null {
+    return this.lastFits[this.fitIndex];
+  }
+
+  // findFits returns a list of places the given word could fit on the board.
   private findFits(word: string): Placement[] {
     // Build up a mapping of letters in our word to the index(es) they appear
     // at.
     const letters: { [s: string]: number[]; } = {};
-    const board = this.boardFromWords();
+    const board = this.board;
     for (let i = 0; i < word.length; i++) {
       const c = word.charAt(i);
       if (letters[c] === undefined) {
@@ -137,6 +194,7 @@ export default class Board extends Vue {
     return Orientation.Horizontal;
   }
 
+  // fits returns if a given match fits on the board.
   private fits(m: Match, word: string, board: string[][]): boolean {
     let x = m.x;
     let y = m.y;
@@ -175,9 +233,11 @@ export default class Board extends Vue {
 
     for (let i = 0; i < word.length; i++) {
       check.push({x, y, letter: word.charAt(i)});
+      /* The commented-out code changes the overlap checking behavior.
       if (!(x === m.intX && y === m.intY)) {
         check.push(...buf());
       }
+      */
       inc();
     }
 
@@ -191,6 +251,11 @@ export default class Board extends Vue {
     return true;
   }
 
+  // isValid returns whether or not the given target is a valid location on the
+  // board. A location is valid if it is:
+  //   - Out of bounds
+  //   - Empty
+  //   - The target letter we're looking for
   private isValid(x: number, y: number, target: string, board: string[][]): boolean {
     return x < 0
         || y < 0
@@ -237,7 +302,36 @@ export default class Board extends Vue {
       .attr('height', this.sizeY + 'px');
   }
 
-  private boardFromWords(): string[][] {
+  private wordToPositions(word: Word): Array<{x: number, y: number, letter: string}> {
+    let inc: () => void = () => { /* Blank until orientation is looked at */};
+    let x = word.x;
+    let y = word.y;
+    let offsetX = 0;
+    let offsetY = 0;
+    if (x < 0) {
+      offsetX = -x;
+    }
+    if (y < 0) {
+      offsetY = -y;
+    }
+    switch (word.orientation) {
+      case Orientation.Horizontal:
+        inc = () => x++;
+        break;
+      case Orientation.Vertical:
+        inc = () => y++;
+        break;
+    }
+    const locs: Array<{x: number, y: number, letter: string}> = [];
+    for (let i = 0; i < word.word.length; i++) {
+      locs.push({x: x + offsetX, y: y + offsetY, letter: word.word.charAt(i)});
+      inc();
+    }
+
+    return locs;
+  }
+
+  get board(): string[][] {
     let maxX = 0;
     let maxY = 0;
     for (const word of this.placedWords) {
@@ -325,7 +419,7 @@ export default class Board extends Vue {
       .attr('rx', board.cellRadius)
       .attr('width', board.cellSize)
       .attr('height', board.cellSize)
-      .style('fill', '#fff')
+      .style('fill', (d: any) => d.suggestion ? '#ffc' : '#fff')
       .style('stroke', '#222');
 
     column.merge(cells).select('text')
@@ -342,7 +436,12 @@ export default class Board extends Vue {
   private dataFromBoard(): {cellSize: number, cellRadius: number, data: Cell[][]} {
     const data: Cell[][] = new Array();
 
-    const board = this.boardFromWords();
+    const fit = this.currentFit;
+    if (fit) {
+      this.normalizeAndAdd({word: this.currentWord, x: fit.x, y: fit.y, orientation: fit.orientation});
+    }
+
+    const board = this.board;
     const boardX = board.length + 2;
     const boardY = board[0].length + 2;
 
@@ -366,7 +465,6 @@ export default class Board extends Vue {
         let letter = '';
         if (x > 0 && x < boardX - 1 && y > 0 && y < boardY - 1) {
           letter = board[x - 1][y - 1];
-
         }
 
         data[x].push({
@@ -375,6 +473,7 @@ export default class Board extends Vue {
           letter,
           row: x,
           column: y,
+          suggestion: false,
         });
 
         // Increment the Y position.
@@ -385,6 +484,17 @@ export default class Board extends Vue {
       // Increment the X position.
       xpos += size + this.margin;
     }
+
+    if (fit) {
+      const poses = this.wordToPositions({word: this.currentWord, x: fit.x, y: fit.y, orientation: fit.orientation});
+      for (const pos of poses) {
+        const x = pos.x + 1;
+        const y = pos.y + 1;
+        data[x][y].suggestion = true;
+      }
+      this.removeLastAndNormalize();
+    }
+
     return {cellSize: size, cellRadius: 5, data};
   }
 }
