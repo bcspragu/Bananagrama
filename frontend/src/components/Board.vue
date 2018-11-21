@@ -28,44 +28,58 @@ export default class Board extends Vue {
 
   public placeCurrentWord(): void {
     const fit = this.currentFit;
-    this.normalizeAndAdd({word: this.currentWord, x: fit.x, y: fit.y, orientation: fit.orientation});
+    if (fit) {
+      this.normalizeAndAdd({word: this.currentWord, x: fit.x, y: fit.y, orientation: fit.orientation});
 
-    this.currentWord = '';
-    this.lastFits = [];
-    this.fitIndex = 0;
+      this.currentWord = '';
+      this.lastFits = [];
+      this.fitIndex = 0;
 
-    this.renderBoard();
+      this.renderBoard();
+    }
   }
 
-  public suggestPlacement(word: string): void {
+  public suggestPlacement(word: string): string[] {
     this.fitIndex = 0;
     this.currentWord = word;
 
+    // If nothing has been placed on the board, just suggest dropping that word
+    // in the center of the board.
     if (this.boardEmpty) {
-      this.lastFits = [{x: 0, y: 0, orientation: Orientation.Horizontal}];
+      this.lastFits = [
+        {x: 0, y: 0, orientation: Orientation.Horizontal},
+        {x: 0, y: 0, orientation: Orientation.Vertical},
+      ];
       this.renderBoard();
-      return;
+      // TODO: Return the real letters required. For this, it's all of them.
+      return [];
     }
 
     this.lastFits = this.findFits(word);
     this.renderBoard();
+
+    // TODO: Return the real letters required.
+    return [];
   }
 
-  public nextSuggestion(): void {
-    this.selectSuggestion(1);
+  public nextSuggestion(): string[] {
+    return this.selectSuggestion(1);
   }
 
-  public prevSuggestion(): void {
-    this.selectSuggestion(this.lastFits.length - 1);
+  public prevSuggestion(): string[] {
+    return this.selectSuggestion(this.lastFits.length - 1);
   }
 
-  private selectSuggestion(offset: number): void {
+  private selectSuggestion(offset: number): string[] {
     if (this.lastFits.length === 0) {
-      return;
+      return [];
     }
 
-    this.fitIndex = (this.fitIndex + 1) % this.lastFits.length;
+    this.fitIndex = (this.fitIndex + offset) % this.lastFits.length;
     this.renderBoard();
+
+    // TODO: Return the real letters required.
+    return [];
   }
 
   private normalizeAndAdd(word: Word): void {
@@ -114,6 +128,9 @@ export default class Board extends Vue {
   }
 
   get currentFit(): Placement | null {
+    if (this.lastFits.length === 0) {
+      return null;
+    }
     return this.lastFits[this.fitIndex];
   }
 
@@ -266,8 +283,7 @@ export default class Board extends Vue {
   }
 
   private mounted(): void {
-    this.grid = d3.select('#grid')
-      .append('svg');
+    this.grid = d3.select('#grid').append('svg');
 
     this.renderBoard();
   }

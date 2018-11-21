@@ -34,3 +34,8 @@ export enum Orientation {
   Vertical = 1,
   Horizontal,
 }
+
+export interface Letter {
+  letter: string;
+  selected: boolean;
+}

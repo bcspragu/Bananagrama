@@ -5,99 +5,83 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from 'vue-property-decorator';
 import * as d3 from 'd3';
 import {BaseType, Selection} from 'd3';
-
-interface Letters {
-  letter: string;
-  selected: boolean;
-}
+import {Letter} from '@/data';
 
 @Component
 export default class UnusedLetters extends Vue {
-  private letters: Letters[] = [];
-  private board: Selection<BaseType, any, HTMLElement, any> = d3.selectAll('div');
+  @Prop() private letters!: Letter[];
+  private board: Selection<BaseType, any, HTMLElement, any> = d3.select('#letters');
 
-  private created(): void {
-    for (let i = 0; i < 20; i++) {
-      this.letters.push({
-        letter: String.fromCharCode(Math.floor(Math.random() * 26) + 65),
-        selected: false,
-      });
-    }
+  private sizeX = 650;
+  private sizeY = 150;
+  private margin = 10;
 
-    window.addEventListener('keydown', (e) => {
-      if (e.keyCode === 27) {
-        this.clearSelected();
-        return;
-      }
-      if (e.keyCode < 65 || e.keyCode > 90) {
-        return;
-      }
-      this.selectIfExists(e.key.toUpperCase());
-    });
-  }
+  public renderLetters(): void {
+    this.resizeSVG();
 
-  private selectIfExists(letter: string): void {
-    const index = this.letters.map((x) => x.letter + (x.selected ? '1' : '0')).indexOf(letter + '0');
-    if (index > -1) {
-      this.letters[index].selected = true;
-      this.renderLetters();
-    }
-  }
+    const perRow = 10;
+    const rows = Math.ceil(this.letters.length / perRow);
 
-  private clearSelected(): void {
-    for (const letter in this.letters) {
-      if (this.letters.hasOwnProperty(letter)) {
-        this.letters[letter].selected = false;
-      }
-    }
-    this.renderLetters();
-  }
+    const size = Math.min(
+      this.sizeX / perRow - this.margin,
+      this.sizeY / rows - this.margin);
 
-  private mounted(): void {
-    this.board = d3.select('#letters')
-      .append('svg')
-      .attr('width', '650px')
-      .attr('height', '250px');
-
-    this.renderLetters();
-  }
-
-  private renderLetters(): void {
-    const size = 55;
-    const margin = 10;
+    const offsetX = this.margin / 2;
 
     const letters = this.board.selectAll('g')
-      .data(this.letters)
-      .enter().append('g');
+      .data(this.letters);
 
-    letters.append('rect')
+    const newLetters = letters.enter().append('g');
+
+    newLetters.append('rect');
+    newLetters.append('text');
+
+    letters.merge(newLetters).select('rect')
         .attr('x', (d: any, i: number) => {
-          return (i % 10) * (size + margin);
+          return (i % perRow) * (size + this.margin) + offsetX;
         })
         .attr('y', (d: any, i: number) => {
-          return Math.floor(i / 10) * (size + margin);
+          return Math.floor(i / perRow) * (size + this.margin);
         })
         .attr('width', size)
         .attr('height', size)
         .style('stroke', '#222')
         .style('fill', (d: any) => d.selected ? '#faa' : '#fff');
 
-    letters.append('text')
-        .attr('x', (d: any, i: number) => (i % 10) * (size + margin) + size / 2)
-        .attr('y', (d: any, i: number) => Math.floor(i / 10) * (size + margin) + size / 2)
+    letters.merge(newLetters).select('text')
+        .attr('x', (d: any, i: number) => (i % perRow) * (size + this.margin) + size / 2 + offsetX)
+        .attr('y', (d: any, i: number) => Math.floor(i / perRow) * (size + this.margin) + size / 2)
         .attr('text-anchor', 'middle')
         .attr('alignment-baseline', 'middle')
         .text((d: any) => d.letter);
+  }
+
+  private resizeSVG(): void {
+    const board = document.getElementById('letters');
+    if (board) {
+      this.sizeX = board.offsetWidth;
+    }
+
+    this.board
+      .attr('width', this.sizeX + 'px');
+  }
+
+  private mounted(): void {
+    this.board = d3.select('#letters').append('svg');
+
+    this.renderLetters();
   }
 }
 </script>
 
 <style>
 #letters {
-  margin-top: 1rem;
+  width: 30%;
+
+  margin: 1rem auto;
   -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
      -khtml-user-select: none; /* Konqueror HTML */
