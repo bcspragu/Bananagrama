@@ -7,12 +7,12 @@ import { Component, Vue } from 'vue-property-decorator';
 import * as d3 from 'd3';
 import {BaseType, Selection} from 'd3';
 
-import {Cell, Orientation, Word, Placement, Match} from '@/data';
+import {Cell, Orientation, Word, PlacedWord, Placement, Match} from '@/data';
 
 
 @Component
 export default class Board extends Vue {
-  private placedWords: Word[] = [];
+  private placedWords: PlacedWord[] = [];
 
   // Temporary variables used for suggestions.
   private currentWord = '';
@@ -29,7 +29,13 @@ export default class Board extends Vue {
   public placeCurrentWord(): void {
     const fit = this.currentFit;
     if (fit) {
-      this.normalizeAndAdd({word: this.currentWord, x: fit.x, y: fit.y, orientation: fit.orientation});
+      this.normalizeAndAdd({
+        word: this.currentWord,
+        x: fit.x,
+        y: fit.y,
+        orientation: fit.orientation,
+        suggestion: false,
+      });
 
       this.currentWord = '';
       this.lastFits = [];
@@ -40,6 +46,7 @@ export default class Board extends Vue {
   }
 
   public suggestPlacement(word: string): string[] {
+    word = word.toUpperCase();
     this.fitIndex = 0;
     this.currentWord = word;
 
@@ -51,15 +58,11 @@ export default class Board extends Vue {
         {x: 0, y: 0, orientation: Orientation.Vertical},
       ];
       this.renderBoard();
-      // TODO: Return the real letters required. For this, it's all of them.
-      return [];
+      return word.split('').map((l) => l.toUpperCase());
     }
 
     this.lastFits = this.findFits(word);
-    this.renderBoard();
-
-    // TODO: Return the real letters required.
-    return [];
+    return this.renderBoard();
   }
 
   public nextSuggestion(): string[] {
@@ -76,13 +79,10 @@ export default class Board extends Vue {
     }
 
     this.fitIndex = (this.fitIndex + offset) % this.lastFits.length;
-    this.renderBoard();
-
-    // TODO: Return the real letters required.
-    return [];
+    return this.renderBoard();
   }
 
-  private normalizeAndAdd(word: Word): void {
+  private normalizeAndAdd(word: PlacedWord): void {
     let offsetX = 0;
     let offsetY = 0;
     if (word.x < 0) {
@@ -139,7 +139,7 @@ export default class Board extends Vue {
     // Build up a mapping of letters in our word to the index(es) they appear
     // at.
     const letters: { [s: string]: number[]; } = {};
-    const board = this.board;
+    const board = this.board.board;
     for (let i = 0; i < word.length; i++) {
       const c = word.charAt(i);
       if (letters[c] === undefined) {
@@ -347,7 +347,7 @@ export default class Board extends Vue {
     return locs;
   }
 
-  get board(): string[][] {
+  get board(): {board: string[][], requiredLetters: string[]} {
     let maxX = 0;
     let maxY = 0;
     for (const word of this.placedWords) {
@@ -370,7 +370,7 @@ export default class Board extends Vue {
     }
 
     if (maxX === 0 && maxY === 0) {
-      return [['']];
+      return {board: [['']], requiredLetters: []};
     }
 
     const board = new Array();
@@ -381,7 +381,13 @@ export default class Board extends Vue {
       }
     }
 
+    let suggestedWord: PlacedWord | null = null;
     for (const word of this.placedWords) {
+      if (word.suggestion) {
+        suggestedWord = word;
+        continue;
+      }
+
       let inc: () => void = () => { /* Blank until orientation is looked at */};
       let x = word.x;
       let y = word.y;
@@ -399,10 +405,21 @@ export default class Board extends Vue {
       }
     }
 
-    return board;
+    const reqLetters: string[] = [];
+    if (suggestedWord) {
+      const poses = this.wordToPositions(suggestedWord);
+      for (const pos of poses) {
+        if (board[pos.x][pos.y] === '') {
+          reqLetters.push(pos.letter);
+        }
+        board[pos.x][pos.y] = pos.letter;
+      }
+    }
+
+    return {board, requiredLetters: reqLetters};
   }
 
-  private renderBoard(): void {
+  private renderBoard(): string[] {
     this.resizeSVG();
     const board = this.dataFromBoard();
 
@@ -447,17 +464,27 @@ export default class Board extends Vue {
         .style('font-size', (d: any) => {
           return board.cellSize * 0.7 + 'px';
         });
+
+    return board.requiredLetters;
   }
 
-  private dataFromBoard(): {cellSize: number, cellRadius: number, data: Cell[][]} {
+  private dataFromBoard(): {cellSize: number, cellRadius: number, requiredLetters: string[], data: Cell[][]} {
     const data: Cell[][] = new Array();
 
     const fit = this.currentFit;
     if (fit) {
-      this.normalizeAndAdd({word: this.currentWord, x: fit.x, y: fit.y, orientation: fit.orientation});
+      this.normalizeAndAdd({
+        word: this.currentWord,
+        x: fit.x,
+        y: fit.y,
+        orientation: fit.orientation,
+        suggestion: true,
+      });
     }
 
-    const board = this.board;
+    const boardResp = this.board;
+    const board = boardResp.board;
+
     const boardX = board.length + 2;
     const boardY = board[0].length + 2;
 
@@ -511,7 +538,7 @@ export default class Board extends Vue {
       this.removeLastAndNormalize();
     }
 
-    return {cellSize: size, cellRadius: 5, data};
+    return {cellSize: size, cellRadius: 5, requiredLetters: boardResp.requiredLetters, data};
   }
 }
 

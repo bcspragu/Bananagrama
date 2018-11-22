@@ -34,6 +34,8 @@ export default class UnusedLetters extends Vue {
     const letters = this.board.selectAll('g')
       .data(this.letters);
 
+    letters.exit().remove();
+
     const newLetters = letters.enter().append('g');
 
     newLetters.append('rect');

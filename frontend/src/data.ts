@@ -23,6 +23,14 @@ export interface Match {
   orientation: Orientation;
 }
 
+export interface PlacedWord {
+  x: number;
+  y: number;
+  orientation: Orientation;
+  word: string;
+  suggestion: boolean;
+}
+
 export interface Word {
   x: number;
   y: number;

@@ -1,10 +1,13 @@
 <template>
   <div class="board">
+
     <Board ref="board"/>
     <UnusedLetters v-if="letters" ref="hand" :letters="letters" />
+
     <input v-model="word">
     <button @click="getSuggestions">Suggest</button>
     <button @click="place">Place</button>
+    <div>{{required}}</div>
   </div>
 </template>
 
@@ -37,8 +40,47 @@ export default class Home extends Vue {
     this.hand = (this.$refs.hand as UnusedLetters);
 
     this.letters = this.randomLetters(20);
+    this.letters.sort((a, b) => a.letter > b.letter ? 1 : (a.letter < b.letter ? -1 : 0));
 
     document.addEventListener('keyup', this.keyup);
+  }
+
+  get required(): string {
+    return this.requiredLetters.join(', ') + `, you're missing ` + this.missing.join(', ');
+  }
+
+  private requiredCount(): { [s: string]: number; } {
+    const need: { [s: string]: number; } = {};
+    for (const letter of this.requiredLetters) {
+      if (need[letter] === undefined) {
+        need[letter] = 0;
+      }
+      need[letter]++;
+    }
+    return need;
+  }
+
+  get missing(): string[] {
+    const need = this.requiredCount();
+
+    for (const letter of this.letters) {
+      if (need[letter.letter] !== undefined) {
+        need[letter.letter]--;
+      }
+    }
+
+    const missing: string[] = [];
+    Object.entries(need).forEach(([letter, count]) => {
+      if (count <= 0) {
+        return;
+      }
+
+      for (let i = 0; i < count; i++) {
+        missing.push(letter);
+      }
+    });
+
+    return missing;
   }
 
   private destroy(): void {
@@ -61,15 +103,9 @@ export default class Home extends Vue {
     // Escape
     if (e.keyCode === 27) {
       this.clearSelected();
+      this.word = '';
       return;
     }
-
-    // Any non-character.
-    if (e.keyCode < 65 || e.keyCode > 90) {
-      return;
-    }
-
-    this.selectIfExists(e.key.toUpperCase());
 
     e.stopPropagation();
   }
@@ -107,9 +143,36 @@ export default class Home extends Vue {
   }
 
   private place(): void {
+    if (this.missing.length > 0) {
+      return;
+    }
+
     this.board.placeCurrentWord();
 
+    const toRemove = this.requiredCount();
+    const indicesToRemove: number[] = [];
+
+    for (let i = this.letters.length - 1; i >= 0; i--) {
+      const l = this.letters[i].letter;
+      if (toRemove[l] !== undefined && toRemove[l] > 0) {
+        indicesToRemove.push(i);
+        this.letters[i].selected = true;
+        toRemove[l]--;
+      }
+    }
+
+    this.hand.renderLetters();
     this.requiredLetters = [];
+    this.word = '';
+
+    window.setTimeout(() => {
+      for (const idx of indicesToRemove) {
+        this.letters.splice(idx, 1);
+      }
+      this.letters.push(...this.randomLetters(indicesToRemove.length));
+      this.letters.sort((a, b) => a.letter > b.letter ? 1 : (a.letter < b.letter ? -1 : 0));
+      this.hand.renderLetters();
+    }, 500);
   }
 
   private prev(): void {
