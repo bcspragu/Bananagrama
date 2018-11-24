@@ -1,11 +1,11 @@
-package engine
+package banana
 
 import (
 	"math/rand"
 	"testing"
 )
 
-func TestNewBunch(t *testing.T) {
+func TestTilesFromDistribution(t *testing.T) {
 	wantDistribution := map[Letter]int{
 		'a': 13000,
 		'b': 3000,
@@ -34,10 +34,13 @@ func TestNewBunch(t *testing.T) {
 		'y': 3000,
 		'z': 2000,
 	}
-	b := NewBunch()
+
+	tiles, err := tilesFromDistribution(Scrabble(), 1000)
+	if err != nil {
+		t.Fatalf("tilesFromDistribution: %v", err)
+	}
 	for letter, want := range wantDistribution {
-		got := b.Freq(letter)
-		if got != want {
+		if got := tiles.Freq(letter); got != want {
 			t.Errorf("tiles[%c]: got %d, want %d", letter, got, want)
 		}
 	}
@@ -72,11 +75,14 @@ func TestTileExhaustsAll(t *testing.T) {
 		'y': 3000,
 		'z': 2000,
 	}
-	b := NewBunch()
-	b.rand = rand.New(rand.NewSource(0))
+	b := newBunch(t, rand.New(rand.NewSource(0)), Scrabble(), 1000)
 	// Exhaust all 144000 tiles, make sure we have none left at the end
 	for i := 0; i < 144000; i++ {
-		wantDistribution[b.Tile()]--
+		l, err := b.Tile()
+		if err != nil {
+			t.Fatalf("Tile(): %v", err)
+		}
+		wantDistribution[l]--
 	}
 
 	// We should have gone through all of our tiles
@@ -117,11 +123,28 @@ func TestTileNExhaustsAll(t *testing.T) {
 		'y': 3000,
 		'z': 2000,
 	}
-	b := NewBunch()
-	b.rand = rand.New(rand.NewSource(0))
+	b := newBunch(t, rand.New(rand.NewSource(0)), Scrabble(), 1000)
 	// Exhaust all 144000 tiles, make sure we have none left at the end
-	for i, f := range b.TileN(144000) {
-		wantDistribution[letter(i)] -= f
+	tiles, err := b.RemoveN(144000)
+	if err != nil {
+		t.Fatalf("RemoveN: %v", err)
+	}
+	for l, freq := range tiles.freq {
+		wantDistribution[l] -= freq
+	}
+
+	// Make sure it fails when we remove another one.
+	if _, err := b.RemoveN(1); err == nil {
+		t.Error("RemoveN should have failed removing letter after exhausting all of them")
+	}
+
+	// Make sure it fails when we ask for a tile..
+	l, err := b.Tile()
+	if err == nil {
+		t.Error("Tile should have failed after exhausting all of them")
+	}
+	if l != noLetter {
+		t.Errorf("Tile = %q, want no letter", l)
 	}
 
 	// We should have gone through all of our tiles
@@ -191,11 +214,14 @@ func TestTileDistribution(t *testing.T) {
 		'y': 0,
 		'z': 0,
 	}
-	b := NewBunch()
-	b.rand = rand.New(rand.NewSource(0))
+	b := newBunch(t, rand.New(rand.NewSource(0)), Scrabble(), 1000)
 	// Get 20,000 tiles, check the distribution is what we'd expect
 	for i := 0; i < 20000; i++ {
-		gotDistribution[b.Tile()]++
+		l, err := b.Tile()
+		if err != nil {
+			t.Fatalf("Tile(): %v", err)
+		}
+		gotDistribution[l]++
 	}
 
 	for letter, count := range gotDistribution {
@@ -206,7 +232,7 @@ func TestTileDistribution(t *testing.T) {
 		diff := abs(want-got) / ((want + got) / 2)
 		// If the difference is more than 10%, fail
 		if diff > 0.1 {
-			t.Errorf("letter %c: got %f, want %f, diff: %f%", letter, got, want, diff*100)
+			t.Errorf("letter %q: got %f, want %f, diff: %f%%", letter, got, want, diff*100)
 		}
 	}
 }
@@ -269,11 +295,14 @@ func TestTileNDistribution(t *testing.T) {
 		'y': 0,
 		'z': 0,
 	}
-	b := NewBunch()
-	b.rand = rand.New(rand.NewSource(0))
+	b := newBunch(t, rand.New(rand.NewSource(0)), Scrabble(), 1000)
 	// Get 20,000 tiles, check the distribution is what we'd expect
-	for i, f := range b.TileN(20000) {
-		gotDistribution[letter(i)] = f
+	tiles, err := b.RemoveN(20000)
+	if err != nil {
+		t.Fatalf("RemoveN: %v", err)
+	}
+	for l, freq := range tiles.freq {
+		gotDistribution[l] = freq
 	}
 
 	for letter, count := range gotDistribution {
@@ -287,6 +316,48 @@ func TestTileNDistribution(t *testing.T) {
 			t.Errorf("letter %c: got %f, want %f, diff: %f%%", letter, got, want, diff*100)
 		}
 	}
+}
+
+func TestCount(t *testing.T) {
+	b := newBunch(t, rand.New(rand.NewSource(0)), Scrabble(), 1000)
+	if got, want := b.Count(), 144000; got != want {
+		t.Errorf("Count: %d, want %d", got, want)
+	}
+}
+
+func TestNewBunchErrors(t *testing.T) {
+	tests := []struct {
+		scale   int
+		wantErr bool
+	}{
+		{-10, true},
+		{-1, true},
+		{0, true},
+		{1, false},
+		{10, false},
+	}
+
+	for _, test := range tests {
+		_, err := NewBunch(rand.New(rand.NewSource(00)), Scrabble(), test.scale)
+		if test.wantErr {
+			if err == nil {
+				t.Error("error expected, none was returned")
+			}
+			continue
+		}
+
+		if err != nil {
+			t.Errorf("NewBunch: %v", err)
+		}
+	}
+}
+
+func newBunch(t *testing.T, r *rand.Rand, dist Distribution, scale int) *Bunch {
+	b, err := NewBunch(r, dist, scale)
+	if err != nil {
+		t.Fatalf("NewBunch: %v", err)
+	}
+	return b
 }
 
 func abs(x float64) float64 {

@@ -1,131 +1,11 @@
-package engine
+package banana
 
 import (
 	"bytes"
 	"sort"
 )
 
-type Orientation int
-
-const (
-	None Orientation = iota
-	Horizontal
-	Vertical
-)
-
-type BoardStatus struct {
-	Code   BoardStatusCode
-	Errors []string
-}
-
-type BoardStatusCode int
-
-const (
-	Success BoardStatusCode = iota
-	InvalidWord
-	DetachedBoard
-	NotAllLetters
-	ExtraLetters
-	InvalidBoard
-)
-
-const (
-	CharacterSetSize = 26
-	// Because of how tricky this indexing stuff is, LetterOffset should only be
-	// used inside FreqList
-	LetterOffset = 'a'
-)
-
-type byX []Word
-
-type Letter rune
-
-func (l Letter) isValid() bool {
-	return 'a' <= l && l <= 'z'
-}
-
-func (l Letter) String() string {
-	return string([]rune{rune(l)})
-}
-
-type FreqList [CharacterSetSize]int
-
-func (f *FreqList) Freq(l Letter) int {
-	if l.isValid() {
-		return f[l-LetterOffset]
-	}
-	return 0
-}
-
-func (f *FreqList) Add(o FreqList) {
-	for letterIndex, freq := range o {
-		f[letterIndex] += freq
-	}
-}
-
-func (f *FreqList) Dec(l Letter) {
-	if l.isValid() {
-		f[l-LetterOffset]--
-	}
-}
-
-func (f *FreqList) Inc(l Letter) {
-	if l.isValid() {
-		f[l-LetterOffset]++
-	}
-}
-
-func (f *FreqList) AsList() []string {
-	s := make([]string, f.Count())
-	i := 0
-	for letterIndex, freq := range f {
-		l := letter(letterIndex).String()
-		for j := 0; j < freq; j++ {
-			s[i] = l
-			i++
-		}
-	}
-	return s
-}
-
-func letter(i int) Letter {
-	return Letter(i + LetterOffset)
-}
-
-func (f *FreqList) Count() int {
-	total := 0
-	for _, freq := range f {
-		total += freq
-	}
-	return total
-}
-
-func (f *FreqList) Set(l Letter, freq int) {
-	if l.isValid() {
-		f[l-LetterOffset] = freq
-	}
-}
-
-func (x byX) Len() int { return len(x) }
-func (x byX) Less(i, j int) bool {
-	if x[i].Loc.X != x[j].Loc.X {
-		return x[i].Loc.X < x[j].Loc.X
-	}
-	return x[i].Loc.Y < x[j].Loc.Y
-}
-func (x byX) Swap(i, j int) { x[i], x[j] = x[j], x[i] }
-
-type byY []Word
-
-func (y byY) Len() int { return len(y) }
-func (y byY) Less(i, j int) bool {
-	if y[i].Loc.Y != y[j].Loc.Y {
-		return y[i].Loc.Y < y[j].Loc.Y
-	}
-	return y[i].Loc.X < y[j].Loc.X
-}
-func (y byY) Swap(i, j int) { y[i], y[j] = y[j], y[i] }
-
+// Board represents an individual players game board.
 type Board struct {
 	Words      []Word
 	Dictionary Dictionary
@@ -138,6 +18,7 @@ type Board struct {
 	visitedMap map[Loc]bool
 }
 
+// Word represents the placement of a single word on a Bananagrams board.
 type Word struct {
 	Orientation Orientation
 	Text        string
@@ -218,7 +99,7 @@ func (b *Board) precompute() bool {
 
 // TODO(bsprague): Lowercase words, and check that it only contains
 // alphanumerics, maybe.
-func (b *Board) ValidateBoard(letters FreqList) BoardStatus {
+func (b *Board) ValidateBoard(tiles *Tiles) BoardStatus {
 	// A board is considered valid if:
 	//   - the player used exactly the letters in their hand
 	//   - the words given don't overlap in conflicting ways
@@ -231,7 +112,7 @@ func (b *Board) ValidateBoard(letters FreqList) BoardStatus {
 		return BoardStatus{Code: InvalidBoard}
 	}
 
-	unused, unowned := b.leftover(letters)
+	unused, unowned := b.leftover(tiles)
 	if len(unused) > 0 {
 		return BoardStatus{Code: NotAllLetters, Errors: unused}
 	}
@@ -254,29 +135,38 @@ func (b *Board) ValidateBoard(letters FreqList) BoardStatus {
 	return BoardStatus{Code: Success}
 }
 
-func (b *Board) getDiff(letters FreqList) FreqList {
-	cp := letters
+func (b *Board) diff(tiles *Tiles) *Tiles {
+	cp := tiles.clone()
 	for _, letter := range b.letterMap {
 		cp.Dec(letter)
 	}
 	return cp
 }
 
-func (b *Board) leftover(letters FreqList) (notUsed, notOwned []string) {
+func (b *Board) leftover(tiles *Tiles) (notUsed, notOwned []string) {
 	// If diff is greater than zero, it means they didn't use all of that letter in their hand
 	// If diff is less than zero, it means they used more than they had
-	for i, freq := range b.getDiff(letters) {
+	d := b.diff(tiles)
+	for l, freq := range d.freq {
 		if freq > 0 {
-			notUsed = append(notUsed, letter(i).String())
-		} else if freq < 0 {
-			notOwned = append(notOwned, letter(i).String())
+			notUsed = append(notUsed, l.String())
+			continue
+		}
+		if freq < 0 {
+			notOwned = append(notOwned, l.String())
+			continue
 		}
 	}
+	sort.Slice(notUsed, func(i, j int) bool { return notUsed[i] < notUsed[j] })
+	sort.Slice(notOwned, func(i, j int) bool { return notOwned[i] < notOwned[j] })
 	return notUsed, notOwned
 }
 
-func (b *Board) containsExactly(letters FreqList) bool {
-	for _, freq := range b.getDiff(letters) {
+func (b *Board) containsExactly(tiles *Tiles) bool {
+	// TODO: This could probably be written more directly by just comparing
+	// b.letterMap and tiles.
+	d := b.diff(tiles)
+	for _, freq := range d.freq {
 		if freq != 0 {
 			return false
 		}
@@ -374,15 +264,18 @@ func findWordsInSequence(cls []CharLoc, f func(Loc) int) []string {
 	return strs
 }
 
-func StartingTileCount(pc int) int {
+func StartingTileCount(pc, scale int) int {
 	var tc int
-	switch {
-	case pc < 4:
+	switch pc {
+	case 1, 2, 3, 4:
 		tc = 21
-	case pc < 6:
+	case 5, 6:
 		tc = 15
-	case pc < 8:
-		tc = 12
+	case 7, 8:
+		tc = 11
+	default:
+		// Default to 11, if we for some reason have more than 8 people...or zero.
+		tc = 11
 	}
-	return tc * TileScalingFactor
+	return tc * scale
 }
