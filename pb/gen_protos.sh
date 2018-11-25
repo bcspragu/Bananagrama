@@ -13,5 +13,6 @@ docker run --rm \
     --plugin="protoc-gen-ts=/project/bin/protoc-gen-ts" \
     --proto_path="/project/proto" \
     --go_out=plugins=grpc:/project/proto \
-    --ts_out="/project/proto"
-mv $DIR/banana_pb.d.ts $DIR/../frontend/src
+    --ts_out=service=true:"/project/proto"
+mv $DIR/banana_pb.d.ts $DIR/banana_pb_service.d.ts $DIR/../frontend/src
+rm banana_pb_service.js
