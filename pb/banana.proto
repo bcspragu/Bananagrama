@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+option go_package = "pb";
+
+message Tiles {
+  // Tiles are just lists of letters
+  repeated string letters = 1;
+}
+
+service BananaService {
+  rpc NewGame(NewGameRequest) returns (NewGameResponse);
+  rpc JoinGame(JoinGameRequest) returns (stream GameUpdate);
+  rpc Dump(DumpRequest) returns (DumpResponse);
+}
+
+message NewGameRequest {
+  // What to name the game.
+  string name = 1;
+  // How to scale the number of tile in the game.
+  int32 scale_factor = 2;
+}
+
+message NewGameResponse {
+  // The unique identifier for the game.
+  string id = 1;
+}
+
+message JoinGameRequest {
+  // The unique identifier for the game to join.
+  string id = 1;
+  // The name of the player joining the game.
+  string name = 2;
+}
+
+message GameUpdate {
+  oneof update {
+    // Player updates happen when people join or leave a game.
+    PlayerUpdate player_update = 1;
+    // Status updates happen when a game starts or ends.
+    StatusUpdate status_update = 2;
+    // Tile updates happen whenever the player's set of tiles changes, like at
+    // the start of a game, when someone peels, or when the player dumps.
+    TileUpdate tile_update = 3;
+  }
+}
+
+message PlayerUpdate {
+  repeated Player players = 1;
+}
+
+message Player {
+  string name = 1;
+}
+
+message StatusUpdate {
+  enum Status {
+    UNKNOWN = 0;
+    GAME_STARTED = 1;
+    GAME_OVER = 2;
+  }
+  Status status = 1;
+}
+
+message TileUpdate {
+  Tiles all_tiles = 1;
+}
+
+message DumpRequest {
+  // The unique identifier for the game you're
+  // dumping in.
+  string id = 1;
+}
+
+message DumpResponse { }

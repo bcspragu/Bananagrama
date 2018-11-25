@@ -1,23 +1,23 @@
-// Copyright 2013 The Gorilla WebSocket Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package main
 
 import (
+	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"html/template"
 	"log"
 	"math/rand"
+	"net"
 	"net/http"
 	"os"
 	txt "text/template"
 	"time"
 
-	"github.com/bcspragu/Bananagrama/engine"
-	"github.com/gorilla/mux"
+	"github.com/bcspragu/Bananagrama/banana"
+	"github.com/bcspragu/Bananagrama/pb"
 	"github.com/gorilla/securecookie"
+	"github.com/improbable-eng/grpc-web/go/grpcweb"
 )
 
 var (
@@ -31,7 +31,7 @@ var (
 	hub              *Hub
 	db               datastore
 	s                *securecookie.SecureCookie
-	dict             engine.Dictionary
+	dict             banana.Dictionary
 )
 
 func main() {
@@ -74,41 +74,32 @@ func main() {
 		panic(err)
 	}
 
-	dict = engine.NewDictionary(f)
+	dict = banana.NewDictionary(f)
 	rand.Seed(time.Now().UnixNano())
 
-	globalAIEndpoint, err = startAIEndpoint(*apiAddr)
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
-		log.Fatal("AI RPC endpoint failed to start:", err)
+		log.Fatalf("failed to listen: %v", err)
 	}
 
-	r := mux.NewRouter()
+	grpcSrv := grpc.NewServer()
+	pb.RegisterBananaServiceServer(grpcServer, &server{})
+	grpcSrv.Serve(lis)
 
-	r.HandleFunc("/", serveHome).Methods("GET")
-	r.HandleFunc("/startGame", startGame).Methods("GET")
-	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		serveWs(hub, w, r)
-	})
-
-	if *env == "dev" {
-		http.Handle("/js/", http.StripPrefix("/js/", http.FileServer(http.Dir("./js"))))
-		http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("./css"))))
-	}
-
-	http.Handle("/", r)
-
-	err = http.ListenAndServe(*addr, nil)
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
-	}
+	wrappedGRPC := grpcweb.WrapServer(grpcSrv)
+	http.ListenAndServe(*addr, wrappedGRPC)
 }
 
-func startGame(w http.ResponseWriter, r *http.Request) {
-	if r.PostFormValue("password") == password {
-		fmt.Fprint(w, "key not set")
-		return
-	}
-	if err := globalAIEndpoint.startGame(); err != nil {
-		fmt.Fprintf(w, "failed to start game: %v", err)
-	}
+type server struct{}
+
+func (s *server) NewGame(ctx context.Context, req *pb.NewGameRequest) (*pb.NewGameResponse, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (s *server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinGameServer) error {
+	return nil
+}
+
+func (s *server) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.DumpResponse, error) {
+	return nil, errors.New("not implemented")
 }

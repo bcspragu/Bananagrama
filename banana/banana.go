@@ -1,6 +1,19 @@
 // Package banana contains the domain types for playing a game of Bananagrams.
 package banana
 
+type DB interface {
+	// Games
+	StartGame(players map[string]*Tiles) (matchID, error)
+	AddPeel(potassium.Peel) error
+	AddDump(potassium.Dump) error
+	finishGame(playerScores map[string]int) error
+
+	lookupGame(id matchID) (potassium.Replay, error)
+	matchIDs() ([]matchID, error)
+
+	Close() error
+}
+
 // Orientation describes how a board is placed on the board.
 type Orientation int
 

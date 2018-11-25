@@ -5,16 +5,15 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
 	"sort"
 	"sync"
 	"time"
 
+	"github.com/bcspragu/Bananagrama/banana"
+	"github.com/bcspragu/Bananagrama/pb"
 	capnp "zombiezen.com/go/capnproto2"
-	"zombiezen.com/go/capnproto2/rpc"
-
-	"github.com/bcspragu/Bananagrama/engine"
-	"github.com/bcspragu/Bananagrama/potassium"
 )
 
 // baseAction is the base of every message we send to the client over
@@ -44,7 +43,7 @@ const (
 
 // aiEndpoint listens for new connections, and handles the game
 type aiEndpoint struct {
-	bunch    *engine.Bunch
+	bunch    *banana.Bunch
 	peelChan chan *peelInfo
 
 	// Fields below are protected by mu
@@ -75,7 +74,7 @@ func (e *aiEndpoint) processPeels() {
 		// Wait for requests to come in
 		// TODO(bsprague): *Maybe* dynamically set the sleep time based on client ping times
 		time.Sleep(time.Millisecond * 20)
-		peelers := make(map[string]potassium.Board)
+		peelers := make(map[string]*pb.Board)
 		for len(e.peelChan) > 0 {
 			p := <-e.peelChan
 			peelers[p.player] = p.board
@@ -100,9 +99,11 @@ func (e *aiEndpoint) startGame() error {
 	}
 
 	// Hand out the initial tiles.
-	tc := engine.StartingTileCount(len(e.connected))
+	// TODO: Update scaling factor appropriately, or at least move it out to the
+	// right place.
+	tc := banana.StartingTileCount(len(e.connected), 1)
 
-	// tc is on the order of engine.TileScalingFactor, so this is actually kind of large
+	// tc is on the order of banana.TileScalingFactor, so this is actually kind of large
 	for _, game := range e.connected {
 		game.mu.Lock()
 		game.tiles.Add(e.bunch.TileN(tc))
@@ -114,7 +115,7 @@ func (e *aiEndpoint) startGame() error {
 	// Now that we've doled out the tiles, send each player a SPLIT request and
 	// give them the tiles we just decided on
 	for _, game := range e.connected {
-		go game.player.Split(context.Background(), func(req potassium.SplitRequest) error {
+		go game.player.Split(context.Background(), func(req *pb.SplitRequest) error {
 			game.mu.RLock()
 			tiles, err := tilesToWire(game.tiles)
 			game.mu.RUnlock()
@@ -148,7 +149,7 @@ func (e *aiEndpoint) startGame() error {
 
 // addSuccessfulPeels sends PeelSize tiles to all players after one or more
 // successful peels are received in a given receive window
-func (e *aiEndpoint) addSuccessfulPeels(peelers map[string]potassium.Board) error {
+func (e *aiEndpoint) addSuccessfulPeels(peelers map[string]*pb.Board) error {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
@@ -164,7 +165,7 @@ func (e *aiEndpoint) addSuccessfulPeels(peelers map[string]potassium.Board) erro
 		for _, game := range e.connected {
 			scores[game.player.name] = game.score
 			// Tell everyone we're done here
-			go game.player.GameOver(context.Background(), func(req potassium.Player_gameOver_Params) error { return nil })
+			go game.player.GameOver(context.Background(), func(req *pb.Player_gameOver_Params) error { return nil })
 		}
 		e.gameStarted = false
 		if err := db.finishGame(scores); err != nil {
@@ -174,8 +175,8 @@ func (e *aiEndpoint) addSuccessfulPeels(peelers map[string]potassium.Board) erro
 	}
 
 	// If we're here, it wasn't the final peel
-	newTiles := make(map[string]engine.FreqList)
-	wireTiles := make(map[string]capnp.TextList)
+	newTiles := make(map[string]*banana.Tiles)
+	wireTiles := make(map[string]*pb.Tiles)
 
 	// Dole out new tiles from the bunch into each player's hand
 	for name, game := range e.connected {
@@ -201,7 +202,7 @@ func (e *aiEndpoint) addSuccessfulPeels(peelers map[string]potassium.Board) erro
 	// Send out the new tile requests in a separate step, to minimize the delay
 	// between players getting the new tiles due to wire conversion
 	for name, game := range e.connected {
-		go game.player.NewTile(context.Background(), func(req potassium.NewTileRequest) error {
+		go game.player.NewTile(context.Background(), func(req *pb.NewTileRequest) error {
 			err = req.SetPeelers(pl)
 			if err != nil {
 				return fmt.Errorf("sending newTile: error setting peelers %v: %v", pl, err)
@@ -224,7 +225,7 @@ func (e *aiEndpoint) addSuccessfulPeels(peelers map[string]potassium.Board) erro
 	}
 
 	// Create the peel
-	p, err := potassium.NewRootPeel(seg)
+	p, err := *pb.NewRootPeel(seg)
 	if err != nil {
 		return fmt.Errorf("saving peel: error making root peel: %v", err)
 	}
@@ -275,7 +276,10 @@ func startAIEndpoint(addr string) (*aiEndpoint, error) {
 	if err != nil {
 		return nil, err
 	}
-	e := &aiEndpoint{connected: make(map[string]*game), bunch: engine.NewBunch()}
+	e := &aiEndpoint{
+		connected: make(map[string]*game),
+		bunch:     banana.NewBunch(rand.New(rand.NewSource(time.Now().UnixNano())), banana.Scrabble(), 1),
+	}
 
 	// Listen for incoming connections
 	go e.listen(l)
@@ -296,7 +300,7 @@ func (e *aiEndpoint) listen(l net.Listener) {
 func (e *aiEndpoint) handleConn(c net.Conn) {
 	// Give the connector a handle to the endpoint, so it can add an AI in a sec
 	aic := &aiConnector{e: e}
-	rc := rpc.NewConn(rpc.StreamTransport(c), rpc.MainInterface(potassium.Server_ServerToClient(aic).Client))
+	rc := rpc.NewConn(rpc.StreamTransport(c), rpc.MainInterface(*pb.Server_ServerToClient(aic).Client))
 	rc.Wait()
 	// End the connection
 	aic.drop()
@@ -307,7 +311,7 @@ type aiConnector struct {
 	game *game
 }
 
-func (c *aiConnector) Connect(call potassium.Server_connect) error {
+func (c *aiConnector) Connect(call *pb.Server_connect) error {
 	req := call.Params
 	resp := call.Results
 
@@ -319,7 +323,7 @@ func (c *aiConnector) Connect(call potassium.Server_connect) error {
 	// If a player is already connected, don't let them connect now
 	if c.game != nil {
 		log.Printf("%s tried to connect again with name %s\n", c.game.player.name, name)
-		resp.SetStatus(potassium.ConnectResponse_Status_yaDoneGoofed)
+		resp.SetStatus(*pb.ConnectResponse_Status_yaDoneGoofed)
 		return nil
 	}
 
@@ -329,7 +333,7 @@ func (c *aiConnector) Connect(call potassium.Server_connect) error {
 		// Despite my warnings, some asshat wanted to pick a long name. Well guess
 		// what, you don't get to play asshole.
 		log.Printf("%s is too long of a name\n", name)
-		resp.SetStatus(potassium.ConnectResponse_Status_nameTooLong)
+		resp.SetStatus(*pb.ConnectResponse_Status_nameTooLong)
 		// TODO(bsprague): IP ban their ass for not following basic instructions,
 		// or ban every prefix of this name. Probably not, but damn.
 		return nil
@@ -337,7 +341,7 @@ func (c *aiConnector) Connect(call potassium.Server_connect) error {
 		// The player sent a blank name. Jesus Christ people, do I have to spell it
 		// out for you?
 		log.Println("Someone connected with a blank name")
-		resp.SetStatus(potassium.ConnectResponse_Status_yaDoneGoofed)
+		resp.SetStatus(*pb.ConnectResponse_Status_yaDoneGoofed)
 		return nil
 	}
 
@@ -347,19 +351,19 @@ func (c *aiConnector) Connect(call potassium.Server_connect) error {
 
 	if c.e.gameStarted {
 		log.Printf("Player %s tried to connect after the game started", name)
-		resp.SetStatus(potassium.ConnectResponse_Status_yaDoneGoofed)
+		resp.SetStatus(*pb.ConnectResponse_Status_yaDoneGoofed)
 		return nil
 	}
 
 	if _, ok := c.e.connected[name]; ok {
 		log.Printf("Name %s is already connected\n", name)
-		resp.SetStatus(potassium.ConnectResponse_Status_nameAlreadyTaken)
+		resp.SetStatus(*pb.ConnectResponse_Status_nameAlreadyTaken)
 		return nil
 	}
 
 	if len(c.e.connected) >= MaxPlayers {
 		log.Printf("%s can't join because the game is full\n", name)
-		resp.SetStatus(potassium.ConnectResponse_Status_gameIsFull)
+		resp.SetStatus(*pb.ConnectResponse_Status_gameIsFull)
 		return nil
 	}
 
@@ -379,8 +383,8 @@ func (c *aiConnector) Connect(call potassium.Server_connect) error {
 	log.Printf("Successfully connected player %s\n", name)
 	// Send the player list to web clients
 	go sendPlayers()
-	resp.SetStatus(potassium.ConnectResponse_Status_success)
-	return resp.SetGame(potassium.Game_ServerToClient(g))
+	resp.SetStatus(*pb.ConnectResponse_Status_success)
+	return resp.SetGame(*pb.Game_ServerToClient(g))
 }
 
 func (c *aiConnector) drop() {
@@ -399,7 +403,7 @@ func (c *aiConnector) drop() {
 }
 
 // This only happens for the initial request
-func tilesToWire(tiles engine.FreqList) (capnp.TextList, error) {
+func tilesToWire(tiles banana.Tiles) (capnp.TextList, error) {
 	_, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
 	if err != nil {
 		return capnp.TextList{}, fmt.Errorf("tileToWire: error creating message: %v", err)
@@ -437,7 +441,7 @@ func sendPlayers() {
 	}
 }
 
-func peelerTL(peelers map[string]potassium.Board) (capnp.TextList, error) {
+func peelerTL(peelers map[string]*pb.Board) (capnp.TextList, error) {
 	_, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
 	if err != nil {
 		return capnp.TextList{}, err
