@@ -1,10 +1,12 @@
 #!/bin/bash
 set -euxo pipefail
 
-docker build -t banana .
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+docker build -t banana $DIR
 docker run --rm \
   -u $(id -u):$(id -g) \
-  -v $PWD:/project/proto \
+  -v $DIR:/project/proto \
   banana protoc \
     -I /project/proto \
     /project/proto/banana.proto \
@@ -12,3 +14,4 @@ docker run --rm \
     --proto_path="/project/proto" \
     --go_out=plugins=grpc:/project/proto \
     --ts_out="/project/proto"
+mv $DIR/banana_pb.d.ts $DIR/../frontend/src
