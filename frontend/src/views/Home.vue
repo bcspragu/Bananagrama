@@ -17,6 +17,12 @@ import Board from '@/components/Board.vue'; // @ is an alias to /src
 import UnusedLetters from '@/components/UnusedLetters.vue'; // @ is an alias to /src
 import {Letter} from '@/data';
 
+import {grpc} from 'grpc-web-client';
+
+// Import code-generated data structures.
+import {BananaService} from '@/proto/banana_pb_service';
+import {NewGameRequest} from '@/proto/banana_pb';
+
 @Component({
   components: {
     Board,
@@ -43,6 +49,19 @@ export default class Home extends Vue {
     this.letters.sort((a, b) => a.letter > b.letter ? 1 : (a.letter < b.letter ? -1 : 0));
 
     document.addEventListener('keyup', this.keyup);
+
+    const req = new NewGameRequest();
+    req.setName('new game');
+    grpc.unary(BananaService.NewGame, {
+      request: req,
+      host: 'localhost:8080',
+      onEnd: (res) => {
+        const { status, statusMessage, headers, message, trailers } = res;
+        if (status === grpc.Code.OK && message) {
+          console.log('all ok. got resp: ', message.toObject());
+        }
+      },
+    });
   }
 
   get required(): string {
