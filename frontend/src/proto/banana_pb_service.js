@@ -4,7 +4,7 @@
 var banana_pb = require("./banana_pb");
 var grpc = require("grpc-web-client").grpc;
 
-var BananaService = (function () {
+export var BananaService = (function () {
   function BananaService() {}
   BananaService.serviceName = "BananaService";
   return BananaService;
@@ -37,9 +37,8 @@ BananaService.Dump = {
   responseType: banana_pb.DumpResponse
 };
 
-exports.BananaService = BananaService;
 
-function BananaServiceClient(serviceHost, options) {
+export function BananaServiceClient(serviceHost, options) {
   this.serviceHost = serviceHost;
   this.options = options || {};
 }
@@ -145,5 +144,4 @@ BananaServiceClient.prototype.dump = function dump(requestMessage, metadata, cal
   };
 };
 
-exports.BananaServiceClient = BananaServiceClient;
 

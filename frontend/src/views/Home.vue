@@ -17,10 +17,8 @@ import Board from '@/components/Board.vue'; // @ is an alias to /src
 import UnusedLetters from '@/components/UnusedLetters.vue'; // @ is an alias to /src
 import {Letter} from '@/data';
 
-import {grpc} from 'grpc-web-client';
-
 // Import code-generated data structures.
-import {BananaService} from '@/proto/banana_pb_service';
+import {BananaServiceClient} from '@/proto/banana_pb_service';
 import {NewGameRequest} from '@/proto/banana_pb';
 
 @Component({
@@ -50,18 +48,10 @@ export default class Home extends Vue {
 
     document.addEventListener('keyup', this.keyup);
 
+    const client = new BananaServiceClient('/api');
     const req = new NewGameRequest();
     req.setName('new game');
-    grpc.unary(BananaService.NewGame, {
-      request: req,
-      host: 'localhost:8080',
-      onEnd: (res) => {
-        const { status, statusMessage, headers, message, trailers } = res;
-        if (status === grpc.Code.OK && message) {
-          console.log('all ok. got resp: ', message.toObject());
-        }
-      },
-    });
+    client.newGame(req, (resp, err) => {console.log('HAYYO', resp, err);});
   }
 
   get required(): string {
