@@ -4,29 +4,27 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/bcspragu/Bananagrama/engine"
-	"github.com/bcspragu/Bananagrama/potassium"
+	"github.com/bcspragu/Bananagrama/banana"
 	capnp "zombiezen.com/go/capnproto2"
 )
 
 var (
-	wireOrientationMap = map[potassium.Word_Orientation]engine.Orientation{
-		potassium.Word_Orientation_unknown:    engine.None,
-		potassium.Word_Orientation_horizontal: engine.Horizontal,
-		potassium.Word_Orientation_vertical:   engine.Vertical,
+	wireOrientationMap = map[pb.Word_Orientation]banana.Orientation{
+		pb.Word_UNKNOWN:    banana.None,
+		pb.Word_HORIZONTAL: banana.Horizontal,
+		pb.Word_VERTICAL:   banana.Vertical,
 	}
 
-	engineStatusMap = map[engine.BoardStatusCode]potassium.PeelResponse_Status{
-		engine.Success:       potassium.PeelResponse_Status_success,
-		engine.InvalidWord:   potassium.PeelResponse_Status_invalidWord,
-		engine.DetachedBoard: potassium.PeelResponse_Status_detachedBoard,
-		engine.NotAllLetters: potassium.PeelResponse_Status_notAllLetters,
-		engine.ExtraLetters:  potassium.PeelResponse_Status_extraLetters,
+	engineStatusMap = map[banana.BoardStatusCode]pb.PeelResponse_Status{
+		banana.Success:       pb.PeelResponse_SUCCESS,
+		banana.InvalidWord:   pb.PeelResponse_INVALID_WORD,
+		banana.DetachedBoard: pb.PeelResponse_DETACHED_BOARD,
+		banana.NotAllLetters: pb.PeelResponse_NOT_ALL_LETTERS,
+		banana.ExtraLetters:  pb.PeelResponse_EXTRA_LETTERS,
 	}
 )
 
 type player struct {
-	potassium.Player
 	name string
 }
 
@@ -35,82 +33,11 @@ type game struct {
 
 	mu     sync.RWMutex
 	score  int
-	tiles  engine.FreqList
+	tiles  banana.Tiles
 	player *player
 }
 
 func (g *game) Peel(call potassium.Game_peel) error {
-	req := call.Params
-	resp := call.Results
-
-	g.e.mu.Lock()
-	if !g.e.gameStarted {
-		resp.SetStatus(potassium.PeelResponse_Status_gameNotStarted)
-		g.e.mu.Unlock()
-		return nil
-	}
-	g.e.mu.Unlock()
-
-	// Load board player sent us
-	wb, err := req.Board()
-	if err != nil {
-		return err
-	}
-
-	// Convert the board to a friendlier format
-	b, err := boardFromWire(wb)
-	if err != nil {
-		return err
-	}
-
-	// Check if the board they sent is valid
-	g.mu.RLock()
-	status := b.ValidateBoard(g.tiles)
-	g.mu.RUnlock()
-
-	// Convert the status to the wire format
-	resp.SetStatus(engineStatusMap[status.Code])
-	// If our error code came with some errors, drop those bad boys into the response
-	if len(status.Errors) > 0 {
-		_, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
-		if err != nil {
-			return err
-		}
-		tl, err := capnp.NewTextList(seg, int32(len(status.Errors)))
-		if err != nil {
-			return err
-		}
-
-		for i, wordErrs := range status.Errors {
-			err = tl.Set(i, wordErrs)
-			if err != nil {
-				return fmt.Errorf("receiving peel: error setting errors %v: %v", wordErrs, err)
-			}
-		}
-		switch status.Code {
-		case engine.NotAllLetters:
-			err = resp.SetNotAllLetters(tl)
-		case engine.ExtraLetters:
-			err = resp.SetExtraLetters(tl)
-		case engine.InvalidWord:
-			err = resp.SetInvalidWord(tl)
-		}
-
-		if err != nil {
-			return fmt.Errorf("receiving peel: error setting response errors: %v", err)
-		}
-	}
-
-	// If the board was valid, increment the players score and let them know waz good
-	if status.Code == engine.Success {
-		// Send the peel data over for persistence/sending to clients
-		g.e.peelChan <- &peelInfo{
-			player: g.player.name,
-			board:  wb,
-		}
-	}
-
-	return nil
 }
 
 type peelInfo struct {
@@ -142,7 +69,7 @@ func (g *game) Dump(call potassium.Game_dump) error {
 		return nil
 	}
 
-	letter := engine.Letter(l[0])
+	letter := banana.Letter(l[0])
 
 	// We don't have enough tiles to give them
 	if g.e.bunch.Count() < DumpSize {
@@ -165,7 +92,7 @@ func (g *game) Dump(call potassium.Game_dump) error {
 	// Take the shit letter from them
 	g.tiles.Dec(letter)
 	// Give them three tiles, before we throw their shit tile back in
-	letters := make([]engine.Letter, DumpSize)
+	letters := make([]banana.Letter, DumpSize)
 	for i := 0; i < DumpSize; i++ {
 		letters[i] = g.e.bunch.Tile()
 		g.tiles.Inc(letters[i])
@@ -213,13 +140,13 @@ func (g *game) Dump(call potassium.Game_dump) error {
 	return nil
 }
 
-func boardFromWire(b potassium.Board) (*engine.Board, error) {
+func boardFromWire(b potassium.Board) (*banana.Board, error) {
 	wireWords, err := b.Words()
 	if err != nil {
 		return nil, err
 	}
 
-	words := make([]engine.Word, wireWords.Len())
+	words := make([]banana.Word, wireWords.Len())
 	for i := 0; i < wireWords.Len(); i++ {
 		w, err := wordFromWire(wireWords.At(i))
 		if err != nil {
@@ -228,21 +155,21 @@ func boardFromWire(b potassium.Board) (*engine.Board, error) {
 		words[i] = w
 	}
 
-	return &engine.Board{
+	return &banana.Board{
 		Words:      words,
 		Dictionary: dict,
 	}, nil
 }
 
-func wordFromWire(w potassium.Word) (engine.Word, error) {
+func wordFromWire(w potassium.Word) (banana.Word, error) {
 	text, err := w.Text()
 	if err != nil {
-		return engine.Word{}, nil
+		return banana.Word{}, nil
 	}
 
-	return engine.Word{
+	return banana.Word{
 		Orientation: wireOrientationMap[w.Orientation()],
 		Text:        text,
-		Loc:         engine.Loc{X: int(w.X()), Y: int(w.Y())},
+		Loc:         banana.Loc{X: int(w.X()), Y: int(w.Y())},
 	}, nil
 }

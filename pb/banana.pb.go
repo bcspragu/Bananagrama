@@ -47,47 +47,72 @@ func (x StatusUpdate_Status) String() string {
 }
 
 func (StatusUpdate_Status) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{7, 0}
+	return fileDescriptor_0022f69d17e210ba, []int{6, 0}
 }
 
-type Tiles struct {
-	// Tiles are just lists of letters
-	Letters              []string `protobuf:"bytes,1,rep,name=letters,proto3" json:"letters,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+type Word_Orientation int32
+
+const (
+	Word_UNKNOWN    Word_Orientation = 0
+	Word_HORIZONTAL Word_Orientation = 1
+	Word_VERTICAL   Word_Orientation = 2
+)
+
+var Word_Orientation_name = map[int32]string{
+	0: "UNKNOWN",
+	1: "HORIZONTAL",
+	2: "VERTICAL",
 }
 
-func (m *Tiles) Reset()         { *m = Tiles{} }
-func (m *Tiles) String() string { return proto.CompactTextString(m) }
-func (*Tiles) ProtoMessage()    {}
-func (*Tiles) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{0}
+var Word_Orientation_value = map[string]int32{
+	"UNKNOWN":    0,
+	"HORIZONTAL": 1,
+	"VERTICAL":   2,
 }
 
-func (m *Tiles) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Tiles.Unmarshal(m, b)
-}
-func (m *Tiles) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Tiles.Marshal(b, m, deterministic)
-}
-func (m *Tiles) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Tiles.Merge(m, src)
-}
-func (m *Tiles) XXX_Size() int {
-	return xxx_messageInfo_Tiles.Size(m)
-}
-func (m *Tiles) XXX_DiscardUnknown() {
-	xxx_messageInfo_Tiles.DiscardUnknown(m)
+func (x Word_Orientation) String() string {
+	return proto.EnumName(Word_Orientation_name, int32(x))
 }
 
-var xxx_messageInfo_Tiles proto.InternalMessageInfo
+func (Word_Orientation) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_0022f69d17e210ba, []int{13, 0}
+}
 
-func (m *Tiles) GetLetters() []string {
-	if m != nil {
-		return m.Letters
-	}
-	return nil
+type PeelResponse_Status int32
+
+const (
+	PeelResponse_UNKNOWN         PeelResponse_Status = 0
+	PeelResponse_SUCCESS         PeelResponse_Status = 1
+	PeelResponse_INVALID_WORD    PeelResponse_Status = 2
+	PeelResponse_DETACHED_BOARD  PeelResponse_Status = 3
+	PeelResponse_NOT_ALL_LETTERS PeelResponse_Status = 4
+	PeelResponse_EXTRA_LETTERS   PeelResponse_Status = 5
+)
+
+var PeelResponse_Status_name = map[int32]string{
+	0: "UNKNOWN",
+	1: "SUCCESS",
+	2: "INVALID_WORD",
+	3: "DETACHED_BOARD",
+	4: "NOT_ALL_LETTERS",
+	5: "EXTRA_LETTERS",
+}
+
+var PeelResponse_Status_value = map[string]int32{
+	"UNKNOWN":         0,
+	"SUCCESS":         1,
+	"INVALID_WORD":    2,
+	"DETACHED_BOARD":  3,
+	"NOT_ALL_LETTERS": 4,
+	"EXTRA_LETTERS":   5,
+}
+
+func (x PeelResponse_Status) String() string {
+	return proto.EnumName(PeelResponse_Status_name, int32(x))
+}
+
+func (PeelResponse_Status) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_0022f69d17e210ba, []int{14, 0}
 }
 
 type NewGameRequest struct {
@@ -104,7 +129,7 @@ func (m *NewGameRequest) Reset()         { *m = NewGameRequest{} }
 func (m *NewGameRequest) String() string { return proto.CompactTextString(m) }
 func (*NewGameRequest) ProtoMessage()    {}
 func (*NewGameRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{1}
+	return fileDescriptor_0022f69d17e210ba, []int{0}
 }
 
 func (m *NewGameRequest) XXX_Unmarshal(b []byte) error {
@@ -151,7 +176,7 @@ func (m *NewGameResponse) Reset()         { *m = NewGameResponse{} }
 func (m *NewGameResponse) String() string { return proto.CompactTextString(m) }
 func (*NewGameResponse) ProtoMessage()    {}
 func (*NewGameResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{2}
+	return fileDescriptor_0022f69d17e210ba, []int{1}
 }
 
 func (m *NewGameResponse) XXX_Unmarshal(b []byte) error {
@@ -193,7 +218,7 @@ func (m *JoinGameRequest) Reset()         { *m = JoinGameRequest{} }
 func (m *JoinGameRequest) String() string { return proto.CompactTextString(m) }
 func (*JoinGameRequest) ProtoMessage()    {}
 func (*JoinGameRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{3}
+	return fileDescriptor_0022f69d17e210ba, []int{2}
 }
 
 func (m *JoinGameRequest) XXX_Unmarshal(b []byte) error {
@@ -243,7 +268,7 @@ func (m *GameUpdate) Reset()         { *m = GameUpdate{} }
 func (m *GameUpdate) String() string { return proto.CompactTextString(m) }
 func (*GameUpdate) ProtoMessage()    {}
 func (*GameUpdate) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{4}
+	return fileDescriptor_0022f69d17e210ba, []int{3}
 }
 
 func (m *GameUpdate) XXX_Unmarshal(b []byte) error {
@@ -418,7 +443,7 @@ func (m *PlayerUpdate) Reset()         { *m = PlayerUpdate{} }
 func (m *PlayerUpdate) String() string { return proto.CompactTextString(m) }
 func (*PlayerUpdate) ProtoMessage()    {}
 func (*PlayerUpdate) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{5}
+	return fileDescriptor_0022f69d17e210ba, []int{4}
 }
 
 func (m *PlayerUpdate) XXX_Unmarshal(b []byte) error {
@@ -457,7 +482,7 @@ func (m *Player) Reset()         { *m = Player{} }
 func (m *Player) String() string { return proto.CompactTextString(m) }
 func (*Player) ProtoMessage()    {}
 func (*Player) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{6}
+	return fileDescriptor_0022f69d17e210ba, []int{5}
 }
 
 func (m *Player) XXX_Unmarshal(b []byte) error {
@@ -496,7 +521,7 @@ func (m *StatusUpdate) Reset()         { *m = StatusUpdate{} }
 func (m *StatusUpdate) String() string { return proto.CompactTextString(m) }
 func (*StatusUpdate) ProtoMessage()    {}
 func (*StatusUpdate) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{7}
+	return fileDescriptor_0022f69d17e210ba, []int{6}
 }
 
 func (m *StatusUpdate) XXX_Unmarshal(b []byte) error {
@@ -535,7 +560,7 @@ func (m *TileUpdate) Reset()         { *m = TileUpdate{} }
 func (m *TileUpdate) String() string { return proto.CompactTextString(m) }
 func (*TileUpdate) ProtoMessage()    {}
 func (*TileUpdate) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{8}
+	return fileDescriptor_0022f69d17e210ba, []int{7}
 }
 
 func (m *TileUpdate) XXX_Unmarshal(b []byte) error {
@@ -559,6 +584,46 @@ var xxx_messageInfo_TileUpdate proto.InternalMessageInfo
 func (m *TileUpdate) GetAllTiles() *Tiles {
 	if m != nil {
 		return m.AllTiles
+	}
+	return nil
+}
+
+type Tiles struct {
+	// Tiles are just lists of letters
+	Letters              []string `protobuf:"bytes,1,rep,name=letters,proto3" json:"letters,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Tiles) Reset()         { *m = Tiles{} }
+func (m *Tiles) String() string { return proto.CompactTextString(m) }
+func (*Tiles) ProtoMessage()    {}
+func (*Tiles) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0022f69d17e210ba, []int{8}
+}
+
+func (m *Tiles) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Tiles.Unmarshal(m, b)
+}
+func (m *Tiles) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Tiles.Marshal(b, m, deterministic)
+}
+func (m *Tiles) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Tiles.Merge(m, src)
+}
+func (m *Tiles) XXX_Size() int {
+	return xxx_messageInfo_Tiles.Size(m)
+}
+func (m *Tiles) XXX_DiscardUnknown() {
+	xxx_messageInfo_Tiles.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Tiles proto.InternalMessageInfo
+
+func (m *Tiles) GetLetters() []string {
+	if m != nil {
+		return m.Letters
 	}
 	return nil
 }
@@ -635,9 +700,201 @@ func (m *DumpResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_DumpResponse proto.InternalMessageInfo
 
+type PeelRequest struct {
+	// The unique identifier for the game you're placing in.
+	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Board                *Board   `protobuf:"bytes,2,opt,name=board,proto3" json:"board,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *PeelRequest) Reset()         { *m = PeelRequest{} }
+func (m *PeelRequest) String() string { return proto.CompactTextString(m) }
+func (*PeelRequest) ProtoMessage()    {}
+func (*PeelRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0022f69d17e210ba, []int{11}
+}
+
+func (m *PeelRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_PeelRequest.Unmarshal(m, b)
+}
+func (m *PeelRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_PeelRequest.Marshal(b, m, deterministic)
+}
+func (m *PeelRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PeelRequest.Merge(m, src)
+}
+func (m *PeelRequest) XXX_Size() int {
+	return xxx_messageInfo_PeelRequest.Size(m)
+}
+func (m *PeelRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_PeelRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PeelRequest proto.InternalMessageInfo
+
+func (m *PeelRequest) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
+func (m *PeelRequest) GetBoard() *Board {
+	if m != nil {
+		return m.Board
+	}
+	return nil
+}
+
+type Board struct {
+	Words                []*Word  `protobuf:"bytes,1,rep,name=words,proto3" json:"words,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Board) Reset()         { *m = Board{} }
+func (m *Board) String() string { return proto.CompactTextString(m) }
+func (*Board) ProtoMessage()    {}
+func (*Board) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0022f69d17e210ba, []int{12}
+}
+
+func (m *Board) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Board.Unmarshal(m, b)
+}
+func (m *Board) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Board.Marshal(b, m, deterministic)
+}
+func (m *Board) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Board.Merge(m, src)
+}
+func (m *Board) XXX_Size() int {
+	return xxx_messageInfo_Board.Size(m)
+}
+func (m *Board) XXX_DiscardUnknown() {
+	xxx_messageInfo_Board.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Board proto.InternalMessageInfo
+
+func (m *Board) GetWords() []*Word {
+	if m != nil {
+		return m.Words
+	}
+	return nil
+}
+
+type Word struct {
+	Letters     string           `protobuf:"bytes,1,opt,name=letters,proto3" json:"letters,omitempty"`
+	Orientation Word_Orientation `protobuf:"varint,2,opt,name=orientation,proto3,enum=Word_Orientation" json:"orientation,omitempty"`
+	// The x-position of the top-left letter on the board.
+	X int32 `protobuf:"varint,3,opt,name=x,proto3" json:"x,omitempty"`
+	// The y-position of the top-left letter on the board.
+	Y                    int32    `protobuf:"varint,4,opt,name=y,proto3" json:"y,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Word) Reset()         { *m = Word{} }
+func (m *Word) String() string { return proto.CompactTextString(m) }
+func (*Word) ProtoMessage()    {}
+func (*Word) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0022f69d17e210ba, []int{13}
+}
+
+func (m *Word) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Word.Unmarshal(m, b)
+}
+func (m *Word) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Word.Marshal(b, m, deterministic)
+}
+func (m *Word) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Word.Merge(m, src)
+}
+func (m *Word) XXX_Size() int {
+	return xxx_messageInfo_Word.Size(m)
+}
+func (m *Word) XXX_DiscardUnknown() {
+	xxx_messageInfo_Word.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Word proto.InternalMessageInfo
+
+func (m *Word) GetLetters() string {
+	if m != nil {
+		return m.Letters
+	}
+	return ""
+}
+
+func (m *Word) GetOrientation() Word_Orientation {
+	if m != nil {
+		return m.Orientation
+	}
+	return Word_UNKNOWN
+}
+
+func (m *Word) GetX() int32 {
+	if m != nil {
+		return m.X
+	}
+	return 0
+}
+
+func (m *Word) GetY() int32 {
+	if m != nil {
+		return m.Y
+	}
+	return 0
+}
+
+type PeelResponse struct {
+	Status               PeelResponse_Status `protobuf:"varint,1,opt,name=status,proto3,enum=PeelResponse_Status" json:"status,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
+	XXX_unrecognized     []byte              `json:"-"`
+	XXX_sizecache        int32               `json:"-"`
+}
+
+func (m *PeelResponse) Reset()         { *m = PeelResponse{} }
+func (m *PeelResponse) String() string { return proto.CompactTextString(m) }
+func (*PeelResponse) ProtoMessage()    {}
+func (*PeelResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0022f69d17e210ba, []int{14}
+}
+
+func (m *PeelResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_PeelResponse.Unmarshal(m, b)
+}
+func (m *PeelResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_PeelResponse.Marshal(b, m, deterministic)
+}
+func (m *PeelResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PeelResponse.Merge(m, src)
+}
+func (m *PeelResponse) XXX_Size() int {
+	return xxx_messageInfo_PeelResponse.Size(m)
+}
+func (m *PeelResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_PeelResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PeelResponse proto.InternalMessageInfo
+
+func (m *PeelResponse) GetStatus() PeelResponse_Status {
+	if m != nil {
+		return m.Status
+	}
+	return PeelResponse_UNKNOWN
+}
+
 func init() {
 	proto.RegisterEnum("StatusUpdate_Status", StatusUpdate_Status_name, StatusUpdate_Status_value)
-	proto.RegisterType((*Tiles)(nil), "Tiles")
+	proto.RegisterEnum("Word_Orientation", Word_Orientation_name, Word_Orientation_value)
+	proto.RegisterEnum("PeelResponse_Status", PeelResponse_Status_name, PeelResponse_Status_value)
 	proto.RegisterType((*NewGameRequest)(nil), "NewGameRequest")
 	proto.RegisterType((*NewGameResponse)(nil), "NewGameResponse")
 	proto.RegisterType((*JoinGameRequest)(nil), "JoinGameRequest")
@@ -646,43 +903,62 @@ func init() {
 	proto.RegisterType((*Player)(nil), "Player")
 	proto.RegisterType((*StatusUpdate)(nil), "StatusUpdate")
 	proto.RegisterType((*TileUpdate)(nil), "TileUpdate")
+	proto.RegisterType((*Tiles)(nil), "Tiles")
 	proto.RegisterType((*DumpRequest)(nil), "DumpRequest")
 	proto.RegisterType((*DumpResponse)(nil), "DumpResponse")
+	proto.RegisterType((*PeelRequest)(nil), "PeelRequest")
+	proto.RegisterType((*Board)(nil), "Board")
+	proto.RegisterType((*Word)(nil), "Word")
+	proto.RegisterType((*PeelResponse)(nil), "PeelResponse")
 }
 
 func init() { proto.RegisterFile("banana.proto", fileDescriptor_0022f69d17e210ba) }
 
 var fileDescriptor_0022f69d17e210ba = []byte{
-	// 463 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x53, 0xdd, 0x8e, 0xda, 0x3c,
-	0x10, 0xdd, 0x64, 0xd9, 0x04, 0x26, 0x09, 0x44, 0xa3, 0xef, 0x02, 0xa1, 0xaf, 0x12, 0x78, 0x6f,
-	0x90, 0x5a, 0x59, 0x5d, 0xfa, 0x73, 0xbf, 0x68, 0x29, 0x55, 0xab, 0xb2, 0x95, 0x61, 0x5b, 0xa9,
-	0x37, 0xc8, 0x80, 0x2b, 0x45, 0x32, 0x49, 0x1a, 0x9b, 0x56, 0x7d, 0x8a, 0xbe, 0x4b, 0x9f, 0xb0,
-	0x8a, 0x9d, 0x40, 0x16, 0xb5, 0x77, 0x9e, 0x93, 0x73, 0x3c, 0x67, 0x3c, 0x27, 0x10, 0x6e, 0x78,
-	0xca, 0x53, 0x4e, 0xf3, 0x22, 0xd3, 0x19, 0x19, 0xc1, 0xd5, 0x2a, 0x91, 0x42, 0x61, 0x1f, 0x7c,
-	0x29, 0xb4, 0x16, 0x85, 0xea, 0x3b, 0xc3, 0xcb, 0x71, 0x87, 0xd5, 0x25, 0x99, 0x43, 0x77, 0x21,
-	0x7e, 0xcc, 0xf9, 0x5e, 0x30, 0xf1, 0xed, 0x20, 0x94, 0x46, 0x84, 0x56, 0xca, 0xf7, 0xa2, 0xef,
-	0x0c, 0x9d, 0x71, 0x87, 0x99, 0x33, 0x8e, 0x20, 0x54, 0x5b, 0x2e, 0xc5, 0xfa, 0x2b, 0xdf, 0xea,
-	0xac, 0xe8, 0xbb, 0x43, 0x67, 0x7c, 0xc5, 0x02, 0x83, 0xbd, 0x31, 0x10, 0x19, 0x41, 0xef, 0x78,
-	0x91, 0xca, 0xb3, 0x54, 0x09, 0xec, 0x82, 0x9b, 0xec, 0xaa, 0x7b, 0xdc, 0x64, 0x47, 0x5e, 0x41,
-	0xef, 0x5d, 0x96, 0xa4, 0xcd, 0x66, 0x67, 0x94, 0x63, 0x73, 0xf7, 0xd4, 0x9c, 0xfc, 0x76, 0x00,
-	0x4a, 0xcd, 0x43, 0xbe, 0xe3, 0x5a, 0xe0, 0x4b, 0x88, 0x72, 0xc9, 0x7f, 0x8a, 0x62, 0x7d, 0x30,
-	0x80, 0x51, 0x07, 0x93, 0x88, 0x7e, 0x34, 0xa8, 0x65, 0xbd, 0xbd, 0x60, 0x61, 0xde, 0xa8, 0x4b,
-	0x95, 0xd2, 0x5c, 0x1f, 0x54, 0xad, 0x72, 0x2b, 0xd5, 0xd2, 0xa0, 0x27, 0x95, 0x6a, 0xd4, 0x48,
-	0x21, 0xd0, 0x89, 0x14, 0xb5, 0xe6, 0xd2, 0x68, 0x02, 0x5a, 0x3e, 0xea, 0x51, 0x01, 0xfa, 0x58,
-	0x4d, 0xdb, 0xe0, 0x59, 0x2a, 0xb9, 0x81, 0xb0, 0xe9, 0x07, 0x47, 0xe0, 0x5b, 0x3f, 0x76, 0x03,
-	0xc1, 0xc4, 0xaf, 0xfc, 0xb2, 0x1a, 0x27, 0xff, 0x83, 0x67, 0xa1, 0xbf, 0xad, 0x80, 0x68, 0x08,
-	0x9b, 0x56, 0xf1, 0x19, 0x78, 0xd6, 0xaa, 0x61, 0x75, 0x27, 0xff, 0x3d, 0x9a, 0xa4, 0x2a, 0x58,
-	0xc5, 0x21, 0xaf, 0xc1, 0xb3, 0x08, 0x06, 0xe0, 0x3f, 0x2c, 0xde, 0x2f, 0xee, 0x3f, 0x2f, 0xe2,
-	0x0b, 0x8c, 0x21, 0x9c, 0xdf, 0x7e, 0x98, 0xad, 0x97, 0xab, 0x5b, 0xb6, 0x9a, 0xdd, 0xc5, 0x0e,
-	0x46, 0xd0, 0x31, 0xc8, 0xfd, 0xa7, 0x19, 0x8b, 0x5d, 0x72, 0x03, 0x70, 0x1a, 0x16, 0xaf, 0xa1,
-	0xc3, 0xa5, 0x5c, 0x97, 0x03, 0xab, 0xea, 0xd9, 0x3d, 0xf3, 0x18, 0x8a, 0xb5, 0xb9, 0x94, 0xe6,
-	0x44, 0x9e, 0x40, 0x70, 0x77, 0xd8, 0xe7, 0xff, 0xd8, 0x30, 0xe9, 0x42, 0x68, 0x3f, 0xdb, 0x90,
-	0x4c, 0x7e, 0x39, 0x10, 0x4d, 0x4d, 0x68, 0x97, 0xa2, 0xf8, 0x9e, 0x6c, 0xcb, 0xc9, 0xfc, 0x2a,
-	0x49, 0xd8, 0xa3, 0x8f, 0xc3, 0x39, 0x88, 0xe9, 0x79, 0xc8, 0x9e, 0x42, 0xbb, 0x0e, 0x15, 0xc6,
-	0xf4, 0x2c, 0x5f, 0x83, 0x80, 0x9e, 0x92, 0xf3, 0xdc, 0xc1, 0x6b, 0x68, 0x95, 0xcd, 0x31, 0xa4,
-	0x0d, 0x8b, 0x83, 0x88, 0x36, 0x1d, 0x4d, 0x5b, 0x5f, 0xdc, 0x7c, 0xb3, 0xf1, 0xcc, 0x2f, 0xf4,
-	0xe2, 0x4f, 0x00, 0x00, 0x00, 0xff, 0xff, 0xab, 0x43, 0xc5, 0xcf, 0x52, 0x03, 0x00, 0x00,
+	// 688 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x54, 0xcd, 0x6e, 0xd3, 0x4c,
+	0x14, 0xed, 0xb8, 0x71, 0x7e, 0xae, 0x9d, 0xc4, 0x9d, 0xef, 0x5b, 0x44, 0xa1, 0x48, 0xcd, 0x94,
+	0x45, 0x25, 0xd0, 0x88, 0xa6, 0x80, 0x90, 0x58, 0x39, 0x89, 0x69, 0x03, 0x21, 0xae, 0x26, 0x6e,
+	0x8b, 0xba, 0xb1, 0x26, 0xcd, 0x20, 0x59, 0x72, 0x63, 0x13, 0x3b, 0xb4, 0x7d, 0x26, 0x24, 0x16,
+	0x88, 0x07, 0x44, 0x1e, 0xdb, 0x89, 0x13, 0xda, 0x9d, 0xcf, 0x99, 0x7b, 0xe6, 0xfe, 0xcc, 0xf1,
+	0x05, 0x7d, 0xca, 0xe7, 0x7c, 0xce, 0x69, 0xb8, 0x08, 0xe2, 0x80, 0x9c, 0x42, 0x63, 0x2c, 0xee,
+	0x4e, 0xf9, 0xad, 0x60, 0xe2, 0xfb, 0x52, 0x44, 0x31, 0xc6, 0x50, 0x9a, 0xf3, 0x5b, 0xd1, 0x42,
+	0x07, 0xe8, 0xa8, 0xc6, 0xe4, 0x37, 0xee, 0x80, 0x1e, 0xdd, 0x70, 0x5f, 0xb8, 0xdf, 0xf8, 0x4d,
+	0x1c, 0x2c, 0x5a, 0xca, 0x01, 0x3a, 0x52, 0x99, 0x26, 0xb9, 0x8f, 0x92, 0x22, 0x1d, 0x68, 0xae,
+	0x2e, 0x8a, 0xc2, 0x60, 0x1e, 0x09, 0xdc, 0x00, 0xc5, 0x9b, 0x65, 0xf7, 0x28, 0xde, 0x8c, 0xbc,
+	0x85, 0xe6, 0xa7, 0xc0, 0x9b, 0x17, 0x93, 0x6d, 0x85, 0xac, 0x92, 0x2b, 0xeb, 0xe4, 0xe4, 0x37,
+	0x02, 0x48, 0x34, 0x17, 0xe1, 0x8c, 0xc7, 0x02, 0xbf, 0x81, 0x7a, 0xe8, 0xf3, 0x07, 0xb1, 0x70,
+	0x97, 0x92, 0x90, 0x6a, 0xad, 0x5b, 0xa7, 0xe7, 0x92, 0x4d, 0xa3, 0xce, 0x76, 0x98, 0x1e, 0x16,
+	0x70, 0xa2, 0x8a, 0x62, 0x1e, 0x2f, 0xa3, 0x5c, 0xa5, 0x64, 0xaa, 0x89, 0x64, 0xd7, 0xaa, 0xa8,
+	0x80, 0x31, 0x05, 0x2d, 0xf6, 0x7c, 0x91, 0x6b, 0x76, 0xa5, 0x46, 0xa3, 0x8e, 0xe7, 0x8b, 0x95,
+	0x02, 0xe2, 0x15, 0xea, 0x55, 0xa1, 0x9c, 0x86, 0x92, 0x63, 0xd0, 0x8b, 0xf5, 0xe0, 0x0e, 0x54,
+	0xd2, 0x7a, 0xa2, 0x16, 0x3a, 0xd8, 0x3d, 0xd2, 0xba, 0x95, 0xac, 0x5e, 0x96, 0xf3, 0x64, 0x1f,
+	0xca, 0x29, 0xf5, 0xd8, 0x13, 0x90, 0x18, 0xf4, 0x62, 0xa9, 0xf8, 0x15, 0x94, 0xd3, 0x52, 0x65,
+	0x54, 0xa3, 0xfb, 0xff, 0x46, 0x27, 0x19, 0x60, 0x59, 0x0c, 0x79, 0x07, 0xe5, 0x94, 0xc1, 0x1a,
+	0x54, 0x2e, 0xc6, 0x9f, 0xc7, 0xf6, 0xd5, 0xd8, 0xd8, 0xc1, 0x06, 0xe8, 0xa7, 0xe6, 0x17, 0xcb,
+	0x9d, 0x38, 0x26, 0x73, 0xac, 0x81, 0x81, 0x70, 0x1d, 0x6a, 0x92, 0xb1, 0x2f, 0x2d, 0x66, 0x28,
+	0xe4, 0x18, 0x60, 0xdd, 0x2c, 0x3e, 0x84, 0x1a, 0xf7, 0x7d, 0x37, 0x69, 0x38, 0xca, 0xc6, 0x5e,
+	0x96, 0xc3, 0x88, 0x58, 0x95, 0xfb, 0xbe, 0xfc, 0x22, 0x1d, 0x50, 0xe5, 0x07, 0x6e, 0x41, 0xc5,
+	0x17, 0x71, 0x9c, 0xb7, 0x5c, 0x63, 0x39, 0x24, 0xcf, 0x41, 0x1b, 0x2c, 0x6f, 0xc3, 0x27, 0x4c,
+	0x40, 0x1a, 0xa0, 0xa7, 0xc7, 0xa9, 0x8f, 0xc8, 0x07, 0xd0, 0xce, 0x85, 0xf0, 0x9f, 0xf2, 0xcc,
+	0x3e, 0xa8, 0xd3, 0x80, 0x2f, 0x66, 0xd9, 0x93, 0x96, 0x69, 0x2f, 0x41, 0x2c, 0x25, 0xc9, 0x0b,
+	0x50, 0x25, 0xc6, 0xcf, 0x40, 0xbd, 0x0b, 0x16, 0xb3, 0x7c, 0xfe, 0x2a, 0xbd, 0x0a, 0x92, 0x28,
+	0xc9, 0x91, 0x9f, 0x08, 0x4a, 0x09, 0xde, 0x2c, 0x1a, 0x15, 0x8a, 0xc6, 0x27, 0xa0, 0x05, 0x0b,
+	0x4f, 0xcc, 0x63, 0x1e, 0x7b, 0xc1, 0x5c, 0x26, 0x6b, 0x74, 0xf7, 0xe4, 0x2d, 0xd4, 0x5e, 0x1f,
+	0xb0, 0x62, 0x14, 0xd6, 0x01, 0xdd, 0x4b, 0xdb, 0xa8, 0x0c, 0xdd, 0x27, 0xe8, 0xa1, 0x55, 0x4a,
+	0xd1, 0x03, 0x79, 0x0f, 0x5a, 0x41, 0xb7, 0xf9, 0x30, 0x0d, 0x80, 0x33, 0x9b, 0x0d, 0xaf, 0xed,
+	0xb1, 0x63, 0x8e, 0x0c, 0x84, 0x75, 0xa8, 0x5e, 0x5a, 0xcc, 0x19, 0xf6, 0xcd, 0x91, 0xa1, 0x90,
+	0x5f, 0x08, 0xf4, 0x74, 0x22, 0xd9, 0x9f, 0xf6, 0xaf, 0x19, 0x8a, 0xc7, 0xdb, 0x66, 0x08, 0x1f,
+	0x37, 0x83, 0x06, 0x95, 0xc9, 0x45, 0xbf, 0x6f, 0x4d, 0x26, 0x06, 0x4a, 0x9c, 0x31, 0x1c, 0x5f,
+	0x9a, 0xa3, 0xe1, 0xc0, 0xbd, 0xb2, 0xd9, 0xc0, 0x50, 0x30, 0x86, 0xc6, 0xc0, 0x72, 0xcc, 0xfe,
+	0x99, 0x35, 0x70, 0x7b, 0xb6, 0xc9, 0x06, 0xc6, 0x2e, 0xfe, 0x0f, 0x9a, 0x63, 0xdb, 0x71, 0xcd,
+	0xd1, 0xc8, 0x1d, 0x59, 0x8e, 0x63, 0xb1, 0x89, 0x51, 0xc2, 0x7b, 0x50, 0xb7, 0xbe, 0x3a, 0xcc,
+	0x5c, 0x51, 0x6a, 0xf7, 0x0f, 0x82, 0x7a, 0x4f, 0xae, 0x9d, 0x89, 0x58, 0xfc, 0xf0, 0x6e, 0x92,
+	0x8a, 0x2b, 0xd9, 0xba, 0xc0, 0x4d, 0xba, 0xb9, 0x81, 0xda, 0x06, 0xdd, 0xde, 0x24, 0x2f, 0xa1,
+	0x9a, 0x6f, 0x0e, 0x6c, 0xd0, 0xad, 0x25, 0xd2, 0xd6, 0xe8, 0x7a, 0x3d, 0xbc, 0x46, 0xf8, 0x10,
+	0x4a, 0x49, 0xf7, 0x58, 0xa7, 0x05, 0xd7, 0xb4, 0xeb, 0x1b, 0x23, 0x49, 0x82, 0x12, 0x8f, 0x61,
+	0x9d, 0x16, 0x9c, 0xd8, 0xae, 0xd3, 0xa2, 0xf1, 0x7a, 0xa5, 0x6b, 0x25, 0x9c, 0x4e, 0xcb, 0x72,
+	0x53, 0x9e, 0xfc, 0x0d, 0x00, 0x00, 0xff, 0xff, 0x7f, 0x7a, 0x95, 0x58, 0x39, 0x05, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -699,6 +975,7 @@ const _ = grpc.SupportPackageIsVersion4
 type BananaServiceClient interface {
 	NewGame(ctx context.Context, in *NewGameRequest, opts ...grpc.CallOption) (*NewGameResponse, error)
 	JoinGame(ctx context.Context, in *JoinGameRequest, opts ...grpc.CallOption) (BananaService_JoinGameClient, error)
+	Peel(ctx context.Context, in *PeelRequest, opts ...grpc.CallOption) (*PeelResponse, error)
 	Dump(ctx context.Context, in *DumpRequest, opts ...grpc.CallOption) (*DumpResponse, error)
 }
 
@@ -751,6 +1028,15 @@ func (x *bananaServiceJoinGameClient) Recv() (*GameUpdate, error) {
 	return m, nil
 }
 
+func (c *bananaServiceClient) Peel(ctx context.Context, in *PeelRequest, opts ...grpc.CallOption) (*PeelResponse, error) {
+	out := new(PeelResponse)
+	err := c.cc.Invoke(ctx, "/BananaService/Peel", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *bananaServiceClient) Dump(ctx context.Context, in *DumpRequest, opts ...grpc.CallOption) (*DumpResponse, error) {
 	out := new(DumpResponse)
 	err := c.cc.Invoke(ctx, "/BananaService/Dump", in, out, opts...)
@@ -764,6 +1050,7 @@ func (c *bananaServiceClient) Dump(ctx context.Context, in *DumpRequest, opts ..
 type BananaServiceServer interface {
 	NewGame(context.Context, *NewGameRequest) (*NewGameResponse, error)
 	JoinGame(*JoinGameRequest, BananaService_JoinGameServer) error
+	Peel(context.Context, *PeelRequest) (*PeelResponse, error)
 	Dump(context.Context, *DumpRequest) (*DumpResponse, error)
 }
 
@@ -810,6 +1097,24 @@ func (x *bananaServiceJoinGameServer) Send(m *GameUpdate) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _BananaService_Peel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PeelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BananaServiceServer).Peel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/BananaService/Peel",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BananaServiceServer).Peel(ctx, req.(*PeelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _BananaService_Dump_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DumpRequest)
 	if err := dec(in); err != nil {
@@ -835,6 +1140,10 @@ var _BananaService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "NewGame",
 			Handler:    _BananaService_NewGame_Handler,
+		},
+		{
+			MethodName: "Peel",
+			Handler:    _BananaService_Peel_Handler,
 		},
 		{
 			MethodName: "Dump",

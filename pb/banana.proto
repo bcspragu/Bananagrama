@@ -2,14 +2,10 @@ syntax = "proto3";
 
 option go_package = "pb";
 
-message Tiles {
-  // Tiles are just lists of letters
-  repeated string letters = 1;
-}
-
 service BananaService {
   rpc NewGame(NewGameRequest) returns (NewGameResponse);
   rpc JoinGame(JoinGameRequest) returns (stream GameUpdate);
+  rpc Peel(PeelRequest) returns (PeelResponse);
   rpc Dump(DumpRequest) returns (DumpResponse);
 }
 
@@ -65,6 +61,11 @@ message TileUpdate {
   Tiles all_tiles = 1;
 }
 
+message Tiles {
+  // Tiles are just lists of letters
+  repeated string letters = 1;
+}
+
 message DumpRequest {
   // The unique identifier for the game you're
   // dumping in.
@@ -72,3 +73,39 @@ message DumpRequest {
 }
 
 message DumpResponse { }
+
+message PeelRequest {
+  // The unique identifier for the game you're placing in.
+  string id = 1;
+  Board board = 2;
+}
+
+message Board {
+  repeated Word words = 1;
+}
+
+message Word {
+  string letters = 1;
+  enum Orientation {
+    UNKNOWN = 0;
+    HORIZONTAL = 1;
+    VERTICAL = 2;
+  }
+  Orientation orientation = 2;
+  // The x-position of the top-left letter on the board.
+  int32 x = 3;
+  // The y-position of the top-left letter on the board.
+  int32 y = 4;
+}
+
+message PeelResponse {
+  enum Status {
+    UNKNOWN = 0;
+    SUCCESS = 1;
+    INVALID_WORD = 2;
+    DETACHED_BOARD = 3;
+    NOT_ALL_LETTERS = 4;
+    EXTRA_LETTERS = 5;
+  }
+  Status status = 1;
+}

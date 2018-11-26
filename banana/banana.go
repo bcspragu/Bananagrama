@@ -1,17 +1,45 @@
 // Package banana contains the domain types for playing a game of Bananagrams.
 package banana
 
+type GameID string
+
 type DB interface {
-	// Games
-	StartGame(players map[string]*Tiles) (matchID, error)
-	AddPeel(potassium.Peel) error
-	AddDump(potassium.Dump) error
-	finishGame(playerScores map[string]int) error
+	// Creates a new game with the given name.
+	NewGame(name string) (GameID, error)
+	// Loads a game with the given ID.
+	Game(id GameID) (*Game, error)
+	// Adds a player to a not-yet-started game.
+	AddPlayer(id GameID, name string) (PlayerID, error)
+	// Updates a player's board.
+	UpdatePlayer(id PlayerID, board *Board, tiles *Tiles) error
+	// Starts a game, and sets everyone's initial tile sets.
+	StartGame(id GameID, players map[PlayerID]*Tiles) error
+	// Ends a given game, stops players from adding more to their boards.
+	EndGame(id GameID) error
+}
 
-	lookupGame(id matchID) (potassium.Replay, error)
-	matchIDs() ([]matchID, error)
+type GameStatus int
 
-	Close() error
+const (
+	UnknownStatus GameStatus = iota
+	WaitingForPlayers
+	InProgress
+	Finished
+)
+
+type Game struct {
+	Name    string
+	Players []*Player
+	Status  GameStatus
+}
+
+type PlayerID string
+
+type Player struct {
+	ID    PlayerID
+	Name  string
+	Board *Board
+	Tiles *Tiles
 }
 
 // Orientation describes how a board is placed on the board.

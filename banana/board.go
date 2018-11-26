@@ -18,6 +18,40 @@ type Board struct {
 	visitedMap map[Loc]bool
 }
 
+func (b *Board) clone() *Board {
+	var (
+		words      []Word
+		letterMap  map[Loc]Letter
+		visitedMap map[Loc]bool
+	)
+
+	if b.Words != nil {
+		words = make([]Word, len(b.Words))
+		copy(words, b.Words)
+	}
+
+	if b.letterMap != nil {
+		letterMap = make(map[Loc]Letter)
+		for k, v := range b.letterMap {
+			letterMap[k] = v
+		}
+	}
+
+	if b.visitedMap != nil {
+		visitedMap = make(map[Loc]bool)
+		for k, v := range b.visitedMap {
+			visitedMap[k] = v
+		}
+	}
+
+	return &Board{
+		Words:      words,
+		Dictionary: b.Dictionary,
+		letterMap:  letterMap,
+		visitedMap: visitedMap,
+	}
+}
+
 // Word represents the placement of a single word on a Bananagrams board.
 type Word struct {
 	Orientation Orientation

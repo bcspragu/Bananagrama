@@ -3,28 +3,6 @@
 
 import * as jspb from "google-protobuf";
 
-export class Tiles extends jspb.Message {
-  clearLettersList(): void;
-  getLettersList(): Array<string>;
-  setLettersList(value: Array<string>): void;
-  addLetters(value: string, index?: number): string;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): Tiles.AsObject;
-  static toObject(includeInstance: boolean, msg: Tiles): Tiles.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: Tiles, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): Tiles;
-  static deserializeBinaryFromReader(message: Tiles, reader: jspb.BinaryReader): Tiles;
-}
-
-export namespace Tiles {
-  export type AsObject = {
-    lettersList: Array<string>,
-  }
-}
-
 export class NewGameRequest extends jspb.Message {
   getName(): string;
   setName(value: string): void;
@@ -225,6 +203,28 @@ export namespace TileUpdate {
   }
 }
 
+export class Tiles extends jspb.Message {
+  clearLettersList(): void;
+  getLettersList(): Array<string>;
+  setLettersList(value: Array<string>): void;
+  addLetters(value: string, index?: number): string;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Tiles.AsObject;
+  static toObject(includeInstance: boolean, msg: Tiles): Tiles.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: Tiles, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Tiles;
+  static deserializeBinaryFromReader(message: Tiles, reader: jspb.BinaryReader): Tiles;
+}
+
+export namespace Tiles {
+  export type AsObject = {
+    lettersList: Array<string>,
+  }
+}
+
 export class DumpRequest extends jspb.Message {
   getId(): string;
   setId(value: string): void;
@@ -258,6 +258,121 @@ export class DumpResponse extends jspb.Message {
 
 export namespace DumpResponse {
   export type AsObject = {
+  }
+}
+
+export class PeelRequest extends jspb.Message {
+  getId(): string;
+  setId(value: string): void;
+
+  hasBoard(): boolean;
+  clearBoard(): void;
+  getBoard(): Board | undefined;
+  setBoard(value?: Board): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): PeelRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: PeelRequest): PeelRequest.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: PeelRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PeelRequest;
+  static deserializeBinaryFromReader(message: PeelRequest, reader: jspb.BinaryReader): PeelRequest;
+}
+
+export namespace PeelRequest {
+  export type AsObject = {
+    id: string,
+    board?: Board.AsObject,
+  }
+}
+
+export class Board extends jspb.Message {
+  clearWordsList(): void;
+  getWordsList(): Array<Word>;
+  setWordsList(value: Array<Word>): void;
+  addWords(value?: Word, index?: number): Word;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Board.AsObject;
+  static toObject(includeInstance: boolean, msg: Board): Board.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: Board, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Board;
+  static deserializeBinaryFromReader(message: Board, reader: jspb.BinaryReader): Board;
+}
+
+export namespace Board {
+  export type AsObject = {
+    wordsList: Array<Word.AsObject>,
+  }
+}
+
+export class Word extends jspb.Message {
+  getLetters(): string;
+  setLetters(value: string): void;
+
+  getOrientation(): Word.Orientation;
+  setOrientation(value: Word.Orientation): void;
+
+  getX(): number;
+  setX(value: number): void;
+
+  getY(): number;
+  setY(value: number): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Word.AsObject;
+  static toObject(includeInstance: boolean, msg: Word): Word.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: Word, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Word;
+  static deserializeBinaryFromReader(message: Word, reader: jspb.BinaryReader): Word;
+}
+
+export namespace Word {
+  export type AsObject = {
+    letters: string,
+    orientation: Word.Orientation,
+    x: number,
+    y: number,
+  }
+
+  export enum Orientation {
+    UNKNOWN = 0,
+    HORIZONTAL = 1,
+    VERTICAL = 2,
+  }
+}
+
+export class PeelResponse extends jspb.Message {
+  getStatus(): PeelResponse.Status;
+  setStatus(value: PeelResponse.Status): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): PeelResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: PeelResponse): PeelResponse.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: PeelResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PeelResponse;
+  static deserializeBinaryFromReader(message: PeelResponse, reader: jspb.BinaryReader): PeelResponse;
+}
+
+export namespace PeelResponse {
+  export type AsObject = {
+    status: PeelResponse.Status,
+  }
+
+  export enum Status {
+    UNKNOWN = 0,
+    SUCCESS = 1,
+    INVALID_WORD = 2,
+    DETACHED_BOARD = 3,
+    NOT_ALL_LETTERS = 4,
+    EXTRA_LETTERS = 5,
   }
 }
 
