@@ -7,7 +7,10 @@ import (
 
 type Bunch struct {
 	tiles *Tiles
-	rand  *rand.Rand
+}
+
+func (b *Bunch) Clone() *Bunch {
+	return &Bunch{tiles: b.tiles.Clone()}
 }
 
 func (b *Bunch) Count() int {
@@ -15,14 +18,14 @@ func (b *Bunch) Count() int {
 }
 
 // RemoveN retrieves N tiles from the bunch.
-func (b *Bunch) RemoveN(n int) (*Tiles, error) {
+func (b *Bunch) RemoveN(n int, r *rand.Rand) (*Tiles, error) {
 	if b.tiles.count < n {
 		return nil, fmt.Errorf("only have %d tiles, can't remove %d tiles", b.tiles.count, n)
 	}
 
 	t := newTiles()
 	for i := 0; i < n; i++ {
-		c := b.rand.Intn(b.tiles.count)
+		c := r.Intn(b.tiles.count)
 		b.tiles.forEach(func(l Letter, freq int) bool {
 			if freq > c {
 				b.tiles.Dec(l)
@@ -36,8 +39,8 @@ func (b *Bunch) RemoveN(n int) (*Tiles, error) {
 	return t, nil
 }
 
-func (b *Bunch) Tile() (Letter, error) {
-	t, err := b.RemoveN(1)
+func (b *Bunch) Tile(r *rand.Rand) (Letter, error) {
+	t, err := b.RemoveN(1, r)
 	if err != nil {
 		return noLetter, err
 	}
@@ -52,9 +55,8 @@ func (b *Bunch) Tile() (Letter, error) {
 
 type Distribution map[int][]Letter
 
-// Scrabble returns the distribution of letters on a Scrabble board, or at
-// least I think this is where I got it from.
-func Scrabble() Distribution {
+// Bananagrams returns the distribution of letters on a Bananagrams board.
+func Bananagrams() Distribution {
 	return map[int][]Letter{
 		2:  []Letter{'j', 'k', 'q', 'x', 'z'},
 		3:  []Letter{'b', 'c', 'f', 'h', 'm', 'p', 'v', 'w', 'y'},
@@ -70,13 +72,10 @@ func Scrabble() Distribution {
 	}
 }
 
-func NewBunch(r *rand.Rand, dist Distribution, scale int) (*Bunch, error) {
+func NewBunch(dist Distribution, scale int) (*Bunch, error) {
 	t, err := tilesFromDistribution(dist, scale)
 	if err != nil {
 		return nil, err
 	}
-	return &Bunch{
-		tiles: t,
-		rand:  r,
-	}, nil
+	return &Bunch{tiles: t}, nil
 }

@@ -36,7 +36,7 @@ func main() {
 	}
 
 	grpcSrv := grpc.NewServer()
-	server := srv.New(memdb.New(r, dict), dict)
+	server := srv.New(r, memdb.New(r, dict), dict)
 	pb.RegisterBananaServiceServer(grpcServer, server)
 	grpcSrv.Serve(lis)
 

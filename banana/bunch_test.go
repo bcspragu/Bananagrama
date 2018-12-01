@@ -35,7 +35,7 @@ func TestTilesFromDistribution(t *testing.T) {
 		'z': 2000,
 	}
 
-	tiles, err := tilesFromDistribution(Scrabble(), 1000)
+	tiles, err := tilesFromDistribution(Bananagrams(), 1000)
 	if err != nil {
 		t.Fatalf("tilesFromDistribution: %v", err)
 	}
@@ -75,10 +75,11 @@ func TestTileExhaustsAll(t *testing.T) {
 		'y': 3000,
 		'z': 2000,
 	}
-	b := newBunch(t, rand.New(rand.NewSource(0)), Scrabble(), 1000)
+	b := newBunch(t, Bananagrams(), 1000)
+	r := rand.New(rand.NewSource(0))
 	// Exhaust all 144000 tiles, make sure we have none left at the end
 	for i := 0; i < 144000; i++ {
-		l, err := b.Tile()
+		l, err := b.Tile(r)
 		if err != nil {
 			t.Fatalf("Tile(): %v", err)
 		}
@@ -123,9 +124,10 @@ func TestTileNExhaustsAll(t *testing.T) {
 		'y': 3000,
 		'z': 2000,
 	}
-	b := newBunch(t, rand.New(rand.NewSource(0)), Scrabble(), 1000)
+	b := newBunch(t, Bananagrams(), 1000)
+	r := rand.New(rand.NewSource(0))
 	// Exhaust all 144000 tiles, make sure we have none left at the end
-	tiles, err := b.RemoveN(144000)
+	tiles, err := b.RemoveN(144000, r)
 	if err != nil {
 		t.Fatalf("RemoveN: %v", err)
 	}
@@ -134,12 +136,12 @@ func TestTileNExhaustsAll(t *testing.T) {
 	}
 
 	// Make sure it fails when we remove another one.
-	if _, err := b.RemoveN(1); err == nil {
+	if _, err := b.RemoveN(1, r); err == nil {
 		t.Error("RemoveN should have failed removing letter after exhausting all of them")
 	}
 
-	// Make sure it fails when we ask for a tile..
-	l, err := b.Tile()
+	// Make sure it fails when we ask for a tile.
+	l, err := b.Tile(r)
 	if err == nil {
 		t.Error("Tile should have failed after exhausting all of them")
 	}
@@ -214,10 +216,11 @@ func TestTileDistribution(t *testing.T) {
 		'y': 0,
 		'z': 0,
 	}
-	b := newBunch(t, rand.New(rand.NewSource(0)), Scrabble(), 1000)
+	b := newBunch(t, Bananagrams(), 1000)
+	r := rand.New(rand.NewSource(0))
 	// Get 20,000 tiles, check the distribution is what we'd expect
 	for i := 0; i < 20000; i++ {
-		l, err := b.Tile()
+		l, err := b.Tile(r)
 		if err != nil {
 			t.Fatalf("Tile(): %v", err)
 		}
@@ -295,9 +298,10 @@ func TestTileNDistribution(t *testing.T) {
 		'y': 0,
 		'z': 0,
 	}
-	b := newBunch(t, rand.New(rand.NewSource(0)), Scrabble(), 1000)
+	b := newBunch(t, Bananagrams(), 1000)
+	r := rand.New(rand.NewSource(0))
 	// Get 20,000 tiles, check the distribution is what we'd expect
-	tiles, err := b.RemoveN(20000)
+	tiles, err := b.RemoveN(20000, r)
 	if err != nil {
 		t.Fatalf("RemoveN: %v", err)
 	}
@@ -319,7 +323,7 @@ func TestTileNDistribution(t *testing.T) {
 }
 
 func TestCount(t *testing.T) {
-	b := newBunch(t, rand.New(rand.NewSource(0)), Scrabble(), 1000)
+	b := newBunch(t, Bananagrams(), 1000)
 	if got, want := b.Count(), 144000; got != want {
 		t.Errorf("Count: %d, want %d", got, want)
 	}
@@ -338,7 +342,7 @@ func TestNewBunchErrors(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		_, err := NewBunch(rand.New(rand.NewSource(00)), Scrabble(), test.scale)
+		_, err := NewBunch(Bananagrams(), test.scale)
 		if test.wantErr {
 			if err == nil {
 				t.Error("error expected, none was returned")
@@ -352,8 +356,8 @@ func TestNewBunchErrors(t *testing.T) {
 	}
 }
 
-func newBunch(t *testing.T, r *rand.Rand, dist Distribution, scale int) *Bunch {
-	b, err := NewBunch(r, dist, scale)
+func newBunch(t *testing.T, dist Distribution, scale int) *Bunch {
+	b, err := NewBunch(dist, scale)
 	if err != nil {
 		t.Fatalf("NewBunch: %v", err)
 	}

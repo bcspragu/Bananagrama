@@ -62,7 +62,7 @@ func (d *DB) Game(id banana.GameID) (*banana.Game, error) {
 	if !ok {
 		return nil, ErrGameNotFound
 	}
-	return g, nil
+	return g.Clone(), nil
 }
 
 // Adds a player to a not-yet-started game.
@@ -121,14 +121,14 @@ func (d *DB) UpdatePlayer(id banana.PlayerID, board *banana.Board, tiles *banana
 		return ErrPlayerNotFound
 	}
 
-	p.Board = board
-	p.Tiles = tiles
+	p.Board = board.Clone()
+	p.Tiles = tiles.Clone()
 
 	return nil
 }
 
 // Starts a game, and sets everyone's initial tile sets.
-func (d *DB) StartGame(id banana.GameID, players map[banana.PlayerID]*banana.Tiles) error {
+func (d *DB) StartGame(id banana.GameID, players map[banana.PlayerID]*banana.Tiles, bunch *banana.Bunch) error {
 	d.Lock()
 	defer d.Unlock()
 
@@ -137,6 +137,7 @@ func (d *DB) StartGame(id banana.GameID, players map[banana.PlayerID]*banana.Til
 		return ErrGameNotFound
 	}
 	g.Status = banana.InProgress
+	g.Bunch = bunch.Clone()
 
 	if len(g.Players) != len(players) {
 		return fmt.Errorf("%d players in game, %d players in tile set map", len(g.Players), len(players))
@@ -147,7 +148,7 @@ func (d *DB) StartGame(id banana.GameID, players map[banana.PlayerID]*banana.Til
 		if !ok {
 			return ErrPlayerNotFound
 		}
-		p.Tiles = tiles
+		p.Tiles = tiles.Clone()
 	}
 
 	return nil

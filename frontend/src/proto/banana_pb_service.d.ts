@@ -13,6 +13,15 @@ type BananaServiceNewGame = {
   readonly responseType: typeof banana_pb.NewGameResponse;
 };
 
+type BananaServiceStartGame = {
+  readonly methodName: string;
+  readonly service: typeof BananaService;
+  readonly requestStream: false;
+  readonly responseStream: false;
+  readonly requestType: typeof banana_pb.StartGameRequest;
+  readonly responseType: typeof banana_pb.StartGameResponse;
+};
+
 type BananaServiceJoinGame = {
   readonly methodName: string;
   readonly service: typeof BananaService;
@@ -43,6 +52,7 @@ type BananaServiceDump = {
 export class BananaService {
   static readonly serviceName: string;
   static readonly NewGame: BananaServiceNewGame;
+  static readonly StartGame: BananaServiceStartGame;
   static readonly JoinGame: BananaServiceJoinGame;
   static readonly Peel: BananaServicePeel;
   static readonly Dump: BananaServiceDump;
@@ -88,6 +98,15 @@ export class BananaServiceClient {
   newGame(
     requestMessage: banana_pb.NewGameRequest,
     callback: (error: ServiceError|null, responseMessage: banana_pb.NewGameResponse|null) => void
+  ): UnaryResponse;
+  startGame(
+    requestMessage: banana_pb.StartGameRequest,
+    metadata: grpc.Metadata,
+    callback: (error: ServiceError|null, responseMessage: banana_pb.StartGameResponse|null) => void
+  ): UnaryResponse;
+  startGame(
+    requestMessage: banana_pb.StartGameRequest,
+    callback: (error: ServiceError|null, responseMessage: banana_pb.StartGameResponse|null) => void
   ): UnaryResponse;
   joinGame(requestMessage: banana_pb.JoinGameRequest, metadata?: grpc.Metadata): ResponseStream<banana_pb.GameUpdate>;
   peel(

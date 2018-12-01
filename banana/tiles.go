@@ -24,8 +24,8 @@ type Tiles struct {
 	count int
 }
 
-// clone returns a deep copy of the set of tiles.
-func (t *Tiles) clone() *Tiles {
+// Clone returns a deep copy of the set of tiles.
+func (t *Tiles) Clone() *Tiles {
 	freq := make(map[Letter]int)
 	for l, idx := range t.freq {
 		freq[l] = idx

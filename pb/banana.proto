@@ -4,6 +4,7 @@ option go_package = "pb";
 
 service BananaService {
   rpc NewGame(NewGameRequest) returns (NewGameResponse);
+  rpc StartGame(StartGameRequest) returns (StartGameResponse);
   rpc JoinGame(JoinGameRequest) returns (stream GameUpdate);
   rpc Peel(PeelRequest) returns (PeelResponse);
   rpc Dump(DumpRequest) returns (DumpResponse);
@@ -12,14 +13,21 @@ service BananaService {
 message NewGameRequest {
   // What to name the game.
   string name = 1;
-  // How to scale the number of tile in the game.
-  int32 scale_factor = 2;
 }
 
 message NewGameResponse {
   // The unique identifier for the game.
   string id = 1;
 }
+
+message StartGameRequest {
+  // The unique identifier for the game to start.
+  string id = 1;
+  // How to scale the number of tile in the game.
+  int32 scale_factor = 2;
+}
+
+message StartGameResponse { }
 
 message JoinGameRequest {
   // The unique identifier for the game to join.
@@ -70,6 +78,8 @@ message DumpRequest {
   // The unique identifier for the game you're
   // dumping in.
   string id = 1;
+  // The letter that is being dumped.
+  string letter = 2;
 }
 
 message DumpResponse { }
@@ -85,7 +95,7 @@ message Board {
 }
 
 message Word {
-  string letters = 1;
+  string Text = 1;
   enum Orientation {
     UNKNOWN = 0;
     HORIZONTAL = 1;

@@ -16,7 +16,10 @@ func TestHasWord(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		dict := NewDictionary(strings.NewReader(tc.input))
+		dict, err := NewDictionary(strings.NewReader(tc.input))
+		if err != nil {
+			t.Fatalf("NewDictionary: %v", err)
+		}
 		for word, want := range tc.want {
 			got := dict.HasWord(word)
 			if want != got {

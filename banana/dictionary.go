@@ -26,7 +26,7 @@ func NewDictionary(r io.Reader) (Dictionary, error) {
 		return nil, err
 	}
 
-	return dict, nli
+	return dict, nil
 }
 
 func (d *dictImpl) HasWord(word string) bool {

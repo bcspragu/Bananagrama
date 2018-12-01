@@ -18,7 +18,7 @@ type Board struct {
 	visitedMap map[Loc]bool
 }
 
-func (b *Board) clone() *Board {
+func (b *Board) Clone() *Board {
 	var (
 		words      []Word
 		letterMap  map[Loc]Letter
@@ -170,7 +170,7 @@ func (b *Board) ValidateBoard(tiles *Tiles) BoardStatus {
 }
 
 func (b *Board) diff(tiles *Tiles) *Tiles {
-	cp := tiles.clone()
+	cp := tiles.Clone()
 	for _, letter := range b.letterMap {
 		cp.Dec(letter)
 	}

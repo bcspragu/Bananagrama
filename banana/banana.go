@@ -13,7 +13,7 @@ type DB interface {
 	// Updates a player's board.
 	UpdatePlayer(id PlayerID, board *Board, tiles *Tiles) error
 	// Starts a game, and sets everyone's initial tile sets.
-	StartGame(id GameID, players map[PlayerID]*Tiles) error
+	StartGame(id GameID, players map[PlayerID]*Tiles, bunch *Bunch) error
 	// Ends a given game, stops players from adding more to their boards.
 	EndGame(id GameID) error
 }
@@ -27,10 +27,38 @@ const (
 	Finished
 )
 
+func (g GameStatus) String() string {
+	switch g {
+	case WaitingForPlayers:
+		return "Waiting For Players"
+	case InProgress:
+		return "In Progress"
+	case Finished:
+		return "Finished"
+	default:
+		return "Unknown"
+	}
+}
+
 type Game struct {
 	Name    string
 	Players []*Player
+	Bunch   *Bunch
 	Status  GameStatus
+}
+
+func (g *Game) Clone() *Game {
+	players := make([]*Player, len(g.Players))
+	for i, p := range g.Players {
+		players[i] = p.Clone()
+	}
+
+	return &Game{
+		Name:    g.Name,
+		Players: players,
+		Bunch:   g.Bunch.Clone(),
+		Status:  g.Status,
+	}
 }
 
 type PlayerID string
@@ -40,6 +68,15 @@ type Player struct {
 	Name  string
 	Board *Board
 	Tiles *Tiles
+}
+
+func (p *Player) Clone() *Player {
+	return &Player{
+		ID:    p.ID,
+		Name:  p.Name,
+		Board: p.Board.Clone(),
+		Tiles: p.Tiles.Clone(),
+	}
 }
 
 // Orientation describes how a board is placed on the board.

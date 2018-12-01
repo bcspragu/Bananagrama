@@ -7,9 +7,6 @@ export class NewGameRequest extends jspb.Message {
   getName(): string;
   setName(value: string): void;
 
-  getScaleFactor(): number;
-  setScaleFactor(value: number): void;
-
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): NewGameRequest.AsObject;
   static toObject(includeInstance: boolean, msg: NewGameRequest): NewGameRequest.AsObject;
@@ -23,7 +20,6 @@ export class NewGameRequest extends jspb.Message {
 export namespace NewGameRequest {
   export type AsObject = {
     name: string,
-    scaleFactor: number,
   }
 }
 
@@ -44,6 +40,46 @@ export class NewGameResponse extends jspb.Message {
 export namespace NewGameResponse {
   export type AsObject = {
     id: string,
+  }
+}
+
+export class StartGameRequest extends jspb.Message {
+  getId(): string;
+  setId(value: string): void;
+
+  getScaleFactor(): number;
+  setScaleFactor(value: number): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): StartGameRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: StartGameRequest): StartGameRequest.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: StartGameRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): StartGameRequest;
+  static deserializeBinaryFromReader(message: StartGameRequest, reader: jspb.BinaryReader): StartGameRequest;
+}
+
+export namespace StartGameRequest {
+  export type AsObject = {
+    id: string,
+    scaleFactor: number,
+  }
+}
+
+export class StartGameResponse extends jspb.Message {
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): StartGameResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: StartGameResponse): StartGameResponse.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: StartGameResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): StartGameResponse;
+  static deserializeBinaryFromReader(message: StartGameResponse, reader: jspb.BinaryReader): StartGameResponse;
+}
+
+export namespace StartGameResponse {
+  export type AsObject = {
   }
 }
 
@@ -229,6 +265,9 @@ export class DumpRequest extends jspb.Message {
   getId(): string;
   setId(value: string): void;
 
+  getLetter(): string;
+  setLetter(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DumpRequest.AsObject;
   static toObject(includeInstance: boolean, msg: DumpRequest): DumpRequest.AsObject;
@@ -242,6 +281,7 @@ export class DumpRequest extends jspb.Message {
 export namespace DumpRequest {
   export type AsObject = {
     id: string,
+    letter: string,
   }
 }
 
@@ -310,8 +350,8 @@ export namespace Board {
 }
 
 export class Word extends jspb.Message {
-  getLetters(): string;
-  setLetters(value: string): void;
+  getText(): string;
+  setText(value: string): void;
 
   getOrientation(): Word.Orientation;
   setOrientation(value: Word.Orientation): void;
@@ -334,7 +374,7 @@ export class Word extends jspb.Message {
 
 export namespace Word {
   export type AsObject = {
-    letters: string,
+    text: string,
     orientation: Word.Orientation,
     x: number,
     y: number,
