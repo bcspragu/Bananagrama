@@ -8,10 +8,16 @@ type DB interface {
 	NewGame(name string) (GameID, error)
 	// Loads a game with the given ID.
 	Game(id GameID) (*Game, error)
+	// Get all of the games.
+	Games() ([]*Game, error)
+	// Loads a player with the given ID.
+	Player(id PlayerID) (*Player, error)
 	// Adds a player to a not-yet-started game.
 	AddPlayer(id GameID, name string) (PlayerID, error)
 	// Updates a player's board.
 	UpdatePlayer(id PlayerID, board *Board, tiles *Tiles) error
+	// Updates the bunch for the game.
+	UpdateBunch(id GameID, bunch *Bunch) error
 	// Starts a game, and sets everyone's initial tile sets.
 	StartGame(id GameID, players map[PlayerID]*Tiles, bunch *Bunch) error
 	// Ends a given game, stops players from adding more to their boards.

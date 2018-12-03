@@ -55,7 +55,7 @@ func TestAdd(t *testing.T) {
 }
 
 func tilesFromMap(m map[Letter]int) *Tiles {
-	t := newTiles()
+	t := NewTiles()
 	for l, c := range m {
 		t.Update(Letter(l), c)
 	}

@@ -10,39 +10,39 @@ import (
 
 func TestWordFromWire(t *testing.T) {
 	testcases := []struct {
-		in   pb.Word
+		in   *pb.Word
 		want banana.Word
 	}{
 		{
-			in: pb.Word{
+			in: &pb.Word{
 				Text:        "test",
-				Orientation: pb.Word_Orientation_UNKNOWN,
+				Orientation: pb.Word_UNKNOWN,
 				X:           1,
 				Y:           2,
 			},
 			want: banana.Word{
 				Text:        "test",
-				Orientation: banana.None,
+				Orientation: banana.NoOrientation,
 				Loc:         banana.Loc{1, 2},
 			},
 		},
 		{
-			in: pb.Word{
+			in: &pb.Word{
 				Text:        "fudge",
-				Orientation: pb.Word_Orientation_HORIZONTAL,
+				Orientation: pb.Word_HORIZONTAL,
 				X:           0,
 				Y:           0,
 			},
-			banana.Word{
+			want: banana.Word{
 				Text:        "fudge",
 				Orientation: banana.Horizontal,
 				Loc:         banana.Loc{0, 0},
 			},
 		},
 		{
-			in: pb.Word{
+			in: &pb.Word{
 				Text:        "globble",
-				Orientation: pb.Word_Orientation_VERTICAL,
+				Orientation: pb.Word_VERTICAL,
 				X:           23,
 				Y:           2,
 			},

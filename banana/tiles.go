@@ -37,8 +37,8 @@ func (t *Tiles) Clone() *Tiles {
 	}
 }
 
-// newTiles returns an initialized and empty tile set.
-func newTiles() *Tiles {
+// NewTiles returns an initialized and empty tile set.
+func NewTiles() *Tiles {
 	return &Tiles{
 		freq: make(map[Letter]int),
 	}

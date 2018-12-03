@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"strings"
+	"sync"
 
 	"github.com/bcspragu/Bananagrama/banana"
 	"github.com/bcspragu/Bananagrama/pb"
@@ -14,13 +15,16 @@ import (
 
 const (
 	DumpSize = 3
+	// TODO: Add MaxPlayers back in
 )
 
 type Server struct {
-	r       *rand.Rand
-	db      banana.DB
-	dict    banana.Dictionary
-	updates map[banana.PlayerID]chan *pb.GameUpdate
+	r    *rand.Rand
+	db   banana.DB
+	dict banana.Dictionary
+
+	*sync.RWMutex
+	updates map[banana.GameID]map[banana.PlayerID]chan *pb.GameUpdate
 }
 
 func New(r *rand.Rand, db banana.DB, dict banana.Dictionary) *Server {
@@ -28,7 +32,7 @@ func New(r *rand.Rand, db banana.DB, dict banana.Dictionary) *Server {
 		r:       r,
 		db:      db,
 		dict:    dict,
-		updates: make(map[banana.PlayerID]chan *pb.GameUpdate),
+		updates: make(map[banana.GameID]map[banana.PlayerID]chan *pb.GameUpdate),
 	}
 }
 
@@ -43,7 +47,27 @@ func (s *Server) NewGame(ctx context.Context, req *pb.NewGameRequest) (*pb.NewGa
 	if err != nil {
 		return nil, err
 	}
+	s.Lock()
+	s.updates[id] = make(map[banana.PlayerID]chan *pb.GameUpdate)
+	s.Unlock()
 	return &pb.NewGameResponse{Id: string(id)}, nil
+}
+
+func (s *Server) ListGames(ctx context.Context, req *pb.ListGamesRequest) (*pb.ListGamesResponse, error) {
+	gs, err := s.db.Games()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get games: %v", err)
+	}
+
+	var pbgs []*pb.Game
+	for id, g := range gs {
+		pbgs = append(pbgs, &pb.Game{
+			Id:   string(id),
+			Name: g.Name,
+		})
+	}
+
+	return &pb.ListGamesResponse{Games: pbgs}, nil
 }
 
 func (s *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (*pb.StartGameResponse, error) {
@@ -63,14 +87,14 @@ func (s *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (*pb.S
 		return nil, fmt.Errorf("failed to make bunch for game: %v", err)
 	}
 
-	numTiles := banana.StartingTileCount(len(g.Players), req.ScaleFactor)
-	players := make(map[banana.PlayerID]*Tiles)
-	for id, p := range g.Players {
-		tls, err := g.Bunch.RemoveN(numTiles)
+	numTiles := banana.StartingTileCount(len(g.Players), int(req.ScaleFactor))
+	players := make(map[banana.PlayerID]*banana.Tiles)
+	for _, p := range g.Players {
+		tls, err := g.Bunch.RemoveN(numTiles, s.r)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get %d tiles for player (%q, %q): %v", numTiles, p.ID, p.Name, err)
 		}
-		players[id] = tls
+		players[p.ID] = tls
 	}
 
 	if err := s.db.StartGame(gid, players, b); err != nil {
@@ -94,18 +118,25 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 	if name == "" {
 		return errors.New("must specify a player name")
 	}
-	pid, err := s.db.AddPlayer(banana.GameID(req.Id), req.Name)
+	gid := banana.GameID(req.Id)
+	pid, err := s.db.AddPlayer(gid, req.Name)
 	if err != nil {
 		return err
 	}
-	if _, ok := s.updates[pid]; !ok {
-		s.updates[pid] = make(chan *pb.GameUpdate)
+	s.Lock()
+	pm, ok := s.updates[gid]
+	if !ok {
+		s.Unlock()
+		return fmt.Errorf("game %q not found", gid)
 	}
+	pm[pid] = make(chan *pb.GameUpdate)
+	s.updates[gid] = pm
+	s.Unlock()
 
-	log.Println("Added player %q to game %q", pid, req.Id)
+	log.Printf("Added player %q to game %q", pid, req.Id)
 
 	for {
-		update := <-s.updates[pid]
+		update := <-s.updates[gid][pid]
 
 		gameOver := false
 		switch u := update.Update.(type) {
@@ -132,71 +163,104 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 }
 
 func (s *Server) Peel(ctx context.Context, req *pb.PeelRequest) (*pb.PeelResponse, error) {
-	// Load board player sent us
-	wb, err := req.Board()
-	if err != nil {
-		return err
-	}
+	gid := banana.GameID(req.Id)
+	// Convert the board to our domain format.
+	b := boardFromWire(req.Board, s.dict)
 
-	// Convert the board to a friendlier format
-	b, err := boardFromWire(wb)
+	pid := banana.PlayerID(req.PlayerId)
+	p, err := s.db.Player(pid)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("failed to get player %q: %v", req.PlayerId, err)
 	}
 
 	// Check if the board they sent is valid
-	status := b.ValidateBoard(g.tiles)
+	status := b.ValidateBoard(p.Tiles)
 
-	// Convert the status to the wire format
-	resp.SetStatus(engineStatusMap[status.Code])
-	// If our error code came with some errors, drop those bad boys into the response
-	if len(status.Errors) > 0 {
-		_, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
-		if err != nil {
-			return err
+	// If the board was valid, clear out their tiles and let everyone know what's
+	// up.
+	if status.Code == banana.Success {
+		if err := s.db.UpdatePlayer(pid, b, banana.NewTiles()); err != nil {
+			return nil, fmt.Errorf("failed to update player %q board: %v", pid, err)
 		}
-		tl, err := capnp.NewTextList(seg, int32(len(status.Errors)))
-		if err != nil {
-			return err
-		}
-
-		for i, wordErrs := range status.Errors {
-			err = tl.Set(i, wordErrs)
-			if err != nil {
-				return fmt.Errorf("receiving peel: error setting errors %v: %v", wordErrs, err)
-			}
-		}
-		switch status.Code {
-		case banana.NotAllLetters:
-			err = resp.SetNotAllLetters(tl)
-		case banana.ExtraLetters:
-			err = resp.SetExtraLetters(tl)
-		case banana.InvalidWord:
-			err = resp.SetInvalidWord(tl)
-		}
-
-		if err != nil {
-			return fmt.Errorf("receiving peel: error setting response errors: %v", err)
+		if err := s.issuePeel(gid, p.Name); err != nil {
+			return nil, fmt.Errorf("failed to issue peels: %v", err)
 		}
 	}
 
-	// If the board was valid, increment the players score and let them know waz good
-	if status.Code == banana.Success {
-		// Send the peel data over for persistence/sending to clients
-		g.e.peelChan <- &peelInfo{
-			player: g.player.name,
-			board:  wb,
+	// Convert the status to the wire format.
+	return &pb.PeelResponse{
+		Status: engineStatusMap[status.Code],
+		Errors: status.Errors,
+	}, nil
+}
+
+func (s *Server) issuePeel(id banana.GameID, name string) error {
+	s.RLock()
+	defer s.RUnlock()
+
+	g, err := s.db.Game(id)
+	if err != nil {
+		return fmt.Errorf("failed to retreive game %q: %v", id, err)
+	}
+
+	// If there are less tiles than players, end the game.
+	if g.Bunch.Count() < len(g.Players) {
+		return s.endGame(id)
+	}
+
+	for pid, c := range s.updates[id] {
+		p, err := s.db.Player(pid)
+		if err != nil {
+			return fmt.Errorf("failed to retreive player %q: %v", pid, err)
+		}
+
+		tiles, err := g.Bunch.RemoveN(1, s.r)
+		if err != nil {
+			return err
+		}
+		p.Tiles.Add(tiles)
+
+		if err := s.db.UpdatePlayer(pid, p.Board, p.Tiles); err != nil {
+			return fmt.Errorf("failed to update player %q board: %v", pid, err)
+		}
+
+		c <- &pb.GameUpdate{
+			Update: &pb.GameUpdate_TileUpdate{
+				TileUpdate: &pb.TileUpdate{
+					Event:    pb.TileUpdate_PEEL,
+					Player:   name,
+					AllTiles: &pb.Tiles{Letters: p.Tiles.AsList()},
+				},
+			},
 		}
 	}
 
 	return nil
 }
 
+func (s *Server) endGame(id banana.GameID) error {
+	for _, c := range s.updates[id] {
+		c <- &pb.GameUpdate{
+			Update: &pb.GameUpdate_StatusUpdate{
+				StatusUpdate: &pb.StatusUpdate{Status: pb.StatusUpdate_GAME_OVER},
+			},
+		}
+	}
+	return s.db.EndGame(id)
+}
+
 // Dump exchanges a player's letter for three from the bunch
 func (s *Server) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.DumpResponse, error) {
-	g, err := s.db.Game(banana.GameID(req.Id))
+	gid := banana.GameID(req.Id)
+	pid := banana.PlayerID(req.PlayerId)
+	g, err := s.db.Game(gid)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retreive game id %q: %v", req.Id, err)
+	}
+
+	p, err := s.db.Player(pid)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retreive player id %q: %v", req.PlayerId, err)
 	}
 
 	if g.Status != banana.InProgress {
@@ -205,72 +269,55 @@ func (s *Server) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.DumpRespons
 	}
 
 	if len(req.Letter) != 1 {
-		return nil, fmt.Errorf("can't dump more than one letter at a time", g.Status)
+		return nil, errors.New("can't dump more than one letter at a time")
 	}
 
-	letter := banana.Letter(l[0])
+	letter := banana.Letter(req.Letter[0])
 
-	if g.bunch.Count() < DumpSize {
+	if g.Bunch.Count() < DumpSize {
 		// We don't have enough tiles to give them
 		return nil, errors.New("not enough tiles to dump")
 	}
 
-	if g.Bunch.Freq(letter) <= 0 {
+	if p.Tiles.Freq(letter) <= 0 {
 		// They don't actually even have this letter to give away.
 		return nil, fmt.Errorf("you don't even have %q in your hand", letter)
 	}
 
-	// If we're here, it's probably safe to go ahead with the dump. We'll start
-	// with a write lock
-	// TODO: Fix everything below here, it's still all old code.
+	// If we're here, it's probably safe to go ahead with the dump.
 
-	// Take the shit letter from them
-	g.tiles.Dec(letter)
-	// Give them three tiles, before we throw their shit tile back in
-	letters := make([]banana.Letter, DumpSize)
-	for i := 0; i < DumpSize; i++ {
-		letters[i] = g.e.bunch.Tile()
-		g.tiles.Inc(letters[i])
-	}
-	// We put their letter back in the pot after we take out their shit letter
-	g.e.bunch.Inc(letter)
+	// Take the shit letter from them.
+	p.Tiles.Dec(letter)
 
-	g.mu.Unlock()
-	tl, err := resp.NewLetters(DumpSize)
+	// Give them three tiles, before we throw their shit tile back in.
+	tls, err := g.Bunch.RemoveN(DumpSize, s.r)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	for i, letter := range letters {
-		err = tl.Set(i, letter.String())
-		if err != nil {
-			return fmt.Errorf("receiving dump: error setting new letters: %v", err)
-		}
-	}
-	resp.SetStatus(potassium.DumpResponse_Status_success)
+	p.Tiles.Add(tls)
 
-	// Save the dump to the DB
-	_, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
-	if err != nil {
-		return fmt.Errorf("saving peel: error making message: %v", err)
+	// We put their letter back in the pot after we take out their shit letter.
+	g.Bunch.Inc(letter)
+
+	if err := s.db.UpdatePlayer(pid, p.Board, p.Tiles); err != nil {
+		return nil, err
 	}
 
-	// Create the dump
-	d, err := potassium.NewRootDump(seg)
-	if err != nil {
-		return fmt.Errorf("saving dump: error making message: %v", err)
+	if err := s.db.UpdateBunch(gid, g.Bunch); err != nil {
+		return nil, err
 	}
 
-	err = d.SetPlayer(g.player.name)
-	if err != nil {
-		return fmt.Errorf("saving dump: error setting player name: %v", err)
+	s.RLock()
+	s.updates[gid][pid] <- &pb.GameUpdate{
+		Update: &pb.GameUpdate_TileUpdate{
+			TileUpdate: &pb.TileUpdate{
+				Event:    pb.TileUpdate_DUMP,
+				Player:   p.Name,
+				AllTiles: &pb.Tiles{Letters: p.Tiles.AsList()},
+			},
+		},
 	}
+	s.RUnlock()
 
-	err = d.SetDump(tl)
-	if err != nil {
-		return fmt.Errorf("saving dump: error setting dump tile list: %v", err)
-	}
-
-	go db.addDump(d)
-
-	return nil
+	return &pb.DumpResponse{}, nil
 }

@@ -17,13 +17,17 @@ func (b *Bunch) Count() int {
 	return b.tiles.count
 }
 
+func (b *Bunch) Inc(l Letter) {
+	b.tiles.Inc(l)
+}
+
 // RemoveN retrieves N tiles from the bunch.
 func (b *Bunch) RemoveN(n int, r *rand.Rand) (*Tiles, error) {
 	if b.tiles.count < n {
 		return nil, fmt.Errorf("only have %d tiles, can't remove %d tiles", b.tiles.count, n)
 	}
 
-	t := newTiles()
+	t := NewTiles()
 	for i := 0; i < n; i++ {
 		c := r.Intn(b.tiles.count)
 		b.tiles.forEach(func(l Letter, freq int) bool {

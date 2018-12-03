@@ -4,6 +4,7 @@ option go_package = "pb";
 
 service BananaService {
   rpc NewGame(NewGameRequest) returns (NewGameResponse);
+  rpc ListGames(ListGamesRequest) returns (ListGamesResponse);
   rpc StartGame(StartGameRequest) returns (StartGameResponse);
   rpc JoinGame(JoinGameRequest) returns (stream GameUpdate);
   rpc Peel(PeelRequest) returns (PeelResponse);
@@ -18,6 +19,17 @@ message NewGameRequest {
 message NewGameResponse {
   // The unique identifier for the game.
   string id = 1;
+}
+
+message ListGamesRequest { }
+
+message ListGamesResponse {
+  repeated Game games = 1;
+}
+
+message Game {
+  string id = 1;
+  string name = 2;
 }
 
 message StartGameRequest {
@@ -38,14 +50,20 @@ message JoinGameRequest {
 
 message GameUpdate {
   oneof update {
+    // A YouUpdate only occurs once, when you join the game successfully.
+    YouUpdate you_update = 1;
     // Player updates happen when people join or leave a game.
-    PlayerUpdate player_update = 1;
+    PlayerUpdate player_update = 2;
     // Status updates happen when a game starts or ends.
-    StatusUpdate status_update = 2;
+    StatusUpdate status_update = 3;
     // Tile updates happen whenever the player's set of tiles changes, like at
     // the start of a game, when someone peels, or when the player dumps.
-    TileUpdate tile_update = 3;
+    TileUpdate tile_update = 4;
   }
+}
+
+message YouUpdate {
+  string your_id = 1;
 }
 
 message PlayerUpdate {
@@ -66,7 +84,18 @@ message StatusUpdate {
 }
 
 message TileUpdate {
-  Tiles all_tiles = 1;
+  enum Event {
+    UNKNOWN = 0;
+    PEEL = 1;
+    DUMP = 2;
+  }
+  // Why we're updating our tile set.
+  Event event = 1;
+  // The player who caused this to occur, mainly for UI purposes. For a dump,
+  // it's always the name of this player. For a peel, it's the player who
+  // peeled.
+  string player = 2;
+  Tiles all_tiles = 3;
 }
 
 message Tiles {
@@ -75,11 +104,12 @@ message Tiles {
 }
 
 message DumpRequest {
-  // The unique identifier for the game you're
-  // dumping in.
+  // The unique identifier for the game you're dumping in.
   string id = 1;
+  // The unique identifier for the player dumping.
+  string player_id = 2;
   // The letter that is being dumped.
-  string letter = 2;
+  string letter = 3;
 }
 
 message DumpResponse { }
@@ -87,7 +117,9 @@ message DumpResponse { }
 message PeelRequest {
   // The unique identifier for the game you're placing in.
   string id = 1;
-  Board board = 2;
+  // The unique identifier for the player peeling.
+  string player_id = 2;
+  Board board = 3;
 }
 
 message Board {
@@ -118,4 +150,5 @@ message PeelResponse {
     EXTRA_LETTERS = 5;
   }
   Status status = 1;
+  repeated string errors = 2;
 }

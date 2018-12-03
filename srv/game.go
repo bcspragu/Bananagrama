@@ -7,7 +7,7 @@ import (
 
 var (
 	wireOrientationMap = map[pb.Word_Orientation]banana.Orientation{
-		pb.Word_UNKNOWN:    banana.None,
+		pb.Word_UNKNOWN:    banana.NoOrientation,
 		pb.Word_HORIZONTAL: banana.Horizontal,
 		pb.Word_VERTICAL:   banana.Vertical,
 	}

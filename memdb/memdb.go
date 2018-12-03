@@ -53,6 +53,18 @@ func (d *DB) NewGame(name string) (banana.GameID, error) {
 	return banana.GameID(""), errors.New("failed to find unique game ID after 10 tries, something is terribly wrong")
 }
 
+func (d *DB) Games() ([]*banana.Game, error) {
+	d.RLock()
+	defer d.RUnlock()
+
+	var gs []*banana.Game
+	for _, g := range d.games {
+		gs = append(gs, g)
+	}
+
+	return gs, nil
+}
+
 // Loads a game with the given ID.
 func (d *DB) Game(id banana.GameID) (*banana.Game, error) {
 	d.RLock()
@@ -63,6 +75,18 @@ func (d *DB) Game(id banana.GameID) (*banana.Game, error) {
 		return nil, ErrGameNotFound
 	}
 	return g.Clone(), nil
+}
+
+// Loads a player with the given ID.
+func (d *DB) Player(id banana.PlayerID) (*banana.Player, error) {
+	d.RLock()
+	defer d.RUnlock()
+
+	p, ok := d.players[id]
+	if !ok {
+		return nil, ErrPlayerNotFound
+	}
+	return p.Clone(), nil
 }
 
 // Adds a player to a not-yet-started game.
@@ -123,6 +147,21 @@ func (d *DB) UpdatePlayer(id banana.PlayerID, board *banana.Board, tiles *banana
 
 	p.Board = board.Clone()
 	p.Tiles = tiles.Clone()
+
+	return nil
+}
+
+// Updates the bunch for the game.
+func (d *DB) UpdateBunch(id banana.GameID, bunch *banana.Bunch) error {
+	d.Lock()
+	defer d.Unlock()
+
+	g, ok := d.games[id]
+	if !ok {
+		return ErrGameNotFound
+	}
+
+	g.Bunch = bunch.Clone()
 
 	return nil
 }
