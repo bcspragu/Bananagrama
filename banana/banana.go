@@ -1,6 +1,8 @@
 // Package banana contains the domain types for playing a game of Bananagrams.
 package banana
 
+import "time"
+
 type GameID string
 
 type DB interface {
@@ -47,10 +49,12 @@ func (g GameStatus) String() string {
 }
 
 type Game struct {
-	Name    string
-	Players []*Player
-	Bunch   *Bunch
-	Status  GameStatus
+	ID        GameID
+	Name      string
+	Players   []*Player
+	Bunch     *Bunch
+	Status    GameStatus
+	CreatedAt time.Time
 }
 
 func (g *Game) Clone() *Game {
@@ -60,11 +64,20 @@ func (g *Game) Clone() *Game {
 	}
 
 	return &Game{
-		Name:    g.Name,
-		Players: players,
-		Bunch:   g.Bunch.Clone(),
-		Status:  g.Status,
+		Name:      g.Name,
+		Players:   players,
+		Bunch:     g.Bunch.Clone(),
+		Status:    g.Status,
+		CreatedAt: cloneTime(g.CreatedAt),
 	}
+}
+
+func cloneTime(t time.Time) time.Time {
+	if t.IsZero() {
+		return time.Time{}
+	}
+
+	return time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), t.Location())
 }
 
 type PlayerID string

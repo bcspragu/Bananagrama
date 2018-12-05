@@ -40,14 +40,15 @@ func main() {
 	grpcSrv := grpc.NewServer()
 	server := srv.New(r, memdb.New(r, dict), dict)
 	pb.RegisterBananaServiceServer(grpcSrv, server)
-	grpcSrv.Serve(lis)
+	go func() {
+		if err := grpcSrv.Serve(lis); err != nil {
+			log.Fatalf("grpc.Serve: %v", err)
+		}
+	}()
 
 	wrappedGRPC := grpcweb.WrapServer(grpcSrv)
 
-	mux := http.NewServeMux()
-	mux.Handle("/api/", wrappedGRPC)
-
-	http.ListenAndServe(*addr, mux)
+	http.ListenAndServe(*addr, wrappedGRPC)
 }
 
 func loadDict(fn string) (banana.Dictionary, error) {

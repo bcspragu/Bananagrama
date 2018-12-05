@@ -5,6 +5,7 @@ option go_package = "pb";
 service BananaService {
   rpc NewGame(NewGameRequest) returns (NewGameResponse);
   rpc ListGames(ListGamesRequest) returns (ListGamesResponse);
+  // TODO: Add a GetGame endpoint, use it in Game.vue.
   rpc StartGame(StartGameRequest) returns (StartGameResponse);
   rpc JoinGame(JoinGameRequest) returns (stream GameUpdate);
   rpc Peel(PeelRequest) returns (PeelResponse);

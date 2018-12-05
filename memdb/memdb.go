@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sync"
+	"time"
 
 	"github.com/bcspragu/Bananagrama/banana"
 )
@@ -44,9 +45,11 @@ func (d *DB) NewGame(name string) (banana.GameID, error) {
 			continue
 		}
 		d.games[id] = &banana.Game{
-			Name:    name,
-			Players: []*banana.Player{},
-			Status:  banana.WaitingForPlayers,
+			ID:        id,
+			Name:      name,
+			Players:   []*banana.Player{},
+			Status:    banana.WaitingForPlayers,
+			CreatedAt: time.Now(),
 		}
 		return id, nil
 	}

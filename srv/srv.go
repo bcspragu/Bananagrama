@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"sort"
 	"strings"
 	"sync"
 
@@ -23,7 +24,7 @@ type Server struct {
 	db   banana.DB
 	dict banana.Dictionary
 
-	*sync.RWMutex
+	sync.RWMutex
 	updates map[banana.GameID]map[banana.PlayerID]chan *pb.GameUpdate
 }
 
@@ -58,11 +59,12 @@ func (s *Server) ListGames(ctx context.Context, req *pb.ListGamesRequest) (*pb.L
 	if err != nil {
 		return nil, fmt.Errorf("failed to get games: %v", err)
 	}
+	sort.Slice(gs, func(i, j int) bool { return gs[i].CreatedAt.Before(gs[j].CreatedAt) })
 
 	var pbgs []*pb.Game
-	for id, g := range gs {
+	for _, g := range gs {
 		pbgs = append(pbgs, &pb.Game{
-			Id:   string(id),
+			Id:   string(g.ID),
 			Name: g.Name,
 		})
 	}
