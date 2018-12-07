@@ -64,8 +64,10 @@ func (s *Server) ListGames(ctx context.Context, req *pb.ListGamesRequest) (*pb.L
 	var pbgs []*pb.Game
 	for _, g := range gs {
 		pbgs = append(pbgs, &pb.Game{
-			Id:   string(g.ID),
-			Name: g.Name,
+			Id:          string(g.ID),
+			Name:        g.Name,
+			Status:      gameStatusMap[g.Status],
+			PlayerCount: int32(len(g.Players)),
 		})
 	}
 

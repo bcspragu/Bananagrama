@@ -1,6 +1,5 @@
 <template>
-  <div class="board">
-
+  <div class="game">
     <Board ref="board"/>
     <UnusedLetters v-if="letters" ref="hand" :letters="letters" />
 
@@ -16,6 +15,7 @@ import { Component, Vue } from 'vue-property-decorator';
 import Board from '@/components/Board.vue'; // @ is an alias to /src
 import UnusedLetters from '@/components/UnusedLetters.vue'; // @ is an alias to /src
 import {Letter} from '@/data';
+import {Game as PBGame, ListGamesRequest} from '@/proto/banana_pb';
 
 @Component({
   components: {
@@ -24,6 +24,8 @@ import {Letter} from '@/data';
   },
 })
 export default class Game extends Vue {
+  private game: PBGame | null = null;
+
   private word: string = '';
   private board: Board = new Board();
 
@@ -36,6 +38,23 @@ export default class Game extends Vue {
   private requiredLetters: string[] = [];
 
   private mounted(): void {
+    this.$client.listGames(new ListGamesRequest(), (err, resp) => {
+      if (!resp) {
+        console.log(err);
+        return;
+      }
+      for (const game of resp.getGamesList()) {
+        if (game.getId() === this.$route.params.id) {
+          this.game = game;
+          break;
+        }
+      }
+
+      if (!this.game) {
+        console.log(`Couldn't find game ID ${this.$route.params.id}`);
+      }
+    });
+
     this.board = (this.$refs.board as Board);
     this.hand = (this.$refs.hand as UnusedLetters);
 
@@ -186,7 +205,7 @@ export default class Game extends Vue {
 </script>
 
 <style scoped>
-.board {
+.game {
   height: 100%;
 }
 </style>

@@ -88,6 +88,12 @@ export class Game extends jspb.Message {
   getName(): string;
   setName(value: string): void;
 
+  getStatus(): Game.Status;
+  setStatus(value: Game.Status): void;
+
+  getPlayerCount(): number;
+  setPlayerCount(value: number): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Game.AsObject;
   static toObject(includeInstance: boolean, msg: Game): Game.AsObject;
@@ -102,6 +108,15 @@ export namespace Game {
   export type AsObject = {
     id: string,
     name: string,
+    status: Game.Status,
+    playerCount: number,
+  }
+
+  export enum Status {
+    UNKNOWN = 0,
+    WAITING_FOR_PLAYERS = 1,
+    IN_PROGRESS = 2,
+    FINISHED = 3,
   }
 }
 

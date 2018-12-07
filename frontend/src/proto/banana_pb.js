@@ -15,6 +15,7 @@ goog.exportSymbol('proto.Board', null, global);
 goog.exportSymbol('proto.DumpRequest', null, global);
 goog.exportSymbol('proto.DumpResponse', null, global);
 goog.exportSymbol('proto.Game', null, global);
+goog.exportSymbol('proto.Game.Status', null, global);
 goog.exportSymbol('proto.GameUpdate', null, global);
 goog.exportSymbol('proto.JoinGameRequest', null, global);
 goog.exportSymbol('proto.ListGamesRequest', null, global);
@@ -652,7 +653,9 @@ proto.Game.prototype.toObject = function(opt_includeInstance) {
 proto.Game.toObject = function(includeInstance, msg) {
   var f, obj = {
     id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    name: jspb.Message.getFieldWithDefault(msg, 2, "")
+    name: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    status: jspb.Message.getFieldWithDefault(msg, 3, 0),
+    playerCount: jspb.Message.getFieldWithDefault(msg, 4, 0)
   };
 
   if (includeInstance) {
@@ -697,6 +700,14 @@ proto.Game.deserializeBinaryFromReader = function(msg, reader) {
       var value = /** @type {string} */ (reader.readString());
       msg.setName(value);
       break;
+    case 3:
+      var value = /** @type {!proto.Game.Status} */ (reader.readEnum());
+      msg.setStatus(value);
+      break;
+    case 4:
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setPlayerCount(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -740,8 +751,32 @@ proto.Game.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
+  f = message.getStatus();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      3,
+      f
+    );
+  }
+  f = message.getPlayerCount();
+  if (f !== 0) {
+    writer.writeInt32(
+      4,
+      f
+    );
+  }
 };
 
+
+/**
+ * @enum {number}
+ */
+proto.Game.Status = {
+  UNKNOWN: 0,
+  WAITING_FOR_PLAYERS: 1,
+  IN_PROGRESS: 2,
+  FINISHED: 3
+};
 
 /**
  * optional string id = 1;
@@ -770,6 +805,36 @@ proto.Game.prototype.getName = function() {
 /** @param {string} value */
 proto.Game.prototype.setName = function(value) {
   jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional Status status = 3;
+ * @return {!proto.Game.Status}
+ */
+proto.Game.prototype.getStatus = function() {
+  return /** @type {!proto.Game.Status} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/** @param {!proto.Game.Status} value */
+proto.Game.prototype.setStatus = function(value) {
+  jspb.Message.setProto3EnumField(this, 3, value);
+};
+
+
+/**
+ * optional int32 player_count = 4;
+ * @return {number}
+ */
+proto.Game.prototype.getPlayerCount = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
+};
+
+
+/** @param {number} value */
+proto.Game.prototype.setPlayerCount = function(value) {
+  jspb.Message.setProto3IntField(this, 4, value);
 };
 
 

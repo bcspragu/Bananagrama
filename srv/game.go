@@ -19,6 +19,12 @@ var (
 		banana.NotAllLetters: pb.PeelResponse_NOT_ALL_LETTERS,
 		banana.ExtraLetters:  pb.PeelResponse_EXTRA_LETTERS,
 	}
+
+	gameStatusMap = map[banana.GameStatus]pb.Game_Status{
+		banana.WaitingForPlayers: pb.Game_WAITING_FOR_PLAYERS,
+		banana.InProgress:        pb.Game_IN_PROGRESS,
+		banana.Finished:          pb.Game_FINISHED,
+	}
 )
 
 func boardFromWire(b *pb.Board, dict banana.Dictionary) *banana.Board {
