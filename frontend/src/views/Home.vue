@@ -1,15 +1,35 @@
 <template>
   <div class="home">
-    <h1>This is the home page</h1>
-    <input v-model="gameName">
-    <button @click="createGame">New Game</button>
-    <div>
-      <ol>
-        <li v-for="game in games">
-          <a @click="checkLogin(game.getId())">{{game.getName()}}</a>
-          <span> ({{gameStatus(game)}}, {{game.getPlayerCount()}} joined)</span>
-        </li>
-      </ol>
+    <div class="columns">
+      <div class="column is-one-fifth"></div>
+      <div class="column is-three-fifths">
+        <h1 class="has-text-centered is-size-3">Welcome to Brananagrams</h1>
+        <div class="columns is-centered">
+          <div class="column is-two-fifths">
+            <img src="@/assets/bananagrams.jpg">
+          </div>
+        </div>
+        <div class="field has-addons new-game-input">
+          <div class="control">
+            <input class="input" v-model="gameName" type="text" placeholder="New Game">
+          </div>
+          <div class="control">
+            <a class="button is-info" @click="createGame">
+              Create Game
+            </a>
+          </div>
+        </div>
+        <div>
+          <h2 class="has-text-centered is-size-3">Game List</h2>
+          <ol>
+            <li v-for="game in games">
+              <a @click="checkLogin(game.getId())">{{game.getName()}}</a>
+              <span> ({{gameStatus(game)}}, {{game.getPlayerCount()}} joined)</span>
+            </li>
+          </ol>
+        </div>
+      </div>
+      <div class="column is-one-fifth"></div>
     </div>
     <b-modal :active.sync="showModal">
       <div class="modal-card">
@@ -20,7 +40,7 @@
           <b-field label="Username">
               <b-input
                   type="text"
-                  :value="username"
+                  v-model="username"
                   placeholder="How Now, Brown Steer?"
                   required>
               </b-input>
@@ -68,18 +88,8 @@ export default class Home extends Vue {
 
   private joinGame(): void {
     this.showModal = false;
-    const req = new JoinGameRequest();
-    req.setId(this.modalGameID);
-    req.setName(this.username);
-
-    this.$client.joinGame(req, (err, resp) => {
-      if (!resp) {
-        console.log(err);
-        return;
-      }
-
-      this.$router.push({ name: 'game', params: { id: this.modalGameID } });
-    });
+    this.$cookies.set(`game-${this.modalGameID}`, this.username);
+    this.$router.push({ name: 'game', params: { id: this.modalGameID } });
   }
 
   private createGame() {
@@ -118,7 +128,8 @@ export default class Home extends Vue {
 </script>
 
 <style scoped>
-li {
-  text-align: left;
+.new-game-input {
+  justify-content: center;
+  margin-bottom: 1rem;
 }
 </style>

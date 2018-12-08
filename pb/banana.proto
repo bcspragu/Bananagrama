@@ -43,8 +43,6 @@ message Game {
 message StartGameRequest {
   // The unique identifier for the game to start.
   string id = 1;
-  // How to scale the number of tile in the game.
-  int32 scale_factor = 2;
 }
 
 message StartGameResponse { }

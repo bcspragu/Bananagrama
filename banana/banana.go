@@ -7,7 +7,7 @@ type GameID string
 
 type DB interface {
 	// Creates a new game with the given name.
-	NewGame(name string) (GameID, error)
+	NewGame(name string, bunch *Bunch) (GameID, error)
 	// Loads a game with the given ID.
 	Game(id GameID) (*Game, error)
 	// Get all of the games.

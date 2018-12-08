@@ -33,7 +33,7 @@ func New(r *rand.Rand, dict banana.Dictionary) *DB {
 }
 
 // Creates a new game with the given name.
-func (d *DB) NewGame(name string) (banana.GameID, error) {
+func (d *DB) NewGame(name string, b *banana.Bunch) (banana.GameID, error) {
 	d.Lock()
 	defer d.Unlock()
 
@@ -48,6 +48,7 @@ func (d *DB) NewGame(name string) (banana.GameID, error) {
 			ID:        id,
 			Name:      name,
 			Players:   []*banana.Player{},
+			Bunch:     b.Clone(),
 			Status:    banana.WaitingForPlayers,
 			CreatedAt: time.Now(),
 		}

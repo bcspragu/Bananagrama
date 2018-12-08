@@ -15,7 +15,8 @@ import { Component, Vue } from 'vue-property-decorator';
 import Board from '@/components/Board.vue'; // @ is an alias to /src
 import UnusedLetters from '@/components/UnusedLetters.vue'; // @ is an alias to /src
 import {Letter} from '@/data';
-import {Game as PBGame, ListGamesRequest} from '@/proto/banana_pb';
+import {Game as PBGame, ListGamesRequest, JoinGameRequest,
+        GameUpdate, YouUpdate, PlayerUpdate, TileUpdate} from '@/proto/banana_pb';
 
 @Component({
   components: {
@@ -25,6 +26,7 @@ import {Game as PBGame, ListGamesRequest} from '@/proto/banana_pb';
 })
 export default class Game extends Vue {
   private game: PBGame | null = null;
+  private playerID: string | null = null;
 
   private word: string = '';
   private board: Board = new Board();
@@ -52,7 +54,10 @@ export default class Game extends Vue {
 
       if (!this.game) {
         console.log(`Couldn't find game ID ${this.$route.params.id}`);
+        return;
       }
+
+      this.joinGame();
     });
 
     this.board = (this.$refs.board as Board);
@@ -62,6 +67,63 @@ export default class Game extends Vue {
     this.letters.sort((a, b) => a.letter > b.letter ? 1 : (a.letter < b.letter ? -1 : 0));
 
     document.addEventListener('keyup', this.keyup);
+  }
+
+  private joinGame(): void {
+    if (!this.game) {
+      return;
+    }
+
+    const id = this.game.getId();
+    const name = this.$cookies.get(`game-${id}`);
+    const req = new JoinGameRequest();
+    console.log('asd', id, name);
+    req.setId(id);
+    req.setName(name);
+
+    const stream = this.$client.joinGame(req);
+
+    stream.on('data', (resp) => {
+      switch (resp.getUpdateCase()) {
+        case GameUpdate.UpdateCase.YOU_UPDATE:
+          this.handleYouUpdate(resp.getYouUpdate()!);
+          break;
+        case GameUpdate.UpdateCase.PLAYER_UPDATE:
+          this.handlePlayerUpdate(resp.getPlayerUpdate()!);
+          break;
+        case GameUpdate.UpdateCase.STATUS_UPDATE:
+          this.handleStatusUpdate(resp.getStatusUpdate()!);
+          break;
+        case GameUpdate.UpdateCase.TILE_UPDATE:
+          this.handleTileUpdate(resp.getTileUpdate()!);
+          break;
+      }
+    });
+    stream.on('status', (status) => {
+      console.log(status.code);
+      console.log(status.details);
+      console.log(status.metadata);
+    });
+    stream.on('end', (end) => {
+      // Game over.
+      console.log('game over', end);
+    });
+  }
+
+  private handleYouUpdate(up: YouUpdate): void {
+    this.playerID = up.getYourId();
+  }
+
+  private handlePlayerUpdate(up: PlayerUpdate): void {
+
+  }
+
+  private handleStatusUpdate(up: StatusUpdate): void {
+
+  }
+
+  private handleTileUpdate(up: TileUpdate): void {
+
   }
 
   get required(): string {

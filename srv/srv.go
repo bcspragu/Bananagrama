@@ -15,7 +15,8 @@ import (
 )
 
 const (
-	DumpSize = 3
+	DumpSize    = 3
+	scaleFactor = 1
 	// TODO: Add MaxPlayers back in
 )
 
@@ -44,7 +45,12 @@ func (s *Server) NewGame(ctx context.Context, req *pb.NewGameRequest) (*pb.NewGa
 	if name == "" {
 		return nil, errors.New("must specify a game name")
 	}
-	id, err := s.db.NewGame(req.Name)
+	bunch, err := banana.NewBunch(banana.Bananagrams(), scaleFactor)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make bunch: %v", err)
+	}
+
+	id, err := s.db.NewGame(req.Name, bunch)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +97,7 @@ func (s *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (*pb.S
 		return nil, fmt.Errorf("failed to make bunch for game: %v", err)
 	}
 
-	numTiles := banana.StartingTileCount(len(g.Players), int(req.ScaleFactor))
+	numTiles := banana.StartingTileCount(len(g.Players), scaleFactor)
 	players := make(map[banana.PlayerID]*banana.Tiles)
 	for _, p := range g.Players {
 		tls, err := g.Bunch.RemoveN(numTiles, s.r)
