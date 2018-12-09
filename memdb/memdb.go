@@ -114,6 +114,7 @@ func (d *DB) AddPlayer(id banana.GameID, name string) (banana.PlayerID, error) {
 		Board: &banana.Board{
 			Dictionary: d.dict,
 		},
+		Tiles: banana.NewTiles(),
 	}
 
 	g.Players = append(g.Players, p)

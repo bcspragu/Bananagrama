@@ -10,6 +10,18 @@ import {BaseType, Selection} from 'd3';
 import {Cell, Orientation, Word, PlacedWord, Placement, Match} from '@/data';
 
 
+interface Suggestion {
+  requiredLetters: string[];
+  valid: boolean;
+}
+
+interface BoardData {
+  cellSize: number;
+  cellRadius: number;
+  suggestion: Suggestion;
+  data: Cell[][];
+}
+
 @Component
 export default class Board extends Vue {
   private placedWords: PlacedWord[] = [];
@@ -19,33 +31,37 @@ export default class Board extends Vue {
   private lastFits: Placement[] = [];
   private fitIndex = 0;
 
-  // Specify a sane default size in case we can't get the page size for some
-  // reason.
-  private sizeX = 750;
-  private sizeY = 500;
+  private sizeX = 0;
+  private sizeY = 0;
   private margin = 2;
   private grid: Selection<any, any, any, any> = d3.select('#grid');
 
-  public placeCurrentWord(): void {
+  // Returns true if we had a fit to place.
+  public placeCurrentWord(): boolean {
     const fit = this.currentFit;
-    if (fit) {
-      this.normalizeAndAdd({
-        word: this.currentWord,
-        x: fit.x,
-        y: fit.y,
-        orientation: fit.orientation,
-        suggestion: false,
-      });
-
-      this.currentWord = '';
-      this.lastFits = [];
-      this.fitIndex = 0;
-
-      this.renderBoard();
+    if (!fit) {
+      return false;
     }
+
+    this.normalizeAndAdd({
+      word: this.currentWord,
+      x: fit.x,
+      y: fit.y,
+      orientation: fit.orientation,
+      suggestion: false,
+    });
+
+    this.currentWord = '';
+    this.lastFits = [];
+    this.fitIndex = 0;
+
+    this.renderBoard();
+
+    return true;
   }
 
-  public suggestPlacement(word: string): string[] {
+  // Returns the letters required to place the given suggestion.
+  public suggestPlacement(word: string): Suggestion {
     word = word.toUpperCase();
     this.fitIndex = 0;
     this.currentWord = word;
@@ -58,24 +74,27 @@ export default class Board extends Vue {
         {x: 0, y: 0, orientation: Orientation.Vertical},
       ];
       this.renderBoard();
-      return word.split('').map((l) => l.toUpperCase());
+      return {
+        requiredLetters: word.split('').map((l) => l.toUpperCase()),
+        valid: true,
+      };
     }
 
     this.lastFits = this.findFits(word);
     return this.renderBoard();
   }
 
-  public nextSuggestion(): string[] {
+  public nextSuggestion(): Suggestion {
     return this.selectSuggestion(1);
   }
 
-  public prevSuggestion(): string[] {
+  public prevSuggestion(): Suggestion {
     return this.selectSuggestion(this.lastFits.length - 1);
   }
 
-  private selectSuggestion(offset: number): string[] {
+  private selectSuggestion(offset: number): Suggestion {
     if (this.lastFits.length === 0) {
-      return [];
+      return {requiredLetters: [], valid: false};
     }
 
     this.fitIndex = (this.fitIndex + offset) % this.lastFits.length;
@@ -419,7 +438,7 @@ export default class Board extends Vue {
     return {board, requiredLetters: reqLetters};
   }
 
-  private renderBoard(): string[] {
+  private renderBoard(): Suggestion {
     this.resizeSVG();
     const board = this.dataFromBoard();
 
@@ -465,10 +484,10 @@ export default class Board extends Vue {
           return board.cellSize * 0.7 + 'px';
         });
 
-    return board.requiredLetters;
+    return board.suggestion;
   }
 
-  private dataFromBoard(): {cellSize: number, cellRadius: number, requiredLetters: string[], data: Cell[][]} {
+  private dataFromBoard(): BoardData {
     const data: Cell[][] = new Array();
 
     const fit = this.currentFit;
@@ -538,7 +557,15 @@ export default class Board extends Vue {
       this.removeLastAndNormalize();
     }
 
-    return {cellSize: size, cellRadius: 5, requiredLetters: boardResp.requiredLetters, data};
+    return {
+      cellSize: size,
+      cellRadius: 5,
+      suggestion: {
+        requiredLetters: boardResp.requiredLetters,
+        valid: !!fit,
+      },
+      data,
+    };
   }
 }
 
@@ -557,6 +584,6 @@ export default class Board extends Vue {
 }
 
 #grid {
-  height: 60%;
+  height: 100%;
 }
 </style>

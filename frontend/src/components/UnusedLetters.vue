@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import * as d3 from 'd3';
 import {BaseType, Selection} from 'd3';
 import {Letter} from '@/data';
@@ -15,10 +15,11 @@ export default class UnusedLetters extends Vue {
   @Prop() private letters!: Letter[];
   private board: Selection<BaseType, any, HTMLElement, any> = d3.select('#letters');
 
-  private sizeX = 650;
-  private sizeY = 150;
+  private sizeX = 0;
+  private sizeY = 0;
   private margin = 10;
 
+  @Watch('letters')
   public renderLetters(): void {
     this.resizeSVG();
 
@@ -65,25 +66,22 @@ export default class UnusedLetters extends Vue {
     const board = document.getElementById('letters');
     if (board) {
       this.sizeX = board.offsetWidth;
+      this.sizeY = board.offsetHeight;
     }
 
     this.board
-      .attr('width', this.sizeX + 'px');
+      .attr('width', this.sizeX + 'px')
+      .attr('height', this.sizeY + 'px');
   }
 
   private mounted(): void {
     this.board = d3.select('#letters').append('svg');
-
-    this.renderLetters();
   }
 }
 </script>
 
 <style>
 #letters {
-  width: 30%;
-
-  margin: 1rem auto;
   -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
      -khtml-user-select: none; /* Konqueror HTML */
@@ -91,5 +89,6 @@ export default class UnusedLetters extends Vue {
         -ms-user-select: none; /* Internet Explorer/Edge */
             user-select: none; /* Non-prefixed version, currently
                                   supported by Chrome and Opera */
+  height: 100%;
 }
 </style>
