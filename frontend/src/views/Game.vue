@@ -192,22 +192,21 @@ export default class Game extends Vue {
     // Left
     if (e.keyCode === 37) {
       this.next();
-      this.getSuggestions();
       return;
     }
 
     // Right
     if (e.keyCode === 39) {
       this.prev();
-      this.getSuggestions();
       return;
     }
 
     // Escape
     if (e.keyCode === 27) {
-      this.clearSelected();
       this.word = '';
       this.notice = [];
+      this.clearSelected();
+      this.board.clear();
       return;
     }
 

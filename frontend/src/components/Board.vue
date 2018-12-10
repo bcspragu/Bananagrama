@@ -51,13 +51,17 @@ export default class Board extends Vue {
       suggestion: false,
     });
 
+    this.clear();
+
+    return true;
+  }
+
+  public clear(): void {
     this.currentWord = '';
     this.lastFits = [];
     this.fitIndex = 0;
 
     this.renderBoard();
-
-    return true;
   }
 
   // Returns the letters required to place the given suggestion.
