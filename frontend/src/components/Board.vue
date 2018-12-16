@@ -306,7 +306,9 @@ export default class Board extends Vue {
   }
 
   private mounted(): void {
-    this.grid = d3.select('#grid').append('svg');
+    this.grid = d3.select('#grid').append('svg')
+      .attr('width', 0)
+      .attr('height', 0);
 
     this.renderBoard();
   }

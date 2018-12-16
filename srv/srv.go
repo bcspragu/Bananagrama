@@ -110,40 +110,95 @@ func (s *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (*pb.S
 	if err := s.db.StartGame(gid, players, b); err != nil {
 		return nil, err
 	}
+
+	s.updateForGame(gid, &pb.GameUpdate{
+		Update: &pb.GameUpdate_StatusUpdate{
+			StatusUpdate: &pb.StatusUpdate{Status: pb.StatusUpdate_GAME_STARTED},
+		},
+	})
+
+	if err := s.sendTiles(gid, &pb.TileUpdate{Event: pb.TileUpdate_SPLIT}); err != nil {
+		return nil, fmt.Errorf("failed to send tiles: %v", err)
+	}
+
 	return &pb.StartGameResponse{}, nil
 }
 
 func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinGameServer) error {
-	g, err := s.db.Game(banana.GameID(req.Id))
+	gid := banana.GameID(req.Id)
+	g, err := s.db.Game(gid)
 	if err != nil {
 		return fmt.Errorf("failed to retreive game id %q: %v", req.Id, err)
 	}
 
-	if g.Status != banana.WaitingForPlayers {
-		// Can't join an in-progess or finished game.
-		return fmt.Errorf("can't join game in state %q", g.Status)
-	}
+	var (
+		pChan chan *pb.GameUpdate
+		pid   banana.PlayerID
+	)
 
-	name := strings.TrimSpace(req.Name)
-	if name == "" {
-		return errors.New("must specify a player name")
-	}
-	gid := banana.GameID(req.Id)
-	pid, err := s.db.AddPlayer(gid, req.Name)
-	if err != nil {
-		return err
-	}
-	s.Lock()
-	pm, ok := s.updates[gid]
-	if !ok {
+	// Try to add a new player if they weren't already in the game.
+	if req.PlayerId == "" {
+
+		if g.Status != banana.WaitingForPlayers {
+			// Can't join an in-progess or finished game.
+			return fmt.Errorf("can't join game in state %q", g.Status)
+		}
+
+		name := strings.TrimSpace(req.Name)
+		if name == "" {
+			return errors.New("must specify a player name")
+		}
+
+		if pid, err = s.db.AddPlayer(gid, req.Name); err != nil {
+			return err
+		}
+		s.Lock()
+		if _, ok := s.updates[gid]; !ok {
+			s.Unlock()
+			return fmt.Errorf("game %q not found", gid)
+		}
+		pChan = make(chan *pb.GameUpdate)
+		s.updates[gid][pid] = pChan
 		s.Unlock()
-		return fmt.Errorf("game %q not found", gid)
-	}
-	pm[pid] = make(chan *pb.GameUpdate)
-	s.updates[gid] = pm
-	s.Unlock()
+		log.Printf("Added player %q to game %q", pid, req.Id)
+	} else {
+		// Find the player in the game.
+		for _, p := range g.Players {
+			if p.ID == banana.PlayerID(req.PlayerId) {
+				// TODO: Maybe add a check that updates[gid] exists, like above.
+				s.RLock()
+				pChan = s.updates[gid][p.ID]
+				pid = p.ID
+				s.RUnlock()
+				break
+			}
+		}
+		log.Printf("Player %q rejoined game %q", pid, req.Id)
 
-	log.Printf("Added player %q to game %q", pid, req.Id)
+		// TODO: Send them the info they need to get back up to speed.
+	}
+
+	if pChan == nil {
+		return fmt.Errorf("failed to add or find player: %+v", req)
+	}
+
+	stream.Send(&pb.GameUpdate{
+		Update: &pb.GameUpdate_YouUpdate{
+			YouUpdate: &pb.YouUpdate{YourId: string(pid)},
+		},
+	})
+
+	go func() {
+		s.updateForGame(gid, &pb.GameUpdate{
+			Update: &pb.GameUpdate_StatusUpdate{
+				StatusUpdate: &pb.StatusUpdate{Status: pb.StatusUpdate_GAME_STARTED},
+			},
+		})
+
+		if err := s.sendPlayers(gid); err != nil {
+			log.Printf("Failed to send player list for game %q: %v", gid, err)
+		}
+	}()
 
 	for {
 		update := <-s.updates[gid][pid]
@@ -170,6 +225,59 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 	}
 
 	return nil
+}
+
+func (s *Server) sendPlayers(id banana.GameID) error {
+	g, err := s.db.Game(id)
+	if err != nil {
+		return err
+	}
+
+	var players []*pb.Player
+	for _, p := range g.Players {
+		players = append(players, &pb.Player{Name: p.Name})
+	}
+
+	up := &pb.GameUpdate{
+		Update: &pb.GameUpdate_PlayerUpdate{
+			PlayerUpdate: &pb.PlayerUpdate{
+				Players: players,
+			},
+		},
+	}
+
+	s.updateForGame(id, up)
+	return nil
+}
+
+func (s *Server) sendTiles(id banana.GameID, base *pb.TileUpdate) error {
+	g, err := s.db.Game(id)
+	if err != nil {
+		return err
+	}
+
+	s.RLock()
+	for _, p := range g.Players {
+		s.updates[id][p.ID] <- &pb.GameUpdate{
+			Update: &pb.GameUpdate_TileUpdate{
+				TileUpdate: &pb.TileUpdate{
+					Event:    base.Event,
+					Player:   base.Player,
+					AllTiles: &pb.Tiles{Letters: p.Tiles.AsList()},
+				},
+			},
+		}
+	}
+	s.RUnlock()
+	return nil
+}
+
+func (s *Server) updateForGame(id banana.GameID, up *pb.GameUpdate) {
+	s.RLock()
+	for _, pc := range s.updates[id] {
+		pc <- up
+	}
+	s.RUnlock()
 }
 
 func (s *Server) Peel(ctx context.Context, req *pb.PeelRequest) (*pb.PeelResponse, error) {

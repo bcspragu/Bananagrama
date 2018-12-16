@@ -52,6 +52,9 @@ message JoinGameRequest {
   string id = 1;
   // The name of the player joining the game.
   string name = 2;
+  // This can be set if a player is re-joining a game they're already in, it'll
+  // attach the user to the same session.
+  string player_id = 3;
 }
 
 message GameUpdate {
@@ -83,8 +86,9 @@ message Player {
 message StatusUpdate {
   enum Status {
     UNKNOWN = 0;
-    GAME_STARTED = 1;
-    GAME_OVER = 2;
+    WAITING = 1;
+    GAME_STARTED = 2;
+    GAME_OVER = 3;
   }
   Status status = 1;
 }
@@ -92,8 +96,9 @@ message StatusUpdate {
 message TileUpdate {
   enum Event {
     UNKNOWN = 0;
-    PEEL = 1;
-    DUMP = 2;
+    SPLIT = 1;
+    PEEL = 2;
+    DUMP = 3;
   }
   // Why we're updating our tile set.
   Event event = 1;

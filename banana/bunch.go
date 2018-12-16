@@ -62,17 +62,17 @@ type Distribution map[int][]Letter
 // Bananagrams returns the distribution of letters on a Bananagrams board.
 func Bananagrams() Distribution {
 	return map[int][]Letter{
-		2:  []Letter{'j', 'k', 'q', 'x', 'z'},
-		3:  []Letter{'b', 'c', 'f', 'h', 'm', 'p', 'v', 'w', 'y'},
-		4:  []Letter{'g'},
-		5:  []Letter{'l'},
-		6:  []Letter{'d', 's', 'u'},
-		8:  []Letter{'n'},
-		9:  []Letter{'t', 'r'},
-		11: []Letter{'o'},
-		12: []Letter{'i'},
-		13: []Letter{'a'},
-		18: []Letter{'e'},
+		2:  []Letter{'J', 'K', 'Q', 'X', 'Z'},
+		3:  []Letter{'B', 'C', 'F', 'H', 'M', 'P', 'V', 'W', 'Y'},
+		4:  []Letter{'G'},
+		5:  []Letter{'L'},
+		6:  []Letter{'D', 'S', 'U'},
+		8:  []Letter{'N'},
+		9:  []Letter{'T', 'R'},
+		11: []Letter{'O'},
+		12: []Letter{'I'},
+		13: []Letter{'A'},
+		18: []Letter{'E'},
 	}
 }
 

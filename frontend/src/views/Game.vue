@@ -18,7 +18,14 @@
         </div>
       </div>
       <div class="column is-one-fifth right-side">
-        <div class="players"></div>
+        <div class="players">
+          <ol>
+            <li v-for="player in players">{{player.getName()}}</li>
+          </ol>
+          <a class="button is-info" @click="startGame">
+            Start Game
+          </a>
+        </div>
         <div class="logs"></div>
       </div>
     </div>
@@ -34,7 +41,7 @@ import Notice from '@/components/Notice.vue'; // @ is an alias to /src
 import {Letter} from '@/data';
 import {Game as PBGame, ListGamesRequest, JoinGameRequest,
         GameUpdate, YouUpdate, PlayerUpdate, TileUpdate,
-        StatusUpdate} from '@/proto/banana_pb';
+        StatusUpdate, StartGameRequest, Player} from '@/proto/banana_pb';
 
 @Component({
   components: {
@@ -47,6 +54,7 @@ import {Game as PBGame, ListGamesRequest, JoinGameRequest,
 export default class Game extends Vue {
   private game: PBGame | null = null;
   private playerID: string | null = null;
+  private players: Player[] = [];
 
   private word: string = '';
   private notice: string[] = [];
@@ -85,10 +93,19 @@ export default class Game extends Vue {
     this.board = (this.$refs.board as Board);
     this.hand = (this.$refs.hand as UnusedLetters);
 
-    this.letters = this.randomLetters(20);
-    this.letters.sort((a, b) => a.letter > b.letter ? 1 : (a.letter < b.letter ? -1 : 0));
-
     document.addEventListener('keyup', this.keyup);
+  }
+
+  private startGame(): void {
+    const req = new StartGameRequest();
+    req.setId(this.game!.getId());
+
+    this.$client.startGame(req, (err, resp) => {
+      if (!resp) {
+        console.log(err);
+        return;
+      }
+    });
   }
 
   private joinGame(): void {
@@ -97,15 +114,20 @@ export default class Game extends Vue {
     }
 
     const id = this.game.getId();
-    const name = this.$cookies.get(`game-${id}`);
+    const name = this.$cookies.get('player-name');
     const req = new JoinGameRequest();
-    console.log('asd', id, name);
     req.setId(id);
     req.setName(name);
+
+    const playerID = this.getPlayerIDFromCookies();
+    if (playerID) {
+      req.setPlayerId(playerID);
+    }
 
     const stream = this.$client.joinGame(req);
 
     stream.on('data', (resp) => {
+      console.log(resp);
       switch (resp.getUpdateCase()) {
         case GameUpdate.UpdateCase.YOU_UPDATE:
           this.handleYouUpdate(resp.getYouUpdate()!);
@@ -128,15 +150,17 @@ export default class Game extends Vue {
     });
     stream.on('end', () => {
       // Game over.
-      console.log('game over');
+      console.log('stream ended');
     });
   }
 
   private handleYouUpdate(up: YouUpdate): void {
     this.playerID = up.getYourId();
+    this.setPlayerIDInCookies(this.playerID);
   }
 
   private handlePlayerUpdate(up: PlayerUpdate): void {
+    this.players = up.getPlayersList();
     return;
   }
 
@@ -145,7 +169,35 @@ export default class Game extends Vue {
   }
 
   private handleTileUpdate(up: TileUpdate): void {
+    const letters: Letter[] = [];
+
+    for (const l of up.getAllTiles()!.getLettersList()) {
+      letters.push({
+        letter: l,
+        selected: false,
+      });
+    }
+
+    this.letters = letters;
     return;
+  }
+
+  private getPlayerIDFromCookies(): string | undefined {
+    if (!this.game) {
+      return;
+    }
+
+    const id = this.game.getId();
+    return this.$cookies.get(`game/${id}/player-id`);
+  }
+
+  private setPlayerIDInCookies(playerID: string): void {
+    if (!this.game) {
+      return;
+    }
+
+    const id = this.game.getId();
+    this.$cookies.set(`game/${id}/player-id`, playerID);
   }
 
   private requiredCount(): { [s: string]: number; } {
@@ -228,17 +280,6 @@ export default class Game extends Vue {
     }
   }
 
-  private randomLetters(n: number): Letter[] {
-    const letters: Letter[] = [];
-    for (let i = 0; i < n; i++) {
-      letters.push({
-        letter: String.fromCharCode(Math.floor(Math.random() * 26) + 65),
-        selected: false,
-      });
-    }
-    return letters;
-  }
-
   private selectIfExists(letter: string): void {
     const index = this.letters.map((x) => x.letter + (x.selected ? '1' : '0')).indexOf(letter + '0');
     if (index > -1) {
@@ -312,7 +353,6 @@ export default class Game extends Vue {
       for (const idx of indicesToRemove) {
         this.letters.splice(idx, 1);
       }
-      this.letters.push(...this.randomLetters(indicesToRemove.length));
       this.letters.sort((a, b) => a.letter > b.letter ? 1 : (a.letter < b.letter ? -1 : 0));
       this.hand.renderLetters();
     }, 500);
@@ -336,11 +376,13 @@ export default class Game extends Vue {
 
 <style scoped>
 .game, .left-side, .right-side {
-  height: 100%;
+  /* Just because borders cause annoyingness. */
+  height: 99.5%;
 }
 
 .players {
   height: 50%;
+  overflow-y: auto;
   border-left: solid 1px black;
   border-bottom: solid 1px black;
 }
@@ -359,6 +401,10 @@ export default class Game extends Vue {
   border-top: solid 1px black;
   border-bottom: solid 1px black;
   border-right: solid 1px black;
+}
+.columns.is-gapless:not(:last-child).active-word {
+  padding: 0;
+  margin: 0;
 }
 .active-display {
   border-right: solid 1px black;

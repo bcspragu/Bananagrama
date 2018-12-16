@@ -885,8 +885,7 @@ proto.StartGameRequest.prototype.toObject = function(opt_includeInstance) {
  */
 proto.StartGameRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    scaleFactor: jspb.Message.getFieldWithDefault(msg, 2, 0)
+    id: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -927,10 +926,6 @@ proto.StartGameRequest.deserializeBinaryFromReader = function(msg, reader) {
       var value = /** @type {string} */ (reader.readString());
       msg.setId(value);
       break;
-    case 2:
-      var value = /** @type {number} */ (reader.readInt32());
-      msg.setScaleFactor(value);
-      break;
     default:
       reader.skipField();
       break;
@@ -967,13 +962,6 @@ proto.StartGameRequest.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getScaleFactor();
-  if (f !== 0) {
-    writer.writeInt32(
-      2,
-      f
-    );
-  }
 };
 
 
@@ -989,21 +977,6 @@ proto.StartGameRequest.prototype.getId = function() {
 /** @param {string} value */
 proto.StartGameRequest.prototype.setId = function(value) {
   jspb.Message.setProto3StringField(this, 1, value);
-};
-
-
-/**
- * optional int32 scale_factor = 2;
- * @return {number}
- */
-proto.StartGameRequest.prototype.getScaleFactor = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
-};
-
-
-/** @param {number} value */
-proto.StartGameRequest.prototype.setScaleFactor = function(value) {
-  jspb.Message.setProto3IntField(this, 2, value);
 };
 
 
@@ -1171,7 +1144,8 @@ proto.JoinGameRequest.prototype.toObject = function(opt_includeInstance) {
 proto.JoinGameRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    name: jspb.Message.getFieldWithDefault(msg, 2, "")
+    name: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    playerId: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -1216,6 +1190,10 @@ proto.JoinGameRequest.deserializeBinaryFromReader = function(msg, reader) {
       var value = /** @type {string} */ (reader.readString());
       msg.setName(value);
       break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPlayerId(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1259,6 +1237,13 @@ proto.JoinGameRequest.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
+  f = message.getPlayerId();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
+      f
+    );
+  }
 };
 
 
@@ -1289,6 +1274,21 @@ proto.JoinGameRequest.prototype.getName = function() {
 /** @param {string} value */
 proto.JoinGameRequest.prototype.setName = function(value) {
   jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional string player_id = 3;
+ * @return {string}
+ */
+proto.JoinGameRequest.prototype.getPlayerId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/** @param {string} value */
+proto.JoinGameRequest.prototype.setPlayerId = function(value) {
+  jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
@@ -2195,8 +2195,9 @@ proto.StatusUpdate.serializeBinaryToWriter = function(message, writer) {
  */
 proto.StatusUpdate.Status = {
   UNKNOWN: 0,
-  GAME_STARTED: 1,
-  GAME_OVER: 2
+  WAITING: 1,
+  GAME_STARTED: 2,
+  GAME_OVER: 3
 };
 
 /**
@@ -2372,8 +2373,9 @@ proto.TileUpdate.serializeBinaryToWriter = function(message, writer) {
  */
 proto.TileUpdate.Event = {
   UNKNOWN: 0,
-  PEEL: 1,
-  DUMP: 2
+  SPLIT: 1,
+  PEEL: 2,
+  DUMP: 3
 };
 
 /**

@@ -124,9 +124,6 @@ export class StartGameRequest extends jspb.Message {
   getId(): string;
   setId(value: string): void;
 
-  getScaleFactor(): number;
-  setScaleFactor(value: number): void;
-
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): StartGameRequest.AsObject;
   static toObject(includeInstance: boolean, msg: StartGameRequest): StartGameRequest.AsObject;
@@ -140,7 +137,6 @@ export class StartGameRequest extends jspb.Message {
 export namespace StartGameRequest {
   export type AsObject = {
     id: string,
-    scaleFactor: number,
   }
 }
 
@@ -167,6 +163,9 @@ export class JoinGameRequest extends jspb.Message {
   getName(): string;
   setName(value: string): void;
 
+  getPlayerId(): string;
+  setPlayerId(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): JoinGameRequest.AsObject;
   static toObject(includeInstance: boolean, msg: JoinGameRequest): JoinGameRequest.AsObject;
@@ -181,6 +180,7 @@ export namespace JoinGameRequest {
   export type AsObject = {
     id: string,
     name: string,
+    playerId: string,
   }
 }
 
@@ -316,8 +316,9 @@ export namespace StatusUpdate {
 
   export enum Status {
     UNKNOWN = 0,
-    GAME_STARTED = 1,
-    GAME_OVER = 2,
+    WAITING = 1,
+    GAME_STARTED = 2,
+    GAME_OVER = 3,
   }
 }
 
@@ -352,8 +353,9 @@ export namespace TileUpdate {
 
   export enum Event {
     UNKNOWN = 0,
-    PEEL = 1,
-    DUMP = 2,
+    SPLIT = 1,
+    PEEL = 2,
+    DUMP = 3,
   }
 }
 

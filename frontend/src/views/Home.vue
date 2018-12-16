@@ -4,6 +4,7 @@
       <div class="column is-one-fifth"></div>
       <div class="column is-three-fifths">
         <h1 class="has-text-centered is-size-3">Welcome to Brananagrams</h1>
+        <h2 v-if="playerName" class="has-text-centered is-size-5">Playing as {{playerName}} <sup><a class="is-size-6" @click="changeName">(change name)</a></sup></h2>
         <div class="columns is-centered">
           <div class="column is-two-fifths">
             <img src="@/assets/bananagrams.jpg">
@@ -23,7 +24,7 @@
           <h2 class="has-text-centered is-size-3">Game List</h2>
           <ol>
             <li v-for="game in games">
-              <a @click="checkLogin(game.getId())">{{game.getName()}}</a>
+              <a @click="joinGame(game.getId())">{{game.getName()}}</a>
               <span> ({{gameStatus(game)}}, {{game.getPlayerCount()}} joined)</span>
             </li>
           </ol>
@@ -34,13 +35,13 @@
     <b-modal :active.sync="showModal">
       <div class="modal-card">
         <header class="modal-card-head">
-          <p class="modal-card-title">Join Game</p>
+          <p class="modal-card-title">Set your name</p>
         </header>
         <section class="modal-card-body">
           <b-field label="Username">
               <b-input
                   type="text"
-                  v-model="username"
+                  v-model="playerName"
                   placeholder="How Now, Brown Steer?"
                   required>
               </b-input>
@@ -48,7 +49,7 @@
         </section>
         <footer class="modal-card-foot">
           <button type="button" @click="showModal = false" class="button">Close</button>
-          <button class="button is-primary" @click="joinGame">Join</button>
+          <button class="button is-primary" @click="setPlayerName">Set Name</button>
         </footer>
       </div>
     </b-modal>
@@ -67,29 +68,51 @@ export default class Home extends Vue {
   private games: Game[] = [];
 
   private showModal = false;
-  private modalGameID: string = '';
-  private username: string = '';
+  private playerName: string = '';
 
   private mounted(): void {
     this.loadGames();
+
+    const playerName = this.$cookies.get('player-name');
+    if (playerName) {
+      this.playerName = playerName;
+    } else {
+      // Have them set their name.
+      this.showModal = true;
+    }
+
   }
 
-  private checkLogin(id: string): void {
-    const name = this.$cookies.get(`game-${id}`);
-    if (name) {
+  private setPlayerName(): void {
+    if (!this.playerName) {
+      // If they didn't set a name, just leave the dialog open.
+      return;
+    }
+    this.showModal = false;
+    this.setPlayerNameInCookies(this.playerName);
+  }
+
+  private changeName(): void {
+    this.showModal = true;
+  }
+
+  private joinGame(id: string): void {
+    const playerName = this.playerNameFromCookies();
+    if (playerName) {
       this.$router.push({ name: 'game', params: { id } });
       return;
     }
 
     // Show a login modal.
-    this.modalGameID = id;
     this.showModal = true;
   }
 
-  private joinGame(): void {
-    this.showModal = false;
-    this.$cookies.set(`game-${this.modalGameID}`, this.username);
-    this.$router.push({ name: 'game', params: { id: this.modalGameID } });
+  private playerNameFromCookies(): string | undefined {
+    return this.$cookies.get('player-name');
+  }
+
+  private setPlayerNameInCookies(name: string) {
+    this.$cookies.set('player-name', name);
   }
 
   private createGame() {
