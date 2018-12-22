@@ -29,6 +29,12 @@ export default class UnusedLetters extends Vue {
   private sizeY = 0;
   private margin = 10;
 
+  public clearSelected(): void {
+    for (const l of this.letters) {
+      l.selected = false;
+    }
+  }
+
   @Watch('letters')
   public renderLetters(): void {
     this.resizeSVG();
@@ -66,11 +72,24 @@ export default class UnusedLetters extends Vue {
     const offsetY = ((margin + (this.sizeY - (size + margin) * rows)) / 2);
 
     const letters = this.board.selectAll('g')
-      .data(this.letters);
+      .data(this.letters, (d: any) => d.letter);
 
     letters.exit().remove();
 
     const newLetters = letters.enter().append('g');
+
+    newLetters
+      .on('click', (d: any) => {
+        const toSet = !d.selected;
+        this.clearSelected();
+        d.selected = toSet;
+        this.renderLetters();
+      })
+      .on('dblclick', (d: any) => {
+        d.selected = false;
+        console.log(d);
+        this.$emit('dumpTile', d.letter);
+      });
 
     newLetters.append('rect');
     newLetters.append('text');
@@ -85,7 +104,15 @@ export default class UnusedLetters extends Vue {
         .attr('width', size)
         .attr('height', size)
         .style('stroke', '#222')
-        .style('fill', (d: any) => d.selected ? '#faa' : '#fff');
+        .style('fill', (d: any): string => {
+          if (d.deleting) {
+            return '#faa';
+          }
+          if (d.selected) {
+            return '#afa';
+          }
+          return '#fff';
+        });
 
     letters.merge(newLetters).select('text')
         .attr('x', (d: any, i: number) => (i % perRow) * (size + margin) + size / 2 + offsetX)

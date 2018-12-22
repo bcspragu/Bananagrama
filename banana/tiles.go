@@ -132,6 +132,10 @@ func (t *Tiles) Update(l Letter, freq int) {
 	t.count += freq - of
 }
 
+func (t *Tiles) Count() int {
+	return t.count
+}
+
 func (t *Tiles) forEach(f func(l Letter, freq int) bool) {
 	type letterFreq struct {
 		l Letter

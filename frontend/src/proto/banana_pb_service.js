@@ -46,13 +46,13 @@ BananaService.JoinGame = {
   responseType: banana_pb.GameUpdate
 };
 
-BananaService.Peel = {
-  methodName: "Peel",
+BananaService.UpdateBoard = {
+  methodName: "UpdateBoard",
   service: BananaService,
   requestStream: false,
   responseStream: false,
-  requestType: banana_pb.PeelRequest,
-  responseType: banana_pb.PeelResponse
+  requestType: banana_pb.UpdateBoardRequest,
+  responseType: banana_pb.UpdateBoardResponse
 };
 
 BananaService.Dump = {
@@ -202,11 +202,11 @@ BananaServiceClient.prototype.joinGame = function joinGame(requestMessage, metad
   };
 };
 
-BananaServiceClient.prototype.peel = function peel(requestMessage, metadata, callback) {
+BananaServiceClient.prototype.updateBoard = function updateBoard(requestMessage, metadata, callback) {
   if (arguments.length === 2) {
     callback = arguments[1];
   }
-  var client = grpc.unary(BananaService.Peel, {
+  var client = grpc.unary(BananaService.UpdateBoard, {
     request: requestMessage,
     host: this.serviceHost,
     metadata: metadata,

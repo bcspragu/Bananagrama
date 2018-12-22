@@ -22,9 +22,6 @@ goog.exportSymbol('proto.ListGamesRequest', null, global);
 goog.exportSymbol('proto.ListGamesResponse', null, global);
 goog.exportSymbol('proto.NewGameRequest', null, global);
 goog.exportSymbol('proto.NewGameResponse', null, global);
-goog.exportSymbol('proto.PeelRequest', null, global);
-goog.exportSymbol('proto.PeelResponse', null, global);
-goog.exportSymbol('proto.PeelResponse.Status', null, global);
 goog.exportSymbol('proto.Player', null, global);
 goog.exportSymbol('proto.PlayerUpdate', null, global);
 goog.exportSymbol('proto.StartGameRequest', null, global);
@@ -34,6 +31,9 @@ goog.exportSymbol('proto.StatusUpdate.Status', null, global);
 goog.exportSymbol('proto.TileUpdate', null, global);
 goog.exportSymbol('proto.TileUpdate.Event', null, global);
 goog.exportSymbol('proto.Tiles', null, global);
+goog.exportSymbol('proto.UpdateBoardRequest', null, global);
+goog.exportSymbol('proto.UpdateBoardResponse', null, global);
+goog.exportSymbol('proto.UpdateBoardResponse.Status', null, global);
 goog.exportSymbol('proto.Word', null, global);
 goog.exportSymbol('proto.Word.Orientation', null, global);
 goog.exportSymbol('proto.YouUpdate', null, global);
@@ -1968,7 +1968,8 @@ proto.Player.prototype.toObject = function(opt_includeInstance) {
  */
 proto.Player.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, "")
+    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    tilesInHand: jspb.Message.getFieldWithDefault(msg, 2, 0)
   };
 
   if (includeInstance) {
@@ -2009,6 +2010,10 @@ proto.Player.deserializeBinaryFromReader = function(msg, reader) {
       var value = /** @type {string} */ (reader.readString());
       msg.setName(value);
       break;
+    case 2:
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setTilesInHand(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -2045,6 +2050,13 @@ proto.Player.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
+  f = message.getTilesInHand();
+  if (f !== 0) {
+    writer.writeInt32(
+      2,
+      f
+    );
+  }
 };
 
 
@@ -2060,6 +2072,21 @@ proto.Player.prototype.getName = function() {
 /** @param {string} value */
 proto.Player.prototype.setName = function(value) {
   jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional int32 tiles_in_hand = 2;
+ * @return {number}
+ */
+proto.Player.prototype.getTilesInHand = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
+};
+
+
+/** @param {number} value */
+proto.Player.prototype.setTilesInHand = function(value) {
+  jspb.Message.setProto3IntField(this, 2, value);
 };
 
 
@@ -2924,12 +2951,12 @@ proto.DumpResponse.serializeBinaryToWriter = function(message, writer) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.PeelRequest = function(opt_data) {
+proto.UpdateBoardRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.PeelRequest, jspb.Message);
+goog.inherits(proto.UpdateBoardRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
-  proto.PeelRequest.displayName = 'proto.PeelRequest';
+  proto.UpdateBoardRequest.displayName = 'proto.UpdateBoardRequest';
 }
 
 
@@ -2944,8 +2971,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     for transitional soy proto support: http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.PeelRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.PeelRequest.toObject(opt_includeInstance, this);
+proto.UpdateBoardRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.UpdateBoardRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -2954,11 +2981,11 @@ proto.PeelRequest.prototype.toObject = function(opt_includeInstance) {
  * @param {boolean|undefined} includeInstance Whether to include the JSPB
  *     instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.PeelRequest} msg The msg instance to transform.
+ * @param {!proto.UpdateBoardRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.PeelRequest.toObject = function(includeInstance, msg) {
+proto.UpdateBoardRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     id: jspb.Message.getFieldWithDefault(msg, 1, ""),
     playerId: jspb.Message.getFieldWithDefault(msg, 2, ""),
@@ -2976,23 +3003,23 @@ proto.PeelRequest.toObject = function(includeInstance, msg) {
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.PeelRequest}
+ * @return {!proto.UpdateBoardRequest}
  */
-proto.PeelRequest.deserializeBinary = function(bytes) {
+proto.UpdateBoardRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.PeelRequest;
-  return proto.PeelRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.UpdateBoardRequest;
+  return proto.UpdateBoardRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.PeelRequest} msg The message object to deserialize into.
+ * @param {!proto.UpdateBoardRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.PeelRequest}
+ * @return {!proto.UpdateBoardRequest}
  */
-proto.PeelRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.UpdateBoardRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -3025,9 +3052,9 @@ proto.PeelRequest.deserializeBinaryFromReader = function(msg, reader) {
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.PeelRequest.prototype.serializeBinary = function() {
+proto.UpdateBoardRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.PeelRequest.serializeBinaryToWriter(this, writer);
+  proto.UpdateBoardRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -3035,11 +3062,11 @@ proto.PeelRequest.prototype.serializeBinary = function() {
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.PeelRequest} message
+ * @param {!proto.UpdateBoardRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.PeelRequest.serializeBinaryToWriter = function(message, writer) {
+proto.UpdateBoardRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getId();
   if (f.length > 0) {
@@ -3070,13 +3097,13 @@ proto.PeelRequest.serializeBinaryToWriter = function(message, writer) {
  * optional string id = 1;
  * @return {string}
  */
-proto.PeelRequest.prototype.getId = function() {
+proto.UpdateBoardRequest.prototype.getId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /** @param {string} value */
-proto.PeelRequest.prototype.setId = function(value) {
+proto.UpdateBoardRequest.prototype.setId = function(value) {
   jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -3085,13 +3112,13 @@ proto.PeelRequest.prototype.setId = function(value) {
  * optional string player_id = 2;
  * @return {string}
  */
-proto.PeelRequest.prototype.getPlayerId = function() {
+proto.UpdateBoardRequest.prototype.getPlayerId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
 
 /** @param {string} value */
-proto.PeelRequest.prototype.setPlayerId = function(value) {
+proto.UpdateBoardRequest.prototype.setPlayerId = function(value) {
   jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -3100,19 +3127,19 @@ proto.PeelRequest.prototype.setPlayerId = function(value) {
  * optional Board board = 3;
  * @return {?proto.Board}
  */
-proto.PeelRequest.prototype.getBoard = function() {
+proto.UpdateBoardRequest.prototype.getBoard = function() {
   return /** @type{?proto.Board} */ (
     jspb.Message.getWrapperField(this, proto.Board, 3));
 };
 
 
 /** @param {?proto.Board|undefined} value */
-proto.PeelRequest.prototype.setBoard = function(value) {
+proto.UpdateBoardRequest.prototype.setBoard = function(value) {
   jspb.Message.setWrapperField(this, 3, value);
 };
 
 
-proto.PeelRequest.prototype.clearBoard = function() {
+proto.UpdateBoardRequest.prototype.clearBoard = function() {
   this.setBoard(undefined);
 };
 
@@ -3121,7 +3148,7 @@ proto.PeelRequest.prototype.clearBoard = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.PeelRequest.prototype.hasBoard = function() {
+proto.UpdateBoardRequest.prototype.hasBoard = function() {
   return jspb.Message.getField(this, 3) != null;
 };
 
@@ -3537,19 +3564,19 @@ proto.Word.prototype.setY = function(value) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.PeelResponse = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.PeelResponse.repeatedFields_, null);
+proto.UpdateBoardResponse = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.UpdateBoardResponse.repeatedFields_, null);
 };
-goog.inherits(proto.PeelResponse, jspb.Message);
+goog.inherits(proto.UpdateBoardResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
-  proto.PeelResponse.displayName = 'proto.PeelResponse';
+  proto.UpdateBoardResponse.displayName = 'proto.UpdateBoardResponse';
 }
 /**
  * List of repeated fields within this message type.
  * @private {!Array<number>}
  * @const
  */
-proto.PeelResponse.repeatedFields_ = [2];
+proto.UpdateBoardResponse.repeatedFields_ = [2];
 
 
 
@@ -3564,8 +3591,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     for transitional soy proto support: http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.PeelResponse.prototype.toObject = function(opt_includeInstance) {
-  return proto.PeelResponse.toObject(opt_includeInstance, this);
+proto.UpdateBoardResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.UpdateBoardResponse.toObject(opt_includeInstance, this);
 };
 
 
@@ -3574,11 +3601,11 @@ proto.PeelResponse.prototype.toObject = function(opt_includeInstance) {
  * @param {boolean|undefined} includeInstance Whether to include the JSPB
  *     instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.PeelResponse} msg The msg instance to transform.
+ * @param {!proto.UpdateBoardResponse} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.PeelResponse.toObject = function(includeInstance, msg) {
+proto.UpdateBoardResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     status: jspb.Message.getFieldWithDefault(msg, 1, 0),
     errorsList: jspb.Message.getRepeatedField(msg, 2)
@@ -3595,23 +3622,23 @@ proto.PeelResponse.toObject = function(includeInstance, msg) {
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.PeelResponse}
+ * @return {!proto.UpdateBoardResponse}
  */
-proto.PeelResponse.deserializeBinary = function(bytes) {
+proto.UpdateBoardResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.PeelResponse;
-  return proto.PeelResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.UpdateBoardResponse;
+  return proto.UpdateBoardResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.PeelResponse} msg The message object to deserialize into.
+ * @param {!proto.UpdateBoardResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.PeelResponse}
+ * @return {!proto.UpdateBoardResponse}
  */
-proto.PeelResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.UpdateBoardResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -3619,7 +3646,7 @@ proto.PeelResponse.deserializeBinaryFromReader = function(msg, reader) {
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {!proto.PeelResponse.Status} */ (reader.readEnum());
+      var value = /** @type {!proto.UpdateBoardResponse.Status} */ (reader.readEnum());
       msg.setStatus(value);
       break;
     case 2:
@@ -3639,9 +3666,9 @@ proto.PeelResponse.deserializeBinaryFromReader = function(msg, reader) {
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.PeelResponse.prototype.serializeBinary = function() {
+proto.UpdateBoardResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.PeelResponse.serializeBinaryToWriter(this, writer);
+  proto.UpdateBoardResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -3649,11 +3676,11 @@ proto.PeelResponse.prototype.serializeBinary = function() {
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.PeelResponse} message
+ * @param {!proto.UpdateBoardResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.PeelResponse.serializeBinaryToWriter = function(message, writer) {
+proto.UpdateBoardResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getStatus();
   if (f !== 0.0) {
@@ -3675,7 +3702,7 @@ proto.PeelResponse.serializeBinaryToWriter = function(message, writer) {
 /**
  * @enum {number}
  */
-proto.PeelResponse.Status = {
+proto.UpdateBoardResponse.Status = {
   UNKNOWN: 0,
   SUCCESS: 1,
   INVALID_WORD: 2,
@@ -3686,15 +3713,15 @@ proto.PeelResponse.Status = {
 
 /**
  * optional Status status = 1;
- * @return {!proto.PeelResponse.Status}
+ * @return {!proto.UpdateBoardResponse.Status}
  */
-proto.PeelResponse.prototype.getStatus = function() {
-  return /** @type {!proto.PeelResponse.Status} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+proto.UpdateBoardResponse.prototype.getStatus = function() {
+  return /** @type {!proto.UpdateBoardResponse.Status} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
 };
 
 
-/** @param {!proto.PeelResponse.Status} value */
-proto.PeelResponse.prototype.setStatus = function(value) {
+/** @param {!proto.UpdateBoardResponse.Status} value */
+proto.UpdateBoardResponse.prototype.setStatus = function(value) {
   jspb.Message.setProto3EnumField(this, 1, value);
 };
 
@@ -3703,13 +3730,13 @@ proto.PeelResponse.prototype.setStatus = function(value) {
  * repeated string errors = 2;
  * @return {!Array.<string>}
  */
-proto.PeelResponse.prototype.getErrorsList = function() {
+proto.UpdateBoardResponse.prototype.getErrorsList = function() {
   return /** @type {!Array.<string>} */ (jspb.Message.getRepeatedField(this, 2));
 };
 
 
 /** @param {!Array.<string>} value */
-proto.PeelResponse.prototype.setErrorsList = function(value) {
+proto.UpdateBoardResponse.prototype.setErrorsList = function(value) {
   jspb.Message.setField(this, 2, value || []);
 };
 
@@ -3718,12 +3745,12 @@ proto.PeelResponse.prototype.setErrorsList = function(value) {
  * @param {!string} value
  * @param {number=} opt_index
  */
-proto.PeelResponse.prototype.addErrors = function(value, opt_index) {
+proto.UpdateBoardResponse.prototype.addErrors = function(value, opt_index) {
   jspb.Message.addToRepeatedField(this, 2, value, opt_index);
 };
 
 
-proto.PeelResponse.prototype.clearErrorsList = function() {
+proto.UpdateBoardResponse.prototype.clearErrorsList = function() {
   this.setErrorsList([]);
 };
 

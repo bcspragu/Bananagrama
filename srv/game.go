@@ -12,12 +12,12 @@ var (
 		pb.Word_VERTICAL:   banana.Vertical,
 	}
 
-	engineStatusMap = map[banana.BoardStatusCode]pb.PeelResponse_Status{
-		banana.Success:       pb.PeelResponse_SUCCESS,
-		banana.InvalidWord:   pb.PeelResponse_INVALID_WORD,
-		banana.DetachedBoard: pb.PeelResponse_DETACHED_BOARD,
-		banana.NotAllLetters: pb.PeelResponse_NOT_ALL_LETTERS,
-		banana.ExtraLetters:  pb.PeelResponse_EXTRA_LETTERS,
+	engineStatusMap = map[banana.BoardStatusCode]pb.UpdateBoardResponse_Status{
+		banana.Success:       pb.UpdateBoardResponse_SUCCESS,
+		banana.InvalidWord:   pb.UpdateBoardResponse_INVALID_WORD,
+		banana.DetachedBoard: pb.UpdateBoardResponse_DETACHED_BOARD,
+		banana.NotAllLetters: pb.UpdateBoardResponse_NOT_ALL_LETTERS,
+		banana.ExtraLetters:  pb.UpdateBoardResponse_EXTRA_LETTERS,
 	}
 
 	gameStatusMap = map[banana.GameStatus]pb.Game_Status{

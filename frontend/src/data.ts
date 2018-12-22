@@ -54,5 +54,6 @@ export enum Orientation {
 
 export interface Letter {
   letter: string;
+  deleting: boolean;
   selected: boolean;
 }

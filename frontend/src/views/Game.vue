@@ -3,7 +3,10 @@
     <div class="columns is-gapless left-side">
       <div class="column is-four-fifths">
         <div class="board">
-          <Board ref="board" v-on:removeTile="addTileToHand"/>
+          <Board ref="board"
+            v-on:removeTile="addTileToHand"
+            v-on:blankClicked="addSelected"
+            v-on:boardUpdated="sendBoard"/>
         </div>
         <div class="active-word columns is-gapless">
           <div class="column is-3 active-display">
@@ -14,13 +17,13 @@
           </div>
         </div>
         <div class="letters">
-          <UnusedLetters v-if="letters" ref="hand" :letters="letters" />
+          <UnusedLetters v-if="letters" ref="hand" :letters="letters" v-on:dumpTile="dumpTile"/>
         </div>
       </div>
       <div class="column is-one-fifth right-side">
         <div class="players">
           <ol>
-            <li v-for="player in players">{{player.getName()}}</li>
+            <li v-for="player in players">{{player.getName()}} - {{player.getTilesInHand()}}</li>
           </ol>
           <a class="button is-info" @click="startGame">
             Start Game
@@ -38,10 +41,11 @@ import Board from '@/components/Board.vue'; // @ is an alias to /src
 import UnusedLetters from '@/components/UnusedLetters.vue'; // @ is an alias to /src
 import ActiveWord from '@/components/ActiveWord.vue'; // @ is an alias to /src
 import Notice from '@/components/Notice.vue'; // @ is an alias to /src
-import {Letter} from '@/data';
-import {Game as PBGame, ListGamesRequest, JoinGameRequest,
+import {Cell, Letter} from '@/data';
+import {Game as PBGame, Board as PBBoard, ListGamesRequest, JoinGameRequest,
         GameUpdate, YouUpdate, PlayerUpdate, TileUpdate,
-        StatusUpdate, StartGameRequest, Player} from '@/proto/banana_pb';
+        StatusUpdate, StartGameRequest, Player, DumpRequest,
+        UpdateBoardRequest} from '@/proto/banana_pb';
 
 @Component({
   components: {
@@ -174,6 +178,7 @@ export default class Game extends Vue {
     for (const l of up.getAllTiles()!.getLettersList()) {
       letters.push({
         letter: l,
+        deleting: false,
         selected: false,
       });
     }
@@ -257,7 +262,7 @@ export default class Game extends Vue {
     if (e.keyCode === 27) {
       this.word = '';
       this.notice = [];
-      this.clearSelected();
+      this.clearDeleting();
       this.board.clear();
       return;
     }
@@ -281,17 +286,17 @@ export default class Game extends Vue {
   }
 
   private selectIfExists(letter: string): void {
-    const index = this.letters.map((x) => x.letter + (x.selected ? '1' : '0')).indexOf(letter + '0');
+    const index = this.letters.map((x) => x.letter + (x.deleting ? '1' : '0')).indexOf(letter + '0');
     if (index > -1) {
-      this.letters[index].selected = true;
+      this.letters[index].deleting = true;
       this.hand.renderLetters();
     }
   }
 
-  private clearSelected(): void {
+  private clearDeleting(): void {
     for (const letter in this.letters) {
       if (this.letters.hasOwnProperty(letter)) {
-        this.letters[letter].selected = false;
+        this.letters[letter].deleting = false;
       }
     }
     this.hand.renderLetters();
@@ -339,30 +344,38 @@ export default class Game extends Vue {
       const l = this.letters[i].letter;
       if (toRemove[l] !== undefined && toRemove[l] > 0) {
         indicesToRemove.push(i);
-        this.letters[i].selected = true;
         toRemove[l]--;
       }
     }
 
-    this.hand.renderLetters();
     this.requiredLetters = [];
     this.word = '';
     this.notice = [];
 
-    window.setTimeout(() => {
-      for (const idx of indicesToRemove) {
-        this.letters.splice(idx, 1);
-      }
-      this.letters.sort((a, b) => a.letter > b.letter ? 1 : (a.letter < b.letter ? -1 : 0));
-      this.hand.renderLetters();
-    }, 500);
+    for (const idx of indicesToRemove) {
+      this.letters.splice(idx, 1);
+    }
+    this.letters.sort((a, b) => a.letter > b.letter ? 1 : (a.letter < b.letter ? -1 : 0));
+    this.hand.renderLetters();
 
     return true;
   }
 
   private addTileToHand(letter: string): void {
-    this.letters.push({letter, selected: false});
+    this.letters.push({letter, deleting: false, selected: false});
     this.letters.sort((a, b) => a.letter > b.letter ? 1 : (a.letter < b.letter ? -1 : 0));
+  }
+
+  private dumpTile(letter: string): void {
+    const req = new DumpRequest();
+    req.setId(this.game!.getId());
+    req.setPlayerId(this.playerID!);
+    req.setLetter(letter);
+    this.$client.dump(req, (err, resp) => {
+      if (err) {
+        console.log(err);
+      }
+    });
   }
 
   private prev(): void {
@@ -375,6 +388,40 @@ export default class Game extends Vue {
     const suggestion = this.board.nextSuggestion();
     this.requiredLetters = suggestion.requiredLetters;
     this.setNotice(suggestion.valid);
+  }
+
+  private addSelected(c: Cell): void {
+    let selected = '';
+    let idx = 0;
+    for (let i = 0; i < this.letters.length; i++) {
+      const l = this.letters[i];
+      if (l.selected) {
+        selected = l.letter;
+        idx = i;
+        break;
+      }
+    }
+
+    if (selected === '') {
+      return;
+    }
+
+    c.letterLoc.letter = selected;
+    this.board.addCell(c);
+    this.hand.clearSelected();
+    this.letters.splice(idx, 1);
+  }
+
+  private sendBoard(board: PBBoard): void {
+    const req = new UpdateBoardRequest();
+    req.setId(this.game!.getId());
+    req.setPlayerId(this.playerID!);
+    req.setBoard(board);
+    this.$client.updateBoard(req, (err, resp) => {
+      if (err) {
+        console.log(err);
+      }
+    });
   }
 }
 </script>

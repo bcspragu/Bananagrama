@@ -235,7 +235,11 @@ func (s *Server) sendPlayers(id banana.GameID) error {
 
 	var players []*pb.Player
 	for _, p := range g.Players {
-		players = append(players, &pb.Player{Name: p.Name})
+		players = append(players, &pb.Player{
+			Name:        p.Name,
+			TilesInHand: int32(p.Tiles.Count()),
+		})
+		fmt.Printf("%+v\n", players[len(players)-1])
 	}
 
 	up := &pb.GameUpdate{
@@ -280,7 +284,7 @@ func (s *Server) updateForGame(id banana.GameID, up *pb.GameUpdate) {
 	s.RUnlock()
 }
 
-func (s *Server) Peel(ctx context.Context, req *pb.PeelRequest) (*pb.PeelResponse, error) {
+func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*pb.UpdateBoardResponse, error) {
 	gid := banana.GameID(req.Id)
 	// Convert the board to our domain format.
 	b := boardFromWire(req.Board, s.dict)
@@ -291,22 +295,34 @@ func (s *Server) Peel(ctx context.Context, req *pb.PeelRequest) (*pb.PeelRespons
 		return nil, fmt.Errorf("failed to get player %q: %v", req.PlayerId, err)
 	}
 
+	// Add existing board to tiles.
+	tiles := p.Tiles.Clone()
+	tiles.Add(p.Board.AsTiles())
+
 	// Check if the board they sent is valid
-	status := b.ValidateBoard(p.Tiles)
+	status, ok := b.ValidateBoard(tiles)
+	if ok {
+		if err := s.db.UpdatePlayer(pid, b, b.Diff(tiles)); err != nil {
+			return nil, fmt.Errorf("failed to update player %q: %v", pid, err)
+		}
+	}
 
 	// If the board was valid, clear out their tiles and let everyone know what's
 	// up.
 	if status.Code == banana.Success {
-		if err := s.db.UpdatePlayer(pid, b, banana.NewTiles()); err != nil {
-			return nil, fmt.Errorf("failed to update player %q board: %v", pid, err)
-		}
 		if err := s.issuePeel(gid, p.Name); err != nil {
 			return nil, fmt.Errorf("failed to issue peels: %v", err)
 		}
 	}
 
+	if err := s.sendPlayers(gid); err != nil {
+		return nil, fmt.Errorf("failed to update players: %v", err)
+	}
+
+	fmt.Printf("STATUS CODE: %d, ERRORS: %+v\n", status.Code, status.Errors)
+
 	// Convert the status to the wire format.
-	return &pb.PeelResponse{
+	return &pb.UpdateBoardResponse{
 		Status: engineStatusMap[status.Code],
 		Errors: status.Errors,
 	}, nil

@@ -131,11 +131,25 @@ func (b *Board) precompute() bool {
 	return true
 }
 
-// TODO(bsprague): Lowercase words, and check that it only contains
-// alphanumerics, maybe.
-func (b *Board) ValidateBoard(tiles *Tiles) BoardStatus {
+func (b *Board) AsTiles() *Tiles {
+	if b == nil || !b.precompute() {
+		return NewTiles()
+	}
+
+	t := NewTiles()
+	for _, l := range b.letterMap {
+		t.Inc(l)
+	}
+
+	return t
+}
+
+// ValidateBoard returns the status of the board. The second parameter
+// determines if we should accept the board, which we should do unless they use
+// letters they don't have or have a board that doesn't make sense.
+func (b *Board) ValidateBoard(tiles *Tiles) (BoardStatus, bool) {
 	// A board is considered valid if:
-	//   - the player used exactly the letters in their hand
+	//   - the player used a subset of the letters in their hand
 	//   - the words given don't overlap in conflicting ways
 	//	 - the words on the grid are real Scrabble words
 	//   - any letter can be reached from any other (aka its all connected)
@@ -143,33 +157,38 @@ func (b *Board) ValidateBoard(tiles *Tiles) BoardStatus {
 	// If precompute failed, we weren't able to make our intermediate
 	// representation, meaning the given words can't form a valid board
 	if !b.precompute() {
-		return BoardStatus{Code: InvalidBoard}
+		return BoardStatus{Code: InvalidBoard}, false
 	}
 
 	unused, unowned := b.leftover(tiles)
-	if len(unused) > 0 {
-		return BoardStatus{Code: NotAllLetters, Errors: unused}
-	}
-
 	if len(unowned) > 0 {
-		return BoardStatus{Code: ExtraLetters, Errors: unowned}
+		return BoardStatus{Code: ExtraLetters, Errors: unowned}, false
 	}
 
+	// TODO: Decide if we want to add this back in.
 	// Check for real Scrabble words
-	for _, word := range b.findWords() {
-		if !b.Dictionary.HasWord(word) {
-			return BoardStatus{Code: InvalidWord, Errors: []string{word}}
+	/*
+		for _, word := range b.findWords() {
+			if !b.Dictionary.HasWord(word) {
+				return BoardStatus{Code: InvalidWord, Errors: []string{word}}
+			}
 		}
-	}
+	*/
 
+	// Allow unconnected boards while people are building.
 	if !b.connected() {
-		return BoardStatus{Code: DetachedBoard}
+		return BoardStatus{Code: DetachedBoard}, true
 	}
 
-	return BoardStatus{Code: Success}
+	// It's fine if they haven't used everything yet.
+	if len(unused) > 0 {
+		return BoardStatus{Code: NotAllLetters, Errors: unused}, true
+	}
+
+	return BoardStatus{Code: Success}, true
 }
 
-func (b *Board) diff(tiles *Tiles) *Tiles {
+func (b *Board) Diff(tiles *Tiles) *Tiles {
 	cp := tiles.Clone()
 	for _, letter := range b.letterMap {
 		cp.Dec(letter)
@@ -180,7 +199,7 @@ func (b *Board) diff(tiles *Tiles) *Tiles {
 func (b *Board) leftover(tiles *Tiles) (notUsed, notOwned []string) {
 	// If diff is greater than zero, it means they didn't use all of that letter in their hand
 	// If diff is less than zero, it means they used more than they had
-	d := b.diff(tiles)
+	d := b.Diff(tiles)
 	for l, freq := range d.freq {
 		if freq > 0 {
 			notUsed = append(notUsed, l.String())
@@ -199,7 +218,7 @@ func (b *Board) leftover(tiles *Tiles) (notUsed, notOwned []string) {
 func (b *Board) containsExactly(tiles *Tiles) bool {
 	// TODO: This could probably be written more directly by just comparing
 	// b.letterMap and tiles.
-	d := b.diff(tiles)
+	d := b.Diff(tiles)
 	for _, freq := range d.freq {
 		if freq != 0 {
 			return false

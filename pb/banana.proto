@@ -7,7 +7,7 @@ service BananaService {
   rpc ListGames(ListGamesRequest) returns (ListGamesResponse);
   rpc StartGame(StartGameRequest) returns (StartGameResponse);
   rpc JoinGame(JoinGameRequest) returns (stream GameUpdate);
-  rpc Peel(PeelRequest) returns (PeelResponse);
+  rpc UpdateBoard(UpdateBoardRequest) returns (UpdateBoardResponse);
   rpc Dump(DumpRequest) returns (DumpResponse);
 }
 
@@ -81,6 +81,7 @@ message PlayerUpdate {
 
 message Player {
   string name = 1;
+  int32 tiles_in_hand = 2;
 }
 
 message StatusUpdate {
@@ -125,7 +126,7 @@ message DumpRequest {
 
 message DumpResponse { }
 
-message PeelRequest {
+message UpdateBoardRequest {
   // The unique identifier for the game you're placing in.
   string id = 1;
   // The unique identifier for the player peeling.
@@ -151,7 +152,7 @@ message Word {
   int32 y = 4;
 }
 
-message PeelResponse {
+message UpdateBoardResponse {
   enum Status {
     UNKNOWN = 0;
     SUCCESS = 1;

@@ -9,6 +9,8 @@ import {BaseType, Selection} from 'd3';
 
 import {Cell, LetterLoc, Orientation, Word, PlacedWord, Placement, Match} from '@/data';
 
+import {Board as PBBoard, Word as PBWord, UpdateBoardRequest} from '@/proto/banana_pb';
+
 
 interface Suggestion {
   requiredLetters: string[];
@@ -35,6 +37,29 @@ export default class Board extends Vue {
   private sizeY = 0;
   private margin = 2;
   private grid: Selection<any, any, any, any> = d3.select('#grid');
+
+  public addCell(c: Cell): void {
+    const ll = c.letterLoc;
+    for (let i = 0; i < ll.wordIndex.length; i++) {
+      const wordIndex = ll.wordIndex[i];
+      const letterIndex = ll.letterIndex[i];
+
+      const word = this.placedWords[wordIndex].word;
+      this.placedWords[wordIndex].word = word.substr(0, letterIndex) + ll.letter + word.substr(letterIndex + 1);
+    }
+
+    if (ll.wordIndex.length === 0) {
+      this.normalizeAndAdd({
+        word: ll.letter,
+        x: c.row - 1,
+        y: c.column - 1,
+        orientation: Orientation.Horizontal,
+        suggestion: false,
+      });
+    }
+
+    this.renderBoard();
+  }
 
   // Returns true if we had a fit to place.
   public placeCurrentWord(): boolean {
@@ -120,11 +145,16 @@ export default class Board extends Vue {
       pWord.x += offsetX;
       pWord.y += offsetY;
     }
+
+    if (!word.suggestion) {
+      this.sendBoard();
+    }
   }
 
   private normalize(removeLast: boolean): void {
+    let suggestion = false;
     if (removeLast) {
-      this.placedWords.splice(-1);
+      suggestion = this.placedWords.splice(-1)[0].suggestion;
     }
 
     if (this.placedWords.length === 0) {
@@ -147,6 +177,34 @@ export default class Board extends Vue {
       word.x -= offsetX;
       word.y -= offsetY;
     }
+
+    if (!suggestion) {
+      this.sendBoard();
+    }
+  }
+
+  private sendBoard(): void {
+    const words: PBWord[] = [];
+
+    for (const pw of this.placedWords) {
+      const word = new PBWord();
+      word.setX(pw.x);
+      word.setY(pw.y);
+      word.setText(pw.word);
+
+      if (pw.orientation === Orientation.Horizontal) {
+        word.setOrientation(PBWord.Orientation.HORIZONTAL);
+      } else if (pw.orientation === Orientation.Vertical) {
+        word.setOrientation(PBWord.Orientation.VERTICAL);
+      }
+
+      words.push(word);
+    }
+
+    const board = new PBBoard();
+    board.setWordsList(words);
+
+    this.$emit('boardUpdated', board);
   }
 
   get boardEmpty(): boolean {
@@ -458,6 +516,7 @@ export default class Board extends Vue {
         .attr('class', 'square')
         .on('click', (d: any) => {
           if (d.letterLoc.letter === '' || d.letterLoc.letter === ' ') {
+            this.$emit('blankClicked', d);
             return;
           }
           this.removeLetterLoc(d.letterLoc);

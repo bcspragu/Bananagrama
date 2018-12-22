@@ -279,6 +279,9 @@ export class Player extends jspb.Message {
   getName(): string;
   setName(value: string): void;
 
+  getTilesInHand(): number;
+  setTilesInHand(value: number): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Player.AsObject;
   static toObject(includeInstance: boolean, msg: Player): Player.AsObject;
@@ -292,6 +295,7 @@ export class Player extends jspb.Message {
 export namespace Player {
   export type AsObject = {
     name: string,
+    tilesInHand: number,
   }
 }
 
@@ -425,7 +429,7 @@ export namespace DumpResponse {
   }
 }
 
-export class PeelRequest extends jspb.Message {
+export class UpdateBoardRequest extends jspb.Message {
   getId(): string;
   setId(value: string): void;
 
@@ -438,16 +442,16 @@ export class PeelRequest extends jspb.Message {
   setBoard(value?: Board): void;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): PeelRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: PeelRequest): PeelRequest.AsObject;
+  toObject(includeInstance?: boolean): UpdateBoardRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: UpdateBoardRequest): UpdateBoardRequest.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: PeelRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): PeelRequest;
-  static deserializeBinaryFromReader(message: PeelRequest, reader: jspb.BinaryReader): PeelRequest;
+  static serializeBinaryToWriter(message: UpdateBoardRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UpdateBoardRequest;
+  static deserializeBinaryFromReader(message: UpdateBoardRequest, reader: jspb.BinaryReader): UpdateBoardRequest;
 }
 
-export namespace PeelRequest {
+export namespace UpdateBoardRequest {
   export type AsObject = {
     id: string,
     playerId: string,
@@ -515,9 +519,9 @@ export namespace Word {
   }
 }
 
-export class PeelResponse extends jspb.Message {
-  getStatus(): PeelResponse.Status;
-  setStatus(value: PeelResponse.Status): void;
+export class UpdateBoardResponse extends jspb.Message {
+  getStatus(): UpdateBoardResponse.Status;
+  setStatus(value: UpdateBoardResponse.Status): void;
 
   clearErrorsList(): void;
   getErrorsList(): Array<string>;
@@ -525,18 +529,18 @@ export class PeelResponse extends jspb.Message {
   addErrors(value: string, index?: number): string;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): PeelResponse.AsObject;
-  static toObject(includeInstance: boolean, msg: PeelResponse): PeelResponse.AsObject;
+  toObject(includeInstance?: boolean): UpdateBoardResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: UpdateBoardResponse): UpdateBoardResponse.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: PeelResponse, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): PeelResponse;
-  static deserializeBinaryFromReader(message: PeelResponse, reader: jspb.BinaryReader): PeelResponse;
+  static serializeBinaryToWriter(message: UpdateBoardResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UpdateBoardResponse;
+  static deserializeBinaryFromReader(message: UpdateBoardResponse, reader: jspb.BinaryReader): UpdateBoardResponse;
 }
 
-export namespace PeelResponse {
+export namespace UpdateBoardResponse {
   export type AsObject = {
-    status: PeelResponse.Status,
+    status: UpdateBoardResponse.Status,
     errorsList: Array<string>,
   }
 
