@@ -3,8 +3,17 @@ export interface Cell {
   y: number;
   row: number;
   column: number;
-  letter: string;
+  letterLoc: LetterLoc;
   suggestion: boolean;
+}
+
+// LetterLoc contains metadata about a cell position on the board.
+export interface LetterLoc {
+  letter: string;
+  // The index of the word(s) on the board that contributed this letter.
+  wordIndex: number[];
+  // The index of the letter(s) in the board that contributed this letter.
+  letterIndex: number[];
 }
 
 // Suggestion where to place a word.

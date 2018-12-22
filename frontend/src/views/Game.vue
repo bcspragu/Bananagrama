@@ -3,7 +3,7 @@
     <div class="columns is-gapless left-side">
       <div class="column is-four-fifths">
         <div class="board">
-          <Board ref="board"/>
+          <Board ref="board" v-on:removeTile="addTileToHand"/>
         </div>
         <div class="active-word columns is-gapless">
           <div class="column is-3 active-display">
@@ -358,6 +358,11 @@ export default class Game extends Vue {
     }, 500);
 
     return true;
+  }
+
+  private addTileToHand(letter: string): void {
+    this.letters.push({letter, selected: false});
+    this.letters.sort((a, b) => a.letter > b.letter ? 1 : (a.letter < b.letter ? -1 : 0));
   }
 
   private prev(): void {

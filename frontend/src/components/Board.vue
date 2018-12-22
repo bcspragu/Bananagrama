@@ -7,7 +7,7 @@ import { Component, Vue } from 'vue-property-decorator';
 import * as d3 from 'd3';
 import {BaseType, Selection} from 'd3';
 
-import {Cell, Orientation, Word, PlacedWord, Placement, Match} from '@/data';
+import {Cell, LetterLoc, Orientation, Word, PlacedWord, Placement, Match} from '@/data';
 
 
 interface Suggestion {
@@ -122,8 +122,11 @@ export default class Board extends Vue {
     }
   }
 
-  private removeLastAndNormalize(): void {
-    this.placedWords.splice(-1);
+  private normalize(removeLast: boolean): void {
+    if (removeLast) {
+      this.placedWords.splice(-1);
+    }
+
     if (this.placedWords.length === 0) {
       return;
     }
@@ -162,7 +165,7 @@ export default class Board extends Vue {
     // Build up a mapping of letters in our word to the index(es) they appear
     // at.
     const letters: { [s: string]: number[]; } = {};
-    const board = this.board.board;
+    const board = this.genBoard().board;
     for (let i = 0; i < word.length; i++) {
       const c = word.charAt(i);
       if (letters[c] === undefined) {
@@ -235,7 +238,7 @@ export default class Board extends Vue {
   }
 
   // fits returns if a given match fits on the board.
-  private fits(m: Match, word: string, board: string[][]): boolean {
+  private fits(m: Match, word: string, board: LetterLoc[][]): boolean {
     let x = m.x;
     let y = m.y;
 
@@ -296,13 +299,14 @@ export default class Board extends Vue {
   //   - Out of bounds
   //   - Empty
   //   - The target letter we're looking for
-  private isValid(x: number, y: number, target: string, board: string[][]): boolean {
+  private isValid(x: number, y: number, target: string, board: LetterLoc[][]): boolean {
     return x < 0
         || y < 0
         || x >= board.length
         || y >= board[x].length
-        || board[x][y] === ''
-        || board[x][y] === target;
+        || board[x][y].letter === ''
+        || board[x][y].letter === ' '
+        || board[x][y].letter === target;
   }
 
   private mounted(): void {
@@ -311,24 +315,6 @@ export default class Board extends Vue {
       .attr('height', 0);
 
     this.renderBoard();
-  }
-
-  private randomBoard(): string[][] {
-    const x = Math.floor(Math.random() * 25) + 10;
-    const y = Math.floor(Math.random() * 15) + 1;
-    const board = new Array();
-    for (let i = 0; i < y; i++) {
-      board.push(new Array());
-      for (let j = 0; j < x; j++) {
-        if (Math.random() > 0.5) {
-          board[i].push(String.fromCharCode(65 + Math.floor(Math.random() * 26)));
-        } else {
-          board[i].push('');
-        }
-      }
-    }
-
-    return board;
   }
 
   private resizeSVG(): void {
@@ -372,9 +358,10 @@ export default class Board extends Vue {
     return locs;
   }
 
-  get board(): {board: string[][], requiredLetters: string[]} {
+  private genBoard(): {board: LetterLoc[][], requiredLetters: string[]} {
     let maxX = 0;
     let maxY = 0;
+
     for (const word of this.placedWords) {
       let x = word.x;
       let y = word.y;
@@ -395,19 +382,20 @@ export default class Board extends Vue {
     }
 
     if (maxX === 0 && maxY === 0) {
-      return {board: [['']], requiredLetters: []};
+      return {board: [[{letter: '', wordIndex: [], letterIndex: []}]], requiredLetters: []};
     }
 
-    const board = new Array();
+    const board: LetterLoc[][] = [];
     for (let i = 0; i < maxX + 1; i++) {
-      board.push(new Array());
+      board.push(new Array<LetterLoc>());
       for (let j = 0; j < maxY + 1; j++) {
-        board[i].push('');
+        board[i].push({letter: '', wordIndex: [], letterIndex: []});
       }
     }
 
     let suggestedWord: PlacedWord | null = null;
-    for (const word of this.placedWords) {
+    for (let i = 0; i < this.placedWords.length; i++) {
+      const word = this.placedWords[i];
       if (word.suggestion) {
         suggestedWord = word;
         continue;
@@ -424,8 +412,10 @@ export default class Board extends Vue {
           inc = () => y++;
           break;
       }
-      for (let i = 0; i < word.word.length; i++) {
-        board[x][y] = word.word.charAt(i);
+      for (let j = 0; j < word.word.length; j++) {
+        board[x][y].letter = word.word.charAt(j);
+        board[x][y].wordIndex.push(i);
+        board[x][y].letterIndex.push(j);
         inc();
       }
     }
@@ -434,10 +424,10 @@ export default class Board extends Vue {
     if (suggestedWord) {
       const poses = this.wordToPositions(suggestedWord);
       for (const pos of poses) {
-        if (board[pos.x][pos.y] === '') {
+        if (board[pos.x][pos.y].letter === '') {
           reqLetters.push(pos.letter);
         }
-        board[pos.x][pos.y] = pos.letter;
+        board[pos.x][pos.y].letter = pos.letter;
       }
     }
 
@@ -465,7 +455,13 @@ export default class Board extends Vue {
     column.exit().remove();
 
     const cells = column.enter().append('g')
-        .attr('class', 'square');
+        .attr('class', 'square')
+        .on('click', (d: any) => {
+          if (d.letterLoc.letter === '' || d.letterLoc.letter === ' ') {
+            return;
+          }
+          this.removeLetterLoc(d.letterLoc);
+        });
 
     cells.append('rect');
     cells.append('text');
@@ -485,7 +481,7 @@ export default class Board extends Vue {
         .attr('y', (d: any) => d.y + board.cellSize / 1.8)
         .attr('text-anchor', 'middle')
         .attr('alignment-baseline', 'middle')
-        .text((d: any) => d.letter)
+        .text((d: any) => d.letterLoc.letter)
         .style('font-size', (d: any) => {
           return board.cellSize * 0.7 + 'px';
         });
@@ -507,7 +503,7 @@ export default class Board extends Vue {
       });
     }
 
-    const boardResp = this.board;
+    const boardResp = this.genBoard();
     const board = boardResp.board;
 
     const boardX = board.length + 2;
@@ -530,15 +526,15 @@ export default class Board extends Vue {
       data.push(new Array());
 
       for (let y = 0; y < boardY; y++) {
-        let letter = '';
+        let ll: LetterLoc = {letter: '', wordIndex: [], letterIndex: []};
         if (x > 0 && x < boardX - 1 && y > 0 && y < boardY - 1) {
-          letter = board[x - 1][y - 1];
+          ll = board[x - 1][y - 1];
         }
 
         data[x].push({
           x: xpos,
           y: ypos,
-          letter,
+          letterLoc: ll,
           row: x,
           column: y,
           suggestion: false,
@@ -560,7 +556,7 @@ export default class Board extends Vue {
         const y = pos.y + 1;
         data[x][y].suggestion = true;
       }
-      this.removeLastAndNormalize();
+      this.normalize(true /* removeLast */);
     }
 
     return {
@@ -572,6 +568,44 @@ export default class Board extends Vue {
       },
       data,
     };
+  }
+
+  private removeLetterLoc(ll: LetterLoc): void {
+    const toRemove: number[] = [];
+    for (let i = 0; i < ll.wordIndex.length; i++) {
+      const wordIndex = ll.wordIndex[i];
+      const letterIndex = ll.letterIndex[i];
+
+      let word = this.placedWords[wordIndex].word;
+      word = word.substr(0, letterIndex) + ' ' + word.substr(letterIndex + 1);
+
+      const spaceIndex = word.search(/\S/);
+      // If there's space at the beginning, move the word forward.
+      if (spaceIndex > 0) {
+        switch (this.placedWords[wordIndex].orientation) {
+          case Orientation.Vertical:
+            this.placedWords[wordIndex].y += spaceIndex;
+            break;
+          case Orientation.Horizontal:
+            this.placedWords[wordIndex].x += spaceIndex;
+            break;
+        }
+      }
+      word = word.trim();
+      // Remove empty words.
+      if (word.length === 0) {
+        toRemove.push(wordIndex);
+      }
+      this.placedWords[wordIndex].word = word.trim();
+    }
+
+    toRemove.sort().reverse();
+    for (const index of toRemove) {
+      this.placedWords.splice(index, 1);
+    }
+    this.normalize(false /* removeLast */);
+    this.$emit('removeTile', ll.letter);
+    this.renderBoard();
   }
 }
 
