@@ -11,6 +11,11 @@ var (
 		pb.Word_HORIZONTAL: banana.Horizontal,
 		pb.Word_VERTICAL:   banana.Vertical,
 	}
+	orientationMap = map[banana.Orientation]pb.Word_Orientation{
+		banana.NoOrientation: pb.Word_UNKNOWN,
+		banana.Horizontal:    pb.Word_HORIZONTAL,
+		banana.Vertical:      pb.Word_VERTICAL,
+	}
 
 	engineStatusMap = map[banana.BoardStatusCode]pb.UpdateBoardResponse_Status{
 		banana.Success:       pb.UpdateBoardResponse_SUCCESS,
@@ -26,6 +31,26 @@ var (
 		banana.Finished:          pb.Game_FINISHED,
 	}
 )
+
+func boardToWire(b *banana.Board) *pb.Board {
+	words := make([]*pb.Word, len(b.Words))
+	for i, word := range b.Words {
+		words[i] = wordToWire(word)
+	}
+
+	return &pb.Board{
+		Words: words,
+	}
+}
+
+func wordToWire(w banana.Word) *pb.Word {
+	return &pb.Word{
+		Orientation: orientationMap[w.Orientation],
+		Text:        w.Text,
+		X:           int32(w.Loc.X),
+		Y:           int32(w.Loc.Y),
+	}
+}
 
 func boardFromWire(b *pb.Board, dict banana.Dictionary) *banana.Board {
 	words := make([]banana.Word, len(b.Words))

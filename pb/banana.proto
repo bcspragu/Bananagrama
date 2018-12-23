@@ -68,6 +68,9 @@ message GameUpdate {
     // Tile updates happen whenever the player's set of tiles changes, like at
     // the start of a game, when someone peels, or when the player dumps.
     TileUpdate tile_update = 4;
+    // Board updates happen when a player refreshes and joins a game thats
+    // already underway.
+    BoardUpdate board_update = 5;
   }
 }
 
@@ -77,11 +80,13 @@ message YouUpdate {
 
 message PlayerUpdate {
   repeated Player players = 1;
+  int32 remaining_tiles = 2;
 }
 
 message Player {
   string name = 1;
   int32 tiles_in_hand = 2;
+  int32 tiles_in_bunch = 3;
 }
 
 message StatusUpdate {
@@ -100,6 +105,7 @@ message TileUpdate {
     SPLIT = 1;
     PEEL = 2;
     DUMP = 3;
+    JOIN = 4;
   }
   // Why we're updating our tile set.
   Event event = 1;
@@ -108,6 +114,10 @@ message TileUpdate {
   // peeled.
   string player = 2;
   Tiles all_tiles = 3;
+}
+
+message BoardUpdate {
+  Board board = 1;
 }
 
 message Tiles {

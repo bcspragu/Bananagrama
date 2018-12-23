@@ -38,6 +38,11 @@ export default class Board extends Vue {
   private margin = 2;
   private grid: Selection<any, any, any, any> = d3.select('#grid');
 
+  public setWords(pws: PlacedWord[]): void {
+    this.placedWords = pws;
+    this.clear();
+  }
+
   public addCell(c: Cell): void {
     const ll = c.letterLoc;
     for (let i = 0; i < ll.wordIndex.length; i++) {

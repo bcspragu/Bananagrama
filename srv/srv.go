@@ -92,11 +92,6 @@ func (s *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (*pb.S
 		return nil, fmt.Errorf("can't join game in state %q", g.Status)
 	}
 
-	b, err := banana.NewBunch(banana.Bananagrams(), 1)
-	if err != nil {
-		return nil, fmt.Errorf("failed to make bunch for game: %v", err)
-	}
-
 	numTiles := banana.StartingTileCount(len(g.Players), scaleFactor)
 	players := make(map[banana.PlayerID]*banana.Tiles)
 	for _, p := range g.Players {
@@ -107,7 +102,7 @@ func (s *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (*pb.S
 		players[p.ID] = tls
 	}
 
-	if err := s.db.StartGame(gid, players, b); err != nil {
+	if err := s.db.StartGame(gid, players, g.Bunch); err != nil {
 		return nil, err
 	}
 
@@ -119,6 +114,10 @@ func (s *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (*pb.S
 
 	if err := s.sendTiles(gid, &pb.TileUpdate{Event: pb.TileUpdate_SPLIT}); err != nil {
 		return nil, fmt.Errorf("failed to send tiles: %v", err)
+	}
+
+	if err := s.sendPlayers(gid); err != nil {
+		return nil, fmt.Errorf("failed to send players: %v", err)
 	}
 
 	return &pb.StartGameResponse{}, nil
@@ -188,6 +187,27 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 		},
 	})
 
+	p, err := s.db.Player(pid)
+	if err != nil {
+		return err
+	}
+
+	stream.Send(&pb.GameUpdate{
+		Update: &pb.GameUpdate_BoardUpdate{
+			BoardUpdate: &pb.BoardUpdate{Board: boardToWire(p.Board)},
+		},
+	})
+
+	stream.Send(&pb.GameUpdate{
+		Update: &pb.GameUpdate_TileUpdate{
+			TileUpdate: &pb.TileUpdate{
+				Event:    pb.TileUpdate_JOIN,
+				Player:   p.Name,
+				AllTiles: &pb.Tiles{Letters: p.Tiles.AsList()},
+			},
+		},
+	})
+
 	go func() {
 		s.updateForGame(gid, &pb.GameUpdate{
 			Update: &pb.GameUpdate_StatusUpdate{
@@ -236,8 +256,9 @@ func (s *Server) sendPlayers(id banana.GameID) error {
 	var players []*pb.Player
 	for _, p := range g.Players {
 		players = append(players, &pb.Player{
-			Name:        p.Name,
-			TilesInHand: int32(p.Tiles.Count()),
+			Name:         p.Name,
+			TilesInHand:  int32(p.Tiles.Count()),
+			TilesInBunch: int32(p.Board.Count()),
 		})
 		fmt.Printf("%+v\n", players[len(players)-1])
 	}
@@ -245,7 +266,8 @@ func (s *Server) sendPlayers(id banana.GameID) error {
 	up := &pb.GameUpdate{
 		Update: &pb.GameUpdate_PlayerUpdate{
 			PlayerUpdate: &pb.PlayerUpdate{
-				Players: players,
+				Players:        players,
+				RemainingTiles: int32(g.Bunch.Count()),
 			},
 		},
 	}
@@ -310,7 +332,7 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 	// If the board was valid, clear out their tiles and let everyone know what's
 	// up.
 	if status.Code == banana.Success {
-		if err := s.issuePeel(gid, p.Name); err != nil {
+		if err := s.issuePeel(gid, p); err != nil {
 			return nil, fmt.Errorf("failed to issue peels: %v", err)
 		}
 	}
@@ -319,7 +341,7 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 		return nil, fmt.Errorf("failed to update players: %v", err)
 	}
 
-	fmt.Printf("STATUS CODE: %d, ERRORS: %+v\n", status.Code, status.Errors)
+	log.Printf("Player %q updated their board, status %+v", p.Name, status)
 
 	// Convert the status to the wire format.
 	return &pb.UpdateBoardResponse{
@@ -328,7 +350,7 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 	}, nil
 }
 
-func (s *Server) issuePeel(id banana.GameID, name string) error {
+func (s *Server) issuePeel(id banana.GameID, p *banana.Player) error {
 	s.RLock()
 	defer s.RUnlock()
 
@@ -367,6 +389,10 @@ func (s *Server) issuePeel(id banana.GameID, name string) error {
 				},
 			},
 		}
+	}
+
+	if err := s.db.UpdateBunch(id, g.Bunch); err != nil {
+		return fmt.Errorf("UpdateBunch: %v", err)
 	}
 
 	return nil
@@ -452,6 +478,12 @@ func (s *Server) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.DumpRespons
 		},
 	}
 	s.RUnlock()
+
+	if err := s.sendPlayers(gid); err != nil {
+		return nil, err
+	}
+
+	log.Printf("Player %q dumped a %q", p.Name, letter)
 
 	return &pb.DumpResponse{}, nil
 }

@@ -205,6 +205,11 @@ export class GameUpdate extends jspb.Message {
   getTileUpdate(): TileUpdate | undefined;
   setTileUpdate(value?: TileUpdate): void;
 
+  hasBoardUpdate(): boolean;
+  clearBoardUpdate(): void;
+  getBoardUpdate(): BoardUpdate | undefined;
+  setBoardUpdate(value?: BoardUpdate): void;
+
   getUpdateCase(): GameUpdate.UpdateCase;
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GameUpdate.AsObject;
@@ -222,6 +227,7 @@ export namespace GameUpdate {
     playerUpdate?: PlayerUpdate.AsObject,
     statusUpdate?: StatusUpdate.AsObject,
     tileUpdate?: TileUpdate.AsObject,
+    boardUpdate?: BoardUpdate.AsObject,
   }
 
   export enum UpdateCase {
@@ -230,6 +236,7 @@ export namespace GameUpdate {
     PLAYER_UPDATE = 2,
     STATUS_UPDATE = 3,
     TILE_UPDATE = 4,
+    BOARD_UPDATE = 5,
   }
 }
 
@@ -259,6 +266,9 @@ export class PlayerUpdate extends jspb.Message {
   setPlayersList(value: Array<Player>): void;
   addPlayers(value?: Player, index?: number): Player;
 
+  getRemainingTiles(): number;
+  setRemainingTiles(value: number): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PlayerUpdate.AsObject;
   static toObject(includeInstance: boolean, msg: PlayerUpdate): PlayerUpdate.AsObject;
@@ -272,6 +282,7 @@ export class PlayerUpdate extends jspb.Message {
 export namespace PlayerUpdate {
   export type AsObject = {
     playersList: Array<Player.AsObject>,
+    remainingTiles: number,
   }
 }
 
@@ -281,6 +292,9 @@ export class Player extends jspb.Message {
 
   getTilesInHand(): number;
   setTilesInHand(value: number): void;
+
+  getTilesInBunch(): number;
+  setTilesInBunch(value: number): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Player.AsObject;
@@ -296,6 +310,7 @@ export namespace Player {
   export type AsObject = {
     name: string,
     tilesInHand: number,
+    tilesInBunch: number,
   }
 }
 
@@ -360,6 +375,29 @@ export namespace TileUpdate {
     SPLIT = 1,
     PEEL = 2,
     DUMP = 3,
+    JOIN = 4,
+  }
+}
+
+export class BoardUpdate extends jspb.Message {
+  hasBoard(): boolean;
+  clearBoard(): void;
+  getBoard(): Board | undefined;
+  setBoard(value?: Board): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): BoardUpdate.AsObject;
+  static toObject(includeInstance: boolean, msg: BoardUpdate): BoardUpdate.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: BoardUpdate, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): BoardUpdate;
+  static deserializeBinaryFromReader(message: BoardUpdate, reader: jspb.BinaryReader): BoardUpdate;
+}
+
+export namespace BoardUpdate {
+  export type AsObject = {
+    board?: Board.AsObject,
   }
 }
 

@@ -12,6 +12,7 @@ var goog = jspb;
 var global = Function('return this')();
 
 goog.exportSymbol('proto.Board', null, global);
+goog.exportSymbol('proto.BoardUpdate', null, global);
 goog.exportSymbol('proto.DumpRequest', null, global);
 goog.exportSymbol('proto.DumpResponse', null, global);
 goog.exportSymbol('proto.Game', null, global);
@@ -1318,7 +1319,7 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<!Array<number>>}
  * @const
  */
-proto.GameUpdate.oneofGroups_ = [[1,2,3,4]];
+proto.GameUpdate.oneofGroups_ = [[1,2,3,4,5]];
 
 /**
  * @enum {number}
@@ -1328,7 +1329,8 @@ proto.GameUpdate.UpdateCase = {
   YOU_UPDATE: 1,
   PLAYER_UPDATE: 2,
   STATUS_UPDATE: 3,
-  TILE_UPDATE: 4
+  TILE_UPDATE: 4,
+  BOARD_UPDATE: 5
 };
 
 /**
@@ -1370,7 +1372,8 @@ proto.GameUpdate.toObject = function(includeInstance, msg) {
     youUpdate: (f = msg.getYouUpdate()) && proto.YouUpdate.toObject(includeInstance, f),
     playerUpdate: (f = msg.getPlayerUpdate()) && proto.PlayerUpdate.toObject(includeInstance, f),
     statusUpdate: (f = msg.getStatusUpdate()) && proto.StatusUpdate.toObject(includeInstance, f),
-    tileUpdate: (f = msg.getTileUpdate()) && proto.TileUpdate.toObject(includeInstance, f)
+    tileUpdate: (f = msg.getTileUpdate()) && proto.TileUpdate.toObject(includeInstance, f),
+    boardUpdate: (f = msg.getBoardUpdate()) && proto.BoardUpdate.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -1426,6 +1429,11 @@ proto.GameUpdate.deserializeBinaryFromReader = function(msg, reader) {
       var value = new proto.TileUpdate;
       reader.readMessage(value,proto.TileUpdate.deserializeBinaryFromReader);
       msg.setTileUpdate(value);
+      break;
+    case 5:
+      var value = new proto.BoardUpdate;
+      reader.readMessage(value,proto.BoardUpdate.deserializeBinaryFromReader);
+      msg.setBoardUpdate(value);
       break;
     default:
       reader.skipField();
@@ -1486,6 +1494,14 @@ proto.GameUpdate.serializeBinaryToWriter = function(message, writer) {
       4,
       f,
       proto.TileUpdate.serializeBinaryToWriter
+    );
+  }
+  f = message.getBoardUpdate();
+  if (f != null) {
+    writer.writeMessage(
+      5,
+      f,
+      proto.BoardUpdate.serializeBinaryToWriter
     );
   }
 };
@@ -1608,6 +1624,36 @@ proto.GameUpdate.prototype.clearTileUpdate = function() {
  */
 proto.GameUpdate.prototype.hasTileUpdate = function() {
   return jspb.Message.getField(this, 4) != null;
+};
+
+
+/**
+ * optional BoardUpdate board_update = 5;
+ * @return {?proto.BoardUpdate}
+ */
+proto.GameUpdate.prototype.getBoardUpdate = function() {
+  return /** @type{?proto.BoardUpdate} */ (
+    jspb.Message.getWrapperField(this, proto.BoardUpdate, 5));
+};
+
+
+/** @param {?proto.BoardUpdate|undefined} value */
+proto.GameUpdate.prototype.setBoardUpdate = function(value) {
+  jspb.Message.setOneofWrapperField(this, 5, proto.GameUpdate.oneofGroups_[0], value);
+};
+
+
+proto.GameUpdate.prototype.clearBoardUpdate = function() {
+  this.setBoardUpdate(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.GameUpdate.prototype.hasBoardUpdate = function() {
+  return jspb.Message.getField(this, 5) != null;
 };
 
 
@@ -1808,7 +1854,8 @@ proto.PlayerUpdate.prototype.toObject = function(opt_includeInstance) {
 proto.PlayerUpdate.toObject = function(includeInstance, msg) {
   var f, obj = {
     playersList: jspb.Message.toObjectList(msg.getPlayersList(),
-    proto.Player.toObject, includeInstance)
+    proto.Player.toObject, includeInstance),
+    remainingTiles: jspb.Message.getFieldWithDefault(msg, 2, 0)
   };
 
   if (includeInstance) {
@@ -1850,6 +1897,10 @@ proto.PlayerUpdate.deserializeBinaryFromReader = function(msg, reader) {
       reader.readMessage(value,proto.Player.deserializeBinaryFromReader);
       msg.addPlayers(value);
       break;
+    case 2:
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setRemainingTiles(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1887,6 +1938,13 @@ proto.PlayerUpdate.serializeBinaryToWriter = function(message, writer) {
       proto.Player.serializeBinaryToWriter
     );
   }
+  f = message.getRemainingTiles();
+  if (f !== 0) {
+    writer.writeInt32(
+      2,
+      f
+    );
+  }
 };
 
 
@@ -1918,6 +1976,21 @@ proto.PlayerUpdate.prototype.addPlayers = function(opt_value, opt_index) {
 
 proto.PlayerUpdate.prototype.clearPlayersList = function() {
   this.setPlayersList([]);
+};
+
+
+/**
+ * optional int32 remaining_tiles = 2;
+ * @return {number}
+ */
+proto.PlayerUpdate.prototype.getRemainingTiles = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
+};
+
+
+/** @param {number} value */
+proto.PlayerUpdate.prototype.setRemainingTiles = function(value) {
+  jspb.Message.setProto3IntField(this, 2, value);
 };
 
 
@@ -1969,7 +2042,8 @@ proto.Player.prototype.toObject = function(opt_includeInstance) {
 proto.Player.toObject = function(includeInstance, msg) {
   var f, obj = {
     name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    tilesInHand: jspb.Message.getFieldWithDefault(msg, 2, 0)
+    tilesInHand: jspb.Message.getFieldWithDefault(msg, 2, 0),
+    tilesInBunch: jspb.Message.getFieldWithDefault(msg, 3, 0)
   };
 
   if (includeInstance) {
@@ -2014,6 +2088,10 @@ proto.Player.deserializeBinaryFromReader = function(msg, reader) {
       var value = /** @type {number} */ (reader.readInt32());
       msg.setTilesInHand(value);
       break;
+    case 3:
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setTilesInBunch(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -2057,6 +2135,13 @@ proto.Player.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
+  f = message.getTilesInBunch();
+  if (f !== 0) {
+    writer.writeInt32(
+      3,
+      f
+    );
+  }
 };
 
 
@@ -2087,6 +2172,21 @@ proto.Player.prototype.getTilesInHand = function() {
 /** @param {number} value */
 proto.Player.prototype.setTilesInHand = function(value) {
   jspb.Message.setProto3IntField(this, 2, value);
+};
+
+
+/**
+ * optional int32 tiles_in_bunch = 3;
+ * @return {number}
+ */
+proto.Player.prototype.getTilesInBunch = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/** @param {number} value */
+proto.Player.prototype.setTilesInBunch = function(value) {
+  jspb.Message.setProto3IntField(this, 3, value);
 };
 
 
@@ -2402,7 +2502,8 @@ proto.TileUpdate.Event = {
   UNKNOWN: 0,
   SPLIT: 1,
   PEEL: 2,
-  DUMP: 3
+  DUMP: 3,
+  JOIN: 4
 };
 
 /**
@@ -2462,6 +2563,165 @@ proto.TileUpdate.prototype.clearAllTiles = function() {
  */
 proto.TileUpdate.prototype.hasAllTiles = function() {
   return jspb.Message.getField(this, 3) != null;
+};
+
+
+
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.BoardUpdate = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.BoardUpdate, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  proto.BoardUpdate.displayName = 'proto.BoardUpdate';
+}
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto suitable for use in Soy templates.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     com.google.apps.jspb.JsClassTemplate.JS_RESERVED_WORDS.
+ * @param {boolean=} opt_includeInstance Whether to include the JSPB instance
+ *     for transitional soy proto support: http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.BoardUpdate.prototype.toObject = function(opt_includeInstance) {
+  return proto.BoardUpdate.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Whether to include the JSPB
+ *     instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.BoardUpdate} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.BoardUpdate.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    board: (f = msg.getBoard()) && proto.Board.toObject(includeInstance, f)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.BoardUpdate}
+ */
+proto.BoardUpdate.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.BoardUpdate;
+  return proto.BoardUpdate.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.BoardUpdate} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.BoardUpdate}
+ */
+proto.BoardUpdate.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = new proto.Board;
+      reader.readMessage(value,proto.Board.deserializeBinaryFromReader);
+      msg.setBoard(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.BoardUpdate.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.BoardUpdate.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.BoardUpdate} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.BoardUpdate.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getBoard();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      proto.Board.serializeBinaryToWriter
+    );
+  }
+};
+
+
+/**
+ * optional Board board = 1;
+ * @return {?proto.Board}
+ */
+proto.BoardUpdate.prototype.getBoard = function() {
+  return /** @type{?proto.Board} */ (
+    jspb.Message.getWrapperField(this, proto.Board, 1));
+};
+
+
+/** @param {?proto.Board|undefined} value */
+proto.BoardUpdate.prototype.setBoard = function(value) {
+  jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+proto.BoardUpdate.prototype.clearBoard = function() {
+  this.setBoard(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.BoardUpdate.prototype.hasBoard = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 

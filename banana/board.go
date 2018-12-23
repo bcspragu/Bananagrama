@@ -131,6 +131,13 @@ func (b *Board) precompute() bool {
 	return true
 }
 
+func (b *Board) Count() int {
+	if b == nil || !b.precompute() {
+		return 0
+	}
+	return len(b.letterMap)
+}
+
 func (b *Board) AsTiles() *Tiles {
 	if b == nil || !b.precompute() {
 		return NewTiles()

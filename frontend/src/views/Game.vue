@@ -22,14 +22,19 @@
       </div>
       <div class="column is-one-fifth right-side">
         <div class="players">
+          <div v-if="tilesInBunch">{{tilesInBunch}} tiles left in bunch</div>
           <ol>
-            <li v-for="player in players">{{player.getName()}} - {{player.getTilesInHand()}}</li>
+            <li v-for="player in players">{{player.getName()}}: {{player.getTilesInHand()}} - {{player.getTilesInBunch()}}</li>
           </ol>
           <a class="button is-info" @click="startGame">
             Start Game
           </a>
         </div>
-        <div class="logs"></div>
+        <div class="logs">
+          <ol>
+            <li v-for="log in logs">{{log}}</li>
+          </ol>
+        </div>
       </div>
     </div>
   </div>
@@ -41,11 +46,11 @@ import Board from '@/components/Board.vue'; // @ is an alias to /src
 import UnusedLetters from '@/components/UnusedLetters.vue'; // @ is an alias to /src
 import ActiveWord from '@/components/ActiveWord.vue'; // @ is an alias to /src
 import Notice from '@/components/Notice.vue'; // @ is an alias to /src
-import {Cell, Letter} from '@/data';
+import {Cell, Letter, PlacedWord, Orientation} from '@/data';
 import {Game as PBGame, Board as PBBoard, ListGamesRequest, JoinGameRequest,
         GameUpdate, YouUpdate, PlayerUpdate, TileUpdate,
         StatusUpdate, StartGameRequest, Player, DumpRequest,
-        UpdateBoardRequest} from '@/proto/banana_pb';
+        UpdateBoardRequest, BoardUpdate, Word} from '@/proto/banana_pb';
 
 @Component({
   components: {
@@ -59,6 +64,8 @@ export default class Game extends Vue {
   private game: PBGame | null = null;
   private playerID: string | null = null;
   private players: Player[] = [];
+  private tilesInBunch: number | null = null;
+  private logs: string[] = [];
 
   private word: string = '';
   private notice: string[] = [];
@@ -87,6 +94,7 @@ export default class Game extends Vue {
       }
 
       if (!this.game) {
+        this.$router.push({ name: 'home' });
         console.log(`Couldn't find game ID ${this.$route.params.id}`);
         return;
       }
@@ -131,19 +139,26 @@ export default class Game extends Vue {
     const stream = this.$client.joinGame(req);
 
     stream.on('data', (resp) => {
-      console.log(resp);
       switch (resp.getUpdateCase()) {
         case GameUpdate.UpdateCase.YOU_UPDATE:
+          console.log('received id');
           this.handleYouUpdate(resp.getYouUpdate()!);
           break;
         case GameUpdate.UpdateCase.PLAYER_UPDATE:
+          console.log('received player list');
           this.handlePlayerUpdate(resp.getPlayerUpdate()!);
           break;
         case GameUpdate.UpdateCase.STATUS_UPDATE:
+          console.log('received status update');
           this.handleStatusUpdate(resp.getStatusUpdate()!);
           break;
         case GameUpdate.UpdateCase.TILE_UPDATE:
+          console.log('received tile list');
           this.handleTileUpdate(resp.getTileUpdate()!);
+          break;
+        case GameUpdate.UpdateCase.BOARD_UPDATE:
+          console.log('received board');
+          this.handleBoardUpdate(resp.getBoardUpdate()!);
           break;
       }
     });
@@ -165,6 +180,7 @@ export default class Game extends Vue {
 
   private handlePlayerUpdate(up: PlayerUpdate): void {
     this.players = up.getPlayersList();
+    this.tilesInBunch = up.getRemainingTiles();
     return;
   }
 
@@ -184,7 +200,45 @@ export default class Game extends Vue {
     }
 
     this.letters = letters;
+
+    const t = new Date();
+    let message = `[${t.getHours()}:${t.getMinutes()}:${t.getSeconds()}] `;
+    let valid = true;
+    switch (up.getEvent()) {
+    case TileUpdate.Event.SPLIT:
+      message += 'The game has started!';
+      break;
+    case TileUpdate.Event.PEEL:
+      message += `${up.getPlayer()} peeled`;
+      break;
+    case TileUpdate.Event.DUMP:
+      message += `${up.getPlayer()} dumped`;
+      break;
+    default:
+      valid = false;
+    }
+    if (valid) {
+      this.logs.unshift(message);
+    }
     return;
+  }
+
+  private handleBoardUpdate(up: BoardUpdate): void {
+    const pws: PlacedWord[] = [];
+    for (const word of up.getBoard()!.getWordsList()) {
+      let o = Orientation.Vertical;
+      if (word.getOrientation() === Word.Orientation.HORIZONTAL) {
+        o = Orientation.Horizontal;
+      }
+      pws.push({
+        x: word.getX(),
+        y: word.getY(),
+        orientation: o,
+        word: word.getText(),
+        suggestion: false,
+      });
+    }
+    this.board.setWords(pws);
   }
 
   private getPlayerIDFromCookies(): string | undefined {
