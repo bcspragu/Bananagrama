@@ -59,24 +59,8 @@ func (b *Bunch) Tile(r *rand.Rand) (Letter, error) {
 
 type Distribution map[int][]Letter
 
-func Bananagrams() Distribution {
-	return map[int][]Letter{
-		1:  []Letter{'J', 'K', 'Q', 'X', 'Z'},
-		2:  []Letter{'B', 'C', 'F', 'H', 'M', 'P', 'V', 'W', 'Y'},
-		3:  []Letter{'G'},
-		4:  []Letter{'L'},
-		5:  []Letter{'D', 'S', 'U'},
-		6:  []Letter{'N'},
-		7:  []Letter{'T', 'R'},
-		8:  []Letter{'O'},
-		9:  []Letter{'I'},
-		10: []Letter{'A'},
-		11: []Letter{'E'},
-	}
-}
-
 // Bananagrams returns the distribution of letters on a Bananagrams board.
-func BananagramsReal() Distribution {
+func Bananagrams() Distribution {
 	return map[int][]Letter{
 		2:  []Letter{'J', 'K', 'Q', 'X', 'Z'},
 		3:  []Letter{'B', 'C', 'F', 'H', 'M', 'P', 'V', 'W', 'Y'},
