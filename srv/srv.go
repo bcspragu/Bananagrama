@@ -88,8 +88,8 @@ func (s *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (*pb.S
 	}
 
 	if g.Status != banana.WaitingForPlayers {
-		// Can't join an in-progess or finished game.
-		return nil, fmt.Errorf("can't join game in state %q", g.Status)
+		// Can't start an in-progess or finished game.
+		return nil, fmt.Errorf("can't start game in state %q", g.Status)
 	}
 
 	numTiles := banana.StartingTileCount(len(g.Players), scaleFactor)
@@ -255,10 +255,15 @@ func (s *Server) sendPlayers(id banana.GameID) error {
 
 	var players []*pb.Player
 	for _, p := range g.Players {
+		bc, err := p.Board.Count()
+		if err != nil {
+			return fmt.Errorf("failed to get board count: %v", err)
+		}
+
 		players = append(players, &pb.Player{
 			Name:         p.Name,
 			TilesInHand:  int32(p.Tiles.Count()),
-			TilesInBunch: int32(p.Board.Count()),
+			TilesInBunch: int32(bc),
 		})
 		fmt.Printf("%+v\n", players[len(players)-1])
 	}
@@ -319,19 +324,35 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 
 	// Add existing board to tiles.
 	tiles := p.Tiles.Clone()
-	tiles.Add(p.Board.AsTiles())
+	bts, err := p.Board.AsTiles()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get board tiles")
+	}
+	tiles.Add(bts)
 
 	// Check if the board they sent is valid
-	status, ok := b.ValidateBoard(tiles)
-	if ok {
-		if err := s.db.UpdatePlayer(pid, b, b.Diff(tiles)); err != nil {
-			return nil, fmt.Errorf("failed to update player %q: %v", pid, err)
-		}
+	bv, err := b.ValidateBoard(tiles)
+	if err != nil {
+		return nil, fmt.Errorf("failed to validate board: %v", err)
 	}
+
+	// We'll write the board as long as they aren't using letters they don't
+	// have.
+	if len(bv.ExtraLetters) > 0 {
+		return nil, fmt.Errorf("used letters you don't have: %v", bv.ExtraLetters)
+	}
+
+	if err := s.db.UpdatePlayer(pid, b, b.Diff(tiles)); err != nil {
+		return nil, fmt.Errorf("failed to update player %q: %v", pid, err)
+	}
+	log.Printf("Player %q updated their board, result %+v", p.Name, bv)
+
+	// A board is peelable if all the words are valid
+	peelable := len(bv.InvalidWords) == 0 && len(bv.UnusedLetters) == 0 && !bv.DetachedBoard
 
 	// If the board was valid, clear out their tiles and let everyone know what's
 	// up.
-	if status.Code == banana.Success {
+	if peelable {
 		if err := s.issuePeel(gid, p); err != nil {
 			return nil, fmt.Errorf("failed to issue peels: %v", err)
 		}
@@ -341,12 +362,11 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 		return nil, fmt.Errorf("failed to update players: %v", err)
 	}
 
-	log.Printf("Player %q updated their board, status %+v", p.Name, status)
-
 	// Convert the status to the wire format.
 	return &pb.UpdateBoardResponse{
-		Status: engineStatusMap[status.Code],
-		Errors: status.Errors,
+		InvalidWords:  charLocsListToWire(bv.InvalidWords),
+		UnusedLetters: bv.UnusedLetters,
+		DetachedBoard: bv.DetachedBoard,
 	}, nil
 }
 
@@ -365,7 +385,7 @@ func (s *Server) issuePeel(id banana.GameID, p *banana.Player) error {
 	}
 
 	for pid, c := range s.updates[id] {
-		p, err := s.db.Player(pid)
+		sp, err := s.db.Player(pid)
 		if err != nil {
 			return fmt.Errorf("failed to retreive player %q: %v", pid, err)
 		}
@@ -374,7 +394,7 @@ func (s *Server) issuePeel(id banana.GameID, p *banana.Player) error {
 		if err != nil {
 			return err
 		}
-		p.Tiles.Add(tiles)
+		sp.Tiles.Add(tiles)
 
 		if err := s.db.UpdatePlayer(pid, p.Board, p.Tiles); err != nil {
 			return fmt.Errorf("failed to update player %q board: %v", pid, err)
@@ -384,8 +404,8 @@ func (s *Server) issuePeel(id banana.GameID, p *banana.Player) error {
 			Update: &pb.GameUpdate_TileUpdate{
 				TileUpdate: &pb.TileUpdate{
 					Event:    pb.TileUpdate_PEEL,
-					Player:   name,
-					AllTiles: &pb.Tiles{Letters: p.Tiles.AsList()},
+					Player:   p.Name,
+					AllTiles: &pb.Tiles{Letters: sp.Tiles.AsList()},
 				},
 			},
 		}

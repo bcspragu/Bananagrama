@@ -9,7 +9,7 @@ import {BaseType, Selection} from 'd3';
 
 import {Cell, LetterLoc, Orientation, Word, PlacedWord, Placement, Match} from '@/data';
 
-import {Board as PBBoard, Word as PBWord, UpdateBoardRequest} from '@/proto/banana_pb';
+import {Board as PBBoard, Word as PBWord, UpdateBoardRequest, CharLocs} from '@/proto/banana_pb';
 
 
 interface Suggestion {
@@ -27,6 +27,7 @@ interface BoardData {
 @Component
 export default class Board extends Vue {
   private placedWords: PlacedWord[] = [];
+  private invalidWords: CharLocs[] = [];
 
   // Temporary variables used for suggestions.
   private currentWord = '';
@@ -37,6 +38,11 @@ export default class Board extends Vue {
   private sizeY = 0;
   private margin = 2;
   private grid: Selection<any, any, any, any> = d3.select('#grid');
+
+  public setInvalidWords(words: CharLocs[]): void {
+    this.invalidWords = words;
+    this.renderBoard();
+  }
 
   public setWords(pws: PlacedWord[]): void {
     this.placedWords = pws;
@@ -537,7 +543,15 @@ export default class Board extends Vue {
       .attr('rx', board.cellRadius)
       .attr('width', board.cellSize)
       .attr('height', board.cellSize)
-      .style('fill', (d: any) => d.suggestion ? '#ffc' : '#fff')
+      .style('fill', (d: any) => {
+        if (d.suggestion) {
+          return '#ffc';
+        }
+        if (d.invalid) {
+          return '#fcc';
+        }
+        return '#fff';
+      })
       .style('stroke', '#222');
 
     column.merge(cells).select('text')
@@ -602,6 +616,7 @@ export default class Board extends Vue {
           row: x,
           column: y,
           suggestion: false,
+          invalid: false,
         });
 
         // Increment the Y position.
@@ -611,6 +626,18 @@ export default class Board extends Vue {
       ypos = this.margin / 2 + paddingY / 2;
       // Increment the X position.
       xpos += size + this.margin;
+    }
+
+    for (const iw of this.invalidWords) {
+      for (const cl of iw.getLocsList()) {
+        if (cl.getX() + 1 >= data.length) {
+          continue;
+        }
+        if (cl.getY() + 1 >= data[cl.getX() + 1].length) {
+          continue;
+        }
+        data[cl.getX() + 1][cl.getY() + 1].invalid = true;
+      }
     }
 
     if (fit) {

@@ -3,6 +3,7 @@ module github.com/bcspragu/Bananagrama
 require (
 	github.com/boltdb/bolt v1.3.1
 	github.com/golang/protobuf v1.2.0
+	github.com/google/go-cmp v0.2.0
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/websocket v1.4.0
 	github.com/improbable-eng/grpc-web v0.0.0-20181117144223-c99847a0e790

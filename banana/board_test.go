@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"sort"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestCharLocs(t *testing.T) {
@@ -40,49 +42,138 @@ func TestCharLocs(t *testing.T) {
 func TestFindWords(t *testing.T) {
 	testcases := []struct {
 		words []Word
-		want  []string
+		want  []CharLocs
 	}{
 		{
 			words: []Word{{Horizontal, "cat", Loc{0, 0}}},
-			want:  []string{"cat"},
+			want: []CharLocs{
+				CharLocs{
+					Word: "cat",
+					Locs: []CharLoc{
+						{Letter: 'c'},
+						{Letter: 'a', Loc: Loc{X: 1}},
+						{Letter: 't', Loc: Loc{X: 2}},
+					},
+				},
+			},
 		},
 		{
 			words: []Word{{Horizontal, "cat", Loc{0, 0}}, {Horizontal, "bad", Loc{1, 1}}, {Horizontal, "smell", Loc{1, 2}}},
-			want:  []string{"cat", "abs", "tam", "bad", "smell", "de"},
+			want: []CharLocs{
+				CharLocs{Word: "abs", Locs: []CharLoc{
+					{Letter: 'a', Loc: Loc{X: 1}},
+					{Letter: 'b', Loc: Loc{X: 1, Y: 1}},
+					{Letter: 's', Loc: Loc{X: 1, Y: 2}},
+				},
+				},
+				CharLocs{Word: "bad", Locs: []CharLoc{
+					{Letter: 'b', Loc: Loc{X: 1, Y: 1}},
+					{Letter: 'a', Loc: Loc{X: 2, Y: 1}},
+					{Letter: 'd', Loc: Loc{X: 3, Y: 1}},
+				},
+				},
+				CharLocs{Word: "cat", Locs: []CharLoc{
+					{Letter: 'c'},
+					{Letter: 'a', Loc: Loc{X: 1}},
+					{Letter: 't', Loc: Loc{X: 2}},
+				},
+				},
+				CharLocs{Word: "de", Locs: []CharLoc{
+					{Letter: 'd', Loc: Loc{X: 3, Y: 1}},
+					{Letter: 'e', Loc: Loc{X: 3, Y: 2}},
+				},
+				},
+				CharLocs{Word: "smell", Locs: []CharLoc{
+					{Letter: 's', Loc: Loc{X: 1, Y: 2}},
+					{Letter: 'm', Loc: Loc{X: 2, Y: 2}},
+					{Letter: 'e', Loc: Loc{X: 3, Y: 2}},
+					{Letter: 'l', Loc: Loc{X: 4, Y: 2}},
+					{Letter: 'l', Loc: Loc{X: 5, Y: 2}},
+				},
+				},
+				CharLocs{Word: "tam", Locs: []CharLoc{
+					{Letter: 't', Loc: Loc{X: 2}},
+					{Letter: 'a', Loc: Loc{X: 2, Y: 1}},
+					{Letter: 'm', Loc: Loc{X: 2, Y: 2}},
+				},
+				},
+			},
 		},
 		{
 			words: []Word{{Vertical, "cat", Loc{0, 0}}, {Vertical, "bad", Loc{1, 1}}, {Vertical, "smell", Loc{2, 1}}},
-			want:  []string{"cat", "abs", "tam", "bad", "smell", "de"},
+			want: []CharLocs{
+				CharLocs{
+					Word: "abs",
+					Locs: []CharLoc{{Letter: 'a', Loc: Loc{Y: 1}}, {Letter: 'b', Loc: Loc{X: 1, Y: 1}}, {Letter: 's', Loc: Loc{X: 2, Y: 1}}},
+				},
+				CharLocs{
+					Word: "bad",
+					Locs: []CharLoc{{Letter: 'b', Loc: Loc{X: 1, Y: 1}}, {Letter: 'a', Loc: Loc{X: 1, Y: 2}}, {Letter: 'd', Loc: Loc{X: 1, Y: 3}}},
+				},
+				CharLocs{
+					Word: "cat",
+					Locs: []CharLoc{{Letter: 'c'}, {Letter: 'a', Loc: Loc{Y: 1}}, {Letter: 't', Loc: Loc{Y: 2}}},
+				},
+				CharLocs{
+					Word: "de",
+					Locs: []CharLoc{{Letter: 'd', Loc: Loc{X: 1, Y: 3}}, {Letter: 'e', Loc: Loc{X: 2, Y: 3}}},
+				},
+				CharLocs{
+					Word: "smell",
+					Locs: []CharLoc{{Letter: 's', Loc: Loc{X: 2, Y: 1}}, {Letter: 'm', Loc: Loc{X: 2, Y: 2}}, {Letter: 'e', Loc: Loc{X: 2, Y: 3}}, {Letter: 'l', Loc: Loc{X: 2, Y: 4}}, {Letter: 'l', Loc: Loc{X: 2, Y: 5}}},
+				},
+				CharLocs{
+					Word: "tam",
+					Locs: []CharLoc{{Letter: 't', Loc: Loc{Y: 2}}, {Letter: 'a', Loc: Loc{X: 1, Y: 2}}, {Letter: 'm', Loc: Loc{X: 2, Y: 2}}},
+				},
+			},
 		},
 		{
 			// Inverting the order of the words shows that we're sorting beforehand
 			words: []Word{{Vertical, "radish", Loc{0, 5}}, {Vertical, "horse", Loc{0, 0}}},
-			want:  []string{"horseradish"},
+			want: []CharLocs{
+				CharLocs{
+					Word: "horseradish",
+					Locs: []CharLoc{{Letter: 'h'}, {Letter: 'o', Loc: Loc{Y: 1}}, {Letter: 'r', Loc: Loc{Y: 2}}, {Letter: 's', Loc: Loc{Y: 3}}, {Letter: 'e', Loc: Loc{Y: 4}}, {Letter: 'r', Loc: Loc{Y: 5}}, {Letter: 'a', Loc: Loc{Y: 6}}, {Letter: 'd', Loc: Loc{Y: 7}}, {Letter: 'i', Loc: Loc{Y: 8}}, {Letter: 's', Loc: Loc{Y: 9}}, {Letter: 'h', Loc: Loc{Y: 10}}}},
+			},
 		},
 		{
 			words: []Word{{Horizontal, "h", Loc{0, 0}}, {Vertical, "i", Loc{0, 1}}},
-			want:  []string{"hi"},
+			want: []CharLocs{
+				CharLocs{Word: "hi", Locs: []CharLoc{{Letter: 'h'}, {Letter: 'i', Loc: Loc{Y: 1}}}},
+			},
 		},
 		{
 			words: []Word{{Horizontal, "hello", Loc{3, 0}}, {Vertical, "hello", Loc{0, 3}}},
-			want:  []string{"hello", "hello"},
+			want: []CharLocs{
+				CharLocs{Word: "hello", Locs: []CharLoc{{Letter: 'h', Loc: Loc{Y: 3}}, {Letter: 'e', Loc: Loc{Y: 4}}, {Letter: 'l', Loc: Loc{Y: 5}}, {Letter: 'l', Loc: Loc{Y: 6}}, {Letter: 'o', Loc: Loc{Y: 7}}}},
+				CharLocs{Word: "hello", Locs: []CharLoc{{Letter: 'h', Loc: Loc{X: 3}}, {Letter: 'e', Loc: Loc{X: 4}}, {Letter: 'l', Loc: Loc{X: 5}}, {Letter: 'l', Loc: Loc{X: 6}}, {Letter: 'o', Loc: Loc{X: 7}}}},
+			},
 		},
 		{
 			words: []Word{{Vertical, "hello", Loc{3, 0}}, {Horizontal, "hello", Loc{0, 3}}},
-			want:  []string{"hello", "hello"},
+			want: []CharLocs{
+				CharLocs{Word: "hello", Locs: []CharLoc{{Letter: 'h', Loc: Loc{X: 3}}, {Letter: 'e', Loc: Loc{X: 3, Y: 1}}, {Letter: 'l', Loc: Loc{X: 3, Y: 2}}, {Letter: 'l', Loc: Loc{X: 3, Y: 3}}, {Letter: 'o', Loc: Loc{X: 3, Y: 4}}}},
+				CharLocs{Word: "hello", Locs: []CharLoc{{Letter: 'h', Loc: Loc{Y: 3}}, {Letter: 'e', Loc: Loc{X: 1, Y: 3}}, {Letter: 'l', Loc: Loc{X: 2, Y: 3}}, {Letter: 'l', Loc: Loc{X: 3, Y: 3}}, {Letter: 'o', Loc: Loc{X: 4, Y: 3}}}},
+			},
 		},
 		{
 			words: []Word{{Vertical, "muffin", Loc{0, 0}}, {Horizontal, "scent", Loc{0, 6}}},
-			want:  []string{"muffins", "scent"},
+			want: []CharLocs{
+				CharLocs{Word: "muffins", Locs: []CharLoc{{Letter: 'm'}, {Letter: 'u', Loc: Loc{Y: 1}}, {Letter: 'f', Loc: Loc{Y: 2}}, {Letter: 'f', Loc: Loc{Y: 3}}, {Letter: 'i', Loc: Loc{Y: 4}}, {Letter: 'n', Loc: Loc{Y: 5}}, {Letter: 's', Loc: Loc{Y: 6}}}},
+				CharLocs{Word: "scent", Locs: []CharLoc{{Letter: 's', Loc: Loc{Y: 6}}, {Letter: 'c', Loc: Loc{X: 1, Y: 6}}, {Letter: 'e', Loc: Loc{X: 2, Y: 6}}, {Letter: 'n', Loc: Loc{X: 3, Y: 6}}, {Letter: 't', Loc: Loc{X: 4, Y: 6}}}},
+			},
 		},
 	}
 
 	for _, tc := range testcases {
 		got := (&Board{Words: tc.words}).findWords()
-		sort.Strings(got)
-		sort.Strings(tc.want)
-		if !reflect.DeepEqual(got, tc.want) {
-			t.Errorf("got %v, want %v", got, tc.want)
+
+		sort.Slice(got, func(i, j int) bool { return got[i].Word < got[j].Word })
+		sort.Slice(tc.want, func(i, j int) bool { return tc.want[i].Word < tc.want[j].Word })
+
+		if diff := cmp.Diff(tc.want, got); diff != "" {
+			t.Errorf("findWords (-want +got):\n%s", diff)
 		}
 	}
 }
@@ -113,8 +204,8 @@ func TestConnected(t *testing.T) {
 
 	for _, tc := range testcases {
 		board := &Board{Words: tc.words}
-		if !board.precompute() {
-			t.Errorf("couldn't precompute board %v", board)
+		if err := board.precompute(); err != nil {
+			t.Errorf("couldn't precompute board %v: %v", board, err)
 		}
 		got := board.connected()
 		if got != tc.want {
@@ -168,8 +259,8 @@ func TestContainsExactly(t *testing.T) {
 
 	for _, tc := range testcases {
 		board := &Board{Words: tc.words}
-		if !board.precompute() {
-			t.Errorf("couldn't precompute board %v", board)
+		if err := board.precompute(); err != nil {
+			t.Errorf("couldn't precompute board %v: %v", board, err)
 		}
 		got := board.containsExactly(tilesFromMap(tc.letters))
 		if got != tc.want {
@@ -186,8 +277,8 @@ func TestMalformedPrecompute(t *testing.T) {
 		},
 	}
 
-	if board.precompute() {
-		t.Error("expected malformed board to fail precompute")
+	if err := board.precompute(); err == nil {
+		t.Error("expected precompute to fail")
 	}
 }
 
@@ -202,10 +293,11 @@ func TestValidateBoard(t *testing.T) {
 		},
 	}
 	tests := []struct {
-		desc  string
-		tiles *Tiles
-		board *Board
-		want  BoardStatus
+		desc    string
+		tiles   *Tiles
+		board   *Board
+		want    BoardValidation
+		wantErr bool
 	}{
 		{
 			desc: "success",
@@ -226,7 +318,7 @@ func TestValidateBoard(t *testing.T) {
 					{Vertical, "cats", Loc{4, 0}},
 				},
 			},
-			want: BoardStatus{Code: Success},
+			want: BoardValidation{},
 		},
 		{
 			desc: "invalid board",
@@ -248,7 +340,7 @@ func TestValidateBoard(t *testing.T) {
 					{Vertical, "bats", Loc{4, 0}},
 				},
 			},
-			want: BoardStatus{Code: InvalidBoard},
+			wantErr: true,
 		},
 		{
 			desc: "not all letters used",
@@ -270,9 +362,8 @@ func TestValidateBoard(t *testing.T) {
 					{Vertical, "cats", Loc{4, 0}},
 				},
 			},
-			want: BoardStatus{
-				Code:   NotAllLetters,
-				Errors: []string{"q", "s"},
+			want: BoardValidation{
+				UnusedLetters: []string{"q", "s"},
 			},
 		},
 		{
@@ -294,9 +385,8 @@ func TestValidateBoard(t *testing.T) {
 					{Vertical, "catsit", Loc{4, 0}},
 				},
 			},
-			want: BoardStatus{
-				Code:   ExtraLetters,
-				Errors: []string{"i", "s", "t"},
+			want: BoardValidation{
+				ExtraLetters: []string{"i", "s", "t"},
 			},
 		},
 		{
@@ -320,9 +410,10 @@ func TestValidateBoard(t *testing.T) {
 					{Vertical, "cats", Loc{4, 0}},
 				},
 			},
-			want: BoardStatus{
-				Code:   InvalidWord,
-				Errors: []string{"attacked"},
+			want: BoardValidation{
+				InvalidWords: []CharLocs{
+					CharLocs{Word: "attacked", Locs: []CharLoc{{Letter: 'a'}, {Letter: 't', Loc: Loc{X: 1}}, {Letter: 't', Loc: Loc{X: 2}}, {Letter: 'a', Loc: Loc{X: 3}}, {Letter: 'c', Loc: Loc{X: 4}}, {Letter: 'k', Loc: Loc{X: 5}}, {Letter: 'e', Loc: Loc{X: 6}}, {Letter: 'd', Loc: Loc{X: 7}}}},
+				},
 			},
 		},
 		{
@@ -344,32 +435,25 @@ func TestValidateBoard(t *testing.T) {
 					{Vertical, "cats", Loc{4, 2}},
 				},
 			},
-			want: BoardStatus{Code: DetachedBoard},
+			want: BoardValidation{DetachedBoard: true},
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			got := test.board.ValidateBoard(test.tiles)
-			if !boardStatusEqual(got, test.want) {
-				t.Errorf("ValidateBoard = %+v, want %+v", got, test.want)
+			got, err := test.board.ValidateBoard(test.tiles)
+			if err != nil {
+				if test.wantErr {
+					// This is what we wanted.
+					return
+				}
+				t.Errorf("ValidateBoard: %v", err)
+			}
+			if diff := cmp.Diff(test.want, got); diff != "" {
+				t.Errorf("ValidateBoard (-want +got):\n%s", diff)
 			}
 		})
 	}
-}
-
-func boardStatusEqual(a, b BoardStatus) bool {
-	if len(a.Errors) != len(b.Errors) {
-		return false
-	}
-
-	for i := range a.Errors {
-		if a.Errors[i] != b.Errors[i] {
-			return false
-		}
-	}
-
-	return a.Code == b.Code
 }
 
 func TestStartingTileCount(t *testing.T) {

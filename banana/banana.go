@@ -110,6 +110,23 @@ const (
 	Vertical
 )
 
+type BoardValidation struct {
+	InvalidWords  []CharLocs
+	InvalidBoard  bool
+	DetachedBoard bool
+	UnusedLetters []string
+	ExtraLetters  []string
+}
+
+// CharLocs is a list of letters and the word they
+// make up, this is currently only used for
+// returning bad words.
+type CharLocs struct {
+	// The word that is made of the charlocs.
+	Word string
+	Locs []CharLoc
+}
+
 // BoardStatus describes if a board is valid, or how it is invalid.
 type BoardStatus struct {
 	Code   BoardStatusCode

@@ -557,14 +557,73 @@ export namespace Word {
   }
 }
 
-export class UpdateBoardResponse extends jspb.Message {
-  getStatus(): UpdateBoardResponse.Status;
-  setStatus(value: UpdateBoardResponse.Status): void;
+export class CharLocs extends jspb.Message {
+  getText(): string;
+  setText(value: string): void;
 
-  clearErrorsList(): void;
-  getErrorsList(): Array<string>;
-  setErrorsList(value: Array<string>): void;
-  addErrors(value: string, index?: number): string;
+  clearLocsList(): void;
+  getLocsList(): Array<CharLoc>;
+  setLocsList(value: Array<CharLoc>): void;
+  addLocs(value?: CharLoc, index?: number): CharLoc;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): CharLocs.AsObject;
+  static toObject(includeInstance: boolean, msg: CharLocs): CharLocs.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: CharLocs, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): CharLocs;
+  static deserializeBinaryFromReader(message: CharLocs, reader: jspb.BinaryReader): CharLocs;
+}
+
+export namespace CharLocs {
+  export type AsObject = {
+    text: string,
+    locsList: Array<CharLoc.AsObject>,
+  }
+}
+
+export class CharLoc extends jspb.Message {
+  getLetter(): string;
+  setLetter(value: string): void;
+
+  getX(): number;
+  setX(value: number): void;
+
+  getY(): number;
+  setY(value: number): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): CharLoc.AsObject;
+  static toObject(includeInstance: boolean, msg: CharLoc): CharLoc.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: CharLoc, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): CharLoc;
+  static deserializeBinaryFromReader(message: CharLoc, reader: jspb.BinaryReader): CharLoc;
+}
+
+export namespace CharLoc {
+  export type AsObject = {
+    letter: string,
+    x: number,
+    y: number,
+  }
+}
+
+export class UpdateBoardResponse extends jspb.Message {
+  clearInvalidWordsList(): void;
+  getInvalidWordsList(): Array<CharLocs>;
+  setInvalidWordsList(value: Array<CharLocs>): void;
+  addInvalidWords(value?: CharLocs, index?: number): CharLocs;
+
+  clearUnusedLettersList(): void;
+  getUnusedLettersList(): Array<string>;
+  setUnusedLettersList(value: Array<string>): void;
+  addUnusedLetters(value: string, index?: number): string;
+
+  getDetachedBoard(): boolean;
+  setDetachedBoard(value: boolean): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): UpdateBoardResponse.AsObject;
@@ -578,17 +637,9 @@ export class UpdateBoardResponse extends jspb.Message {
 
 export namespace UpdateBoardResponse {
   export type AsObject = {
-    status: UpdateBoardResponse.Status,
-    errorsList: Array<string>,
-  }
-
-  export enum Status {
-    UNKNOWN = 0,
-    SUCCESS = 1,
-    INVALID_WORD = 2,
-    DETACHED_BOARD = 3,
-    NOT_ALL_LETTERS = 4,
-    EXTRA_LETTERS = 5,
+    invalidWordsList: Array<CharLocs.AsObject>,
+    unusedLettersList: Array<string>,
+    detachedBoard: boolean,
   }
 }
 

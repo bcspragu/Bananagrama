@@ -17,14 +17,6 @@ var (
 		banana.Vertical:      pb.Word_VERTICAL,
 	}
 
-	engineStatusMap = map[banana.BoardStatusCode]pb.UpdateBoardResponse_Status{
-		banana.Success:       pb.UpdateBoardResponse_SUCCESS,
-		banana.InvalidWord:   pb.UpdateBoardResponse_INVALID_WORD,
-		banana.DetachedBoard: pb.UpdateBoardResponse_DETACHED_BOARD,
-		banana.NotAllLetters: pb.UpdateBoardResponse_NOT_ALL_LETTERS,
-		banana.ExtraLetters:  pb.UpdateBoardResponse_EXTRA_LETTERS,
-	}
-
 	gameStatusMap = map[banana.GameStatus]pb.Game_Status{
 		banana.WaitingForPlayers: pb.Game_WAITING_FOR_PLAYERS,
 		banana.InProgress:        pb.Game_IN_PROGRESS,
@@ -69,5 +61,34 @@ func wordFromWire(w *pb.Word) banana.Word {
 		Orientation: wireOrientationMap[w.Orientation],
 		Text:        w.Text,
 		Loc:         banana.Loc{X: int(w.X), Y: int(w.Y)},
+	}
+}
+
+func charLocsListToWire(cls []banana.CharLocs) []*pb.CharLocs {
+	wireCls := make([]*pb.CharLocs, len(cls))
+	for i, cl := range cls {
+		wireCls[i] = charLocsToWire(cl)
+	}
+
+	return wireCls
+}
+
+func charLocsToWire(cls banana.CharLocs) *pb.CharLocs {
+	locs := make([]*pb.CharLoc, len(cls.Locs))
+	for i, cl := range cls.Locs {
+		locs[i] = charLocToWire(cl)
+	}
+
+	return &pb.CharLocs{
+		Text: cls.Word,
+		Locs: locs,
+	}
+}
+
+func charLocToWire(cl banana.CharLoc) *pb.CharLoc {
+	return &pb.CharLoc{
+		Letter: string(cl.Letter),
+		X:      int32(cl.Loc.X),
+		Y:      int32(cl.Loc.Y),
 	}
 }

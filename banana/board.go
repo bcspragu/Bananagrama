@@ -2,6 +2,7 @@ package banana
 
 import (
 	"bytes"
+	"fmt"
 	"sort"
 )
 
@@ -89,7 +90,6 @@ func (l Loc) surrounding() []Loc {
 }
 
 func (w Word) CharLocs() []CharLoc {
-	cls := make([]CharLoc, len(w.Text))
 	dx, dy := 0, 0
 	switch w.Orientation {
 	case Horizontal:
@@ -97,11 +97,16 @@ func (w Word) CharLocs() []CharLoc {
 	case Vertical:
 		dy = 1
 	}
+
+	var cls []CharLoc
 	for i := 0; i < len(w.Text); i++ {
-		cls[i] = CharLoc{
+		if w.Text[i] == ' ' {
+			continue
+		}
+		cls = append(cls, CharLoc{
 			Letter: Letter(w.Text[i]),
 			Loc:    Loc{X: w.Loc.X + i*dx, Y: w.Loc.Y + i*dy},
-		}
+		})
 	}
 	return cls
 }
@@ -109,7 +114,7 @@ func (w Word) CharLocs() []CharLoc {
 // precompute calculates a few common data structures for later Board
 // validation steps. If the data structures can't be created, the function
 // returns false.
-func (b *Board) precompute() bool {
+func (b *Board) precompute() error {
 	b.letterMap = make(map[Loc]Letter)
 	b.visitedMap = make(map[Loc]bool)
 
@@ -120,7 +125,7 @@ func (b *Board) precompute() bool {
 			// If we've already placed a letter there, they've sent us a malformed
 			// board
 			if l, ok := b.letterMap[cl.Loc]; ok && l != cl.Letter {
-				return false
+				return fmt.Errorf("can't place %q in location %+v, %q is already there", cl.Letter, cl.Loc, l)
 			} else if !ok {
 				b.letterMap[cl.Loc] = cl.Letter
 				b.visitedMap[cl.Loc] = false
@@ -128,19 +133,27 @@ func (b *Board) precompute() bool {
 		}
 	}
 
-	return true
+	return nil
 }
 
-func (b *Board) Count() int {
-	if b == nil || !b.precompute() {
-		return 0
+func (b *Board) Count() (int, error) {
+	if err := b.precompute(); err != nil {
+		return 0, err
 	}
-	return len(b.letterMap)
+
+	if b == nil {
+		return 0, nil
+	}
+	return len(b.letterMap), nil
 }
 
-func (b *Board) AsTiles() *Tiles {
-	if b == nil || !b.precompute() {
-		return NewTiles()
+func (b *Board) AsTiles() (*Tiles, error) {
+	if err := b.precompute(); err != nil {
+		return nil, err
+	}
+
+	if b == nil {
+		return NewTiles(), nil
 	}
 
 	t := NewTiles()
@@ -148,13 +161,13 @@ func (b *Board) AsTiles() *Tiles {
 		t.Inc(l)
 	}
 
-	return t
+	return t, nil
 }
 
 // ValidateBoard returns the status of the board. The second parameter
 // determines if we should accept the board, which we should do unless they use
 // letters they don't have or have a board that doesn't make sense.
-func (b *Board) ValidateBoard(tiles *Tiles) (BoardStatus, bool) {
+func (b *Board) ValidateBoard(tiles *Tiles) (BoardValidation, error) {
 	// A board is considered valid if:
 	//   - the player used a subset of the letters in their hand
 	//   - the words given don't overlap in conflicting ways
@@ -163,36 +176,28 @@ func (b *Board) ValidateBoard(tiles *Tiles) (BoardStatus, bool) {
 
 	// If precompute failed, we weren't able to make our intermediate
 	// representation, meaning the given words can't form a valid board
-	if !b.precompute() {
-		return BoardStatus{Code: InvalidBoard}, false
+	if err := b.precompute(); err != nil {
+		return BoardValidation{InvalidBoard: true}, err
 	}
 
 	unused, unowned := b.leftover(tiles)
 	if len(unowned) > 0 {
-		return BoardStatus{Code: ExtraLetters, Errors: unowned}, false
+		return BoardValidation{ExtraLetters: unowned}, nil
 	}
 
-	// TODO: Decide if we want to add this back in.
-	// Check for real Scrabble words
-	/*
-		for _, word := range b.findWords() {
-			if !b.Dictionary.HasWord(word) {
-				return BoardStatus{Code: InvalidWord, Errors: []string{word}}
-			}
+	var iws []CharLocs
+	for _, cls := range b.findWords() {
+		if !b.Dictionary.HasWord(cls.Word) {
+			iws = append(iws, cls)
 		}
-	*/
-
-	// Allow unconnected boards while people are building.
-	if !b.connected() {
-		return BoardStatus{Code: DetachedBoard}, true
 	}
 
-	// It's fine if they haven't used everything yet.
-	if len(unused) > 0 {
-		return BoardStatus{Code: NotAllLetters, Errors: unused}, true
-	}
-
-	return BoardStatus{Code: Success}, true
+	return BoardValidation{
+		InvalidWords:  iws,
+		DetachedBoard: !b.connected(),
+		UnusedLetters: unused,
+		ExtraLetters:  unowned,
+	}, nil
 }
 
 func (b *Board) Diff(tiles *Tiles) *Tiles {
@@ -235,37 +240,70 @@ func (b *Board) containsExactly(tiles *Tiles) bool {
 }
 
 // findWords builds a list of all the words in the grid
-func (b *Board) findWords() []string {
-	strs := []string{}
-	// The algorithm:
+func (b *Board) findWords() []CharLocs {
+	xx := make([]Word, len(b.Words))
+	yy := make([]Word, len(b.Words))
+
+	copy(xx, b.Words)
+	copy(yy, b.Words)
+
+	usedX := make(map[Loc]Letter)
+	usedY := make(map[Loc]Letter)
+
 	// 1. Bucket letters by X, map to lists of (Y, letter)
 	xm := make(map[int][]CharLoc)
-	sort.Sort(byY(b.Words))
-	for _, word := range b.Words {
+	sort.Sort(byY(yy))
+	for _, word := range yy {
 		for _, cl := range word.CharLocs() {
+			if _, ok := usedX[cl.Loc]; ok {
+				continue
+			}
 			xm[cl.Loc.X] = append(xm[cl.Loc.X], cl)
+			usedX[cl.Loc] = cl.Letter
 		}
 	}
 
 	ym := make(map[int][]CharLoc)
-	sort.Sort(byX(b.Words))
-	for _, word := range b.Words {
+	sort.Sort(byX(xx))
+	for _, word := range xx {
 		for _, cl := range word.CharLocs() {
+			if _, ok := usedY[cl.Loc]; ok {
+				continue
+			}
 			ym[cl.Loc.Y] = append(ym[cl.Loc.Y], cl)
+			usedY[cl.Loc] = cl.Letter
 		}
 	}
 
+	var wds []CharLocs
 	// Go down vertically, match up sequential CharLocs into words
 	for _, cls := range xm {
-		strs = append(strs, findWordsInSequence(cls, func(l Loc) int { return l.Y })...)
+		wds = append(wds, findWordsInSequence(cls, func(l Loc) int { return l.Y })...)
 	}
 
 	// Go horizontally, match up sequential CharLocs into words
 	for _, cls := range ym {
-		strs = append(strs, findWordsInSequence(cls, func(l Loc) int { return l.X })...)
+		wds = append(wds, findWordsInSequence(cls, func(l Loc) int { return l.X })...)
 	}
 
-	return strs
+	// Doesn't matter if we use usedX or usedY here.
+	for loc, l := range usedX {
+		if _, ok := usedX[Loc{X: loc.X - 1, Y: loc.Y}]; ok {
+			continue
+		}
+		if _, ok := usedX[Loc{X: loc.X + 1, Y: loc.Y}]; ok {
+			continue
+		}
+		if _, ok := usedX[Loc{X: loc.X, Y: loc.Y - 1}]; ok {
+			continue
+		}
+		if _, ok := usedX[Loc{X: loc.X, Y: loc.Y + 1}]; ok {
+			continue
+		}
+		wds = append(wds, CharLocs{Word: l.String(), Locs: []CharLoc{{Letter: l, Loc: loc}}})
+	}
+
+	return wds
 }
 
 func (b *Board) connected() bool {
@@ -294,34 +332,48 @@ func (b *Board) explore(l Loc) {
 	}
 }
 
-func findWordsInSequence(cls []CharLoc, f func(Loc) int) []string {
-	var buf bytes.Buffer
-	strs := []string{}
-	started := false
+func findWordsInSequence(cls []CharLoc, f func(Loc) int) []CharLocs {
+	var (
+		buf bytes.Buffer
+		// Our list of words.
+		wds []CharLocs
+		// The intermediate list of characters and locations
+		tempCls []CharLoc
+
+		started = false
+	)
+
 	for i, cur := range cls[:len(cls)-1] {
 		next := cls[i+1]
+
 		// Sequential
 		if f(next.Loc)-f(cur.Loc) == 1 {
-			// Add this letter to the word
+			// Add this letter to the word, and the location to our list.
 			buf.WriteRune(rune(cur.Letter))
+			tempCls = append(tempCls, cur)
+
 			started = true
 			// If we're at the second to last letter, and we know they're sequential,
 			// add that one too
 			if i == len(cls)-2 {
 				buf.WriteRune(rune(next.Letter))
-				strs = append(strs, buf.String())
+				tempCls = append(tempCls, next)
+				wds = append(wds, CharLocs{Word: buf.String(), Locs: tempCls})
 			}
 		} else if started {
 			// If the next two aren't sequential, but we've started a word, that
 			// means the current letter is the last one in the word, so we should add
 			// it and reset
 			buf.WriteRune(rune(cur.Letter))
-			strs = append(strs, buf.String())
+			tempCls = append(tempCls, cur)
+			wds = append(wds, CharLocs{Word: buf.String(), Locs: tempCls})
+
 			buf.Reset()
+			tempCls = []CharLoc{}
 			started = false
 		}
 	}
-	return strs
+	return wds
 }
 
 func StartingTileCount(pc, scale int) int {

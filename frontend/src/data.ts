@@ -5,6 +5,7 @@ export interface Cell {
   column: number;
   letterLoc: LetterLoc;
   suggestion: boolean;
+  invalid: boolean;
 }
 
 // LetterLoc contains metadata about a cell position on the board.

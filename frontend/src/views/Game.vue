@@ -31,9 +31,9 @@
           </a>
         </div>
         <div class="logs">
-          <ol>
+          <ul>
             <li v-for="log in logs">{{log}}</li>
-          </ol>
+          </ul>
         </div>
       </div>
     </div>
@@ -472,9 +472,11 @@ export default class Game extends Vue {
     req.setPlayerId(this.playerID!);
     req.setBoard(board);
     this.$client.updateBoard(req, (err, resp) => {
-      if (err) {
+      if (!resp) {
         console.log(err);
+        return;
       }
+      this.board.setInvalidWords(resp.getInvalidWordsList());
     });
   }
 }

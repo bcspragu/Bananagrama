@@ -13,6 +13,8 @@ var global = Function('return this')();
 
 goog.exportSymbol('proto.Board', null, global);
 goog.exportSymbol('proto.BoardUpdate', null, global);
+goog.exportSymbol('proto.CharLoc', null, global);
+goog.exportSymbol('proto.CharLocs', null, global);
 goog.exportSymbol('proto.DumpRequest', null, global);
 goog.exportSymbol('proto.DumpResponse', null, global);
 goog.exportSymbol('proto.Game', null, global);
@@ -34,7 +36,6 @@ goog.exportSymbol('proto.TileUpdate.Event', null, global);
 goog.exportSymbol('proto.Tiles', null, global);
 goog.exportSymbol('proto.UpdateBoardRequest', null, global);
 goog.exportSymbol('proto.UpdateBoardResponse', null, global);
-goog.exportSymbol('proto.UpdateBoardResponse.Status', null, global);
 goog.exportSymbol('proto.Word', null, global);
 goog.exportSymbol('proto.Word.Orientation', null, global);
 goog.exportSymbol('proto.YouUpdate', null, global);
@@ -3754,7 +3755,7 @@ proto.Word.Orientation = {
 };
 
 /**
- * optional string Text = 1;
+ * optional string text = 1;
  * @return {string}
  */
 proto.Word.prototype.getText = function() {
@@ -3824,6 +3825,397 @@ proto.Word.prototype.setY = function(value) {
  * @extends {jspb.Message}
  * @constructor
  */
+proto.CharLocs = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.CharLocs.repeatedFields_, null);
+};
+goog.inherits(proto.CharLocs, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  proto.CharLocs.displayName = 'proto.CharLocs';
+}
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.CharLocs.repeatedFields_ = [2];
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto suitable for use in Soy templates.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     com.google.apps.jspb.JsClassTemplate.JS_RESERVED_WORDS.
+ * @param {boolean=} opt_includeInstance Whether to include the JSPB instance
+ *     for transitional soy proto support: http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.CharLocs.prototype.toObject = function(opt_includeInstance) {
+  return proto.CharLocs.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Whether to include the JSPB
+ *     instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.CharLocs} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.CharLocs.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    text: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    locsList: jspb.Message.toObjectList(msg.getLocsList(),
+    proto.CharLoc.toObject, includeInstance)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.CharLocs}
+ */
+proto.CharLocs.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.CharLocs;
+  return proto.CharLocs.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.CharLocs} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.CharLocs}
+ */
+proto.CharLocs.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setText(value);
+      break;
+    case 2:
+      var value = new proto.CharLoc;
+      reader.readMessage(value,proto.CharLoc.deserializeBinaryFromReader);
+      msg.addLocs(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.CharLocs.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.CharLocs.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.CharLocs} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.CharLocs.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getText();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+  f = message.getLocsList();
+  if (f.length > 0) {
+    writer.writeRepeatedMessage(
+      2,
+      f,
+      proto.CharLoc.serializeBinaryToWriter
+    );
+  }
+};
+
+
+/**
+ * optional string text = 1;
+ * @return {string}
+ */
+proto.CharLocs.prototype.getText = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/** @param {string} value */
+proto.CharLocs.prototype.setText = function(value) {
+  jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * repeated CharLoc locs = 2;
+ * @return {!Array.<!proto.CharLoc>}
+ */
+proto.CharLocs.prototype.getLocsList = function() {
+  return /** @type{!Array.<!proto.CharLoc>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.CharLoc, 2));
+};
+
+
+/** @param {!Array.<!proto.CharLoc>} value */
+proto.CharLocs.prototype.setLocsList = function(value) {
+  jspb.Message.setRepeatedWrapperField(this, 2, value);
+};
+
+
+/**
+ * @param {!proto.CharLoc=} opt_value
+ * @param {number=} opt_index
+ * @return {!proto.CharLoc}
+ */
+proto.CharLocs.prototype.addLocs = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 2, opt_value, proto.CharLoc, opt_index);
+};
+
+
+proto.CharLocs.prototype.clearLocsList = function() {
+  this.setLocsList([]);
+};
+
+
+
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.CharLoc = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.CharLoc, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  proto.CharLoc.displayName = 'proto.CharLoc';
+}
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto suitable for use in Soy templates.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     com.google.apps.jspb.JsClassTemplate.JS_RESERVED_WORDS.
+ * @param {boolean=} opt_includeInstance Whether to include the JSPB instance
+ *     for transitional soy proto support: http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.CharLoc.prototype.toObject = function(opt_includeInstance) {
+  return proto.CharLoc.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Whether to include the JSPB
+ *     instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.CharLoc} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.CharLoc.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    letter: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    x: jspb.Message.getFieldWithDefault(msg, 2, 0),
+    y: jspb.Message.getFieldWithDefault(msg, 3, 0)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.CharLoc}
+ */
+proto.CharLoc.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.CharLoc;
+  return proto.CharLoc.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.CharLoc} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.CharLoc}
+ */
+proto.CharLoc.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setLetter(value);
+      break;
+    case 2:
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setX(value);
+      break;
+    case 3:
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setY(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.CharLoc.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.CharLoc.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.CharLoc} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.CharLoc.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getLetter();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+  f = message.getX();
+  if (f !== 0) {
+    writer.writeInt32(
+      2,
+      f
+    );
+  }
+  f = message.getY();
+  if (f !== 0) {
+    writer.writeInt32(
+      3,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional string letter = 1;
+ * @return {string}
+ */
+proto.CharLoc.prototype.getLetter = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/** @param {string} value */
+proto.CharLoc.prototype.setLetter = function(value) {
+  jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional int32 x = 2;
+ * @return {number}
+ */
+proto.CharLoc.prototype.getX = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
+};
+
+
+/** @param {number} value */
+proto.CharLoc.prototype.setX = function(value) {
+  jspb.Message.setProto3IntField(this, 2, value);
+};
+
+
+/**
+ * optional int32 y = 3;
+ * @return {number}
+ */
+proto.CharLoc.prototype.getY = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/** @param {number} value */
+proto.CharLoc.prototype.setY = function(value) {
+  jspb.Message.setProto3IntField(this, 3, value);
+};
+
+
+
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
 proto.UpdateBoardResponse = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, proto.UpdateBoardResponse.repeatedFields_, null);
 };
@@ -3836,7 +4228,7 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<number>}
  * @const
  */
-proto.UpdateBoardResponse.repeatedFields_ = [2];
+proto.UpdateBoardResponse.repeatedFields_ = [1,2];
 
 
 
@@ -3867,8 +4259,10 @@ proto.UpdateBoardResponse.prototype.toObject = function(opt_includeInstance) {
  */
 proto.UpdateBoardResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    status: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    errorsList: jspb.Message.getRepeatedField(msg, 2)
+    invalidWordsList: jspb.Message.toObjectList(msg.getInvalidWordsList(),
+    proto.CharLocs.toObject, includeInstance),
+    unusedLettersList: jspb.Message.getRepeatedField(msg, 2),
+    detachedBoard: jspb.Message.getFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -3906,12 +4300,17 @@ proto.UpdateBoardResponse.deserializeBinaryFromReader = function(msg, reader) {
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {!proto.UpdateBoardResponse.Status} */ (reader.readEnum());
-      msg.setStatus(value);
+      var value = new proto.CharLocs;
+      reader.readMessage(value,proto.CharLocs.deserializeBinaryFromReader);
+      msg.addInvalidWords(value);
       break;
     case 2:
       var value = /** @type {string} */ (reader.readString());
-      msg.addErrors(value);
+      msg.addUnusedLetters(value);
+      break;
+    case 3:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setDetachedBoard(value);
       break;
     default:
       reader.skipField();
@@ -3942,61 +4341,73 @@ proto.UpdateBoardResponse.prototype.serializeBinary = function() {
  */
 proto.UpdateBoardResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getStatus();
-  if (f !== 0.0) {
-    writer.writeEnum(
+  f = message.getInvalidWordsList();
+  if (f.length > 0) {
+    writer.writeRepeatedMessage(
       1,
-      f
+      f,
+      proto.CharLocs.serializeBinaryToWriter
     );
   }
-  f = message.getErrorsList();
+  f = message.getUnusedLettersList();
   if (f.length > 0) {
     writer.writeRepeatedString(
       2,
       f
     );
   }
+  f = message.getDetachedBoard();
+  if (f) {
+    writer.writeBool(
+      3,
+      f
+    );
+  }
 };
 
 
 /**
- * @enum {number}
+ * repeated CharLocs invalid_words = 1;
+ * @return {!Array.<!proto.CharLocs>}
  */
-proto.UpdateBoardResponse.Status = {
-  UNKNOWN: 0,
-  SUCCESS: 1,
-  INVALID_WORD: 2,
-  DETACHED_BOARD: 3,
-  NOT_ALL_LETTERS: 4,
-  EXTRA_LETTERS: 5
+proto.UpdateBoardResponse.prototype.getInvalidWordsList = function() {
+  return /** @type{!Array.<!proto.CharLocs>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.CharLocs, 1));
 };
 
+
+/** @param {!Array.<!proto.CharLocs>} value */
+proto.UpdateBoardResponse.prototype.setInvalidWordsList = function(value) {
+  jspb.Message.setRepeatedWrapperField(this, 1, value);
+};
+
+
 /**
- * optional Status status = 1;
- * @return {!proto.UpdateBoardResponse.Status}
+ * @param {!proto.CharLocs=} opt_value
+ * @param {number=} opt_index
+ * @return {!proto.CharLocs}
  */
-proto.UpdateBoardResponse.prototype.getStatus = function() {
-  return /** @type {!proto.UpdateBoardResponse.Status} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+proto.UpdateBoardResponse.prototype.addInvalidWords = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.CharLocs, opt_index);
 };
 
 
-/** @param {!proto.UpdateBoardResponse.Status} value */
-proto.UpdateBoardResponse.prototype.setStatus = function(value) {
-  jspb.Message.setProto3EnumField(this, 1, value);
+proto.UpdateBoardResponse.prototype.clearInvalidWordsList = function() {
+  this.setInvalidWordsList([]);
 };
 
 
 /**
- * repeated string errors = 2;
+ * repeated string unused_letters = 2;
  * @return {!Array.<string>}
  */
-proto.UpdateBoardResponse.prototype.getErrorsList = function() {
+proto.UpdateBoardResponse.prototype.getUnusedLettersList = function() {
   return /** @type {!Array.<string>} */ (jspb.Message.getRepeatedField(this, 2));
 };
 
 
 /** @param {!Array.<string>} value */
-proto.UpdateBoardResponse.prototype.setErrorsList = function(value) {
+proto.UpdateBoardResponse.prototype.setUnusedLettersList = function(value) {
   jspb.Message.setField(this, 2, value || []);
 };
 
@@ -4005,13 +4416,30 @@ proto.UpdateBoardResponse.prototype.setErrorsList = function(value) {
  * @param {!string} value
  * @param {number=} opt_index
  */
-proto.UpdateBoardResponse.prototype.addErrors = function(value, opt_index) {
+proto.UpdateBoardResponse.prototype.addUnusedLetters = function(value, opt_index) {
   jspb.Message.addToRepeatedField(this, 2, value, opt_index);
 };
 
 
-proto.UpdateBoardResponse.prototype.clearErrorsList = function() {
-  this.setErrorsList([]);
+proto.UpdateBoardResponse.prototype.clearUnusedLettersList = function() {
+  this.setUnusedLettersList([]);
+};
+
+
+/**
+ * optional bool detached_board = 3;
+ * Note that Boolean fields may be set to 0/1 when serialized from a Java server.
+ * You should avoid comparisons like {@code val === true/false} in those cases.
+ * @return {boolean}
+ */
+proto.UpdateBoardResponse.prototype.getDetachedBoard = function() {
+  return /** @type {boolean} */ (jspb.Message.getFieldWithDefault(this, 3, false));
+};
+
+
+/** @param {boolean} value */
+proto.UpdateBoardResponse.prototype.setDetachedBoard = function(value) {
+  jspb.Message.setProto3BooleanField(this, 3, value);
 };
 
 
