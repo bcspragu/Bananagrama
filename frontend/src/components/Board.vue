@@ -254,7 +254,91 @@ export default class Board extends Vue {
       }
     }
 
+    const cache: { [s: string]: number } = {};
+    fits.sort((a, b) => {
+      const keyA = this.placementKey(a);
+      const keyB = this.placementKey(b);
+      let numA = (word.length + 1) * 2;
+      let numB = (word.length + 1) * 2;
+      if (cache[keyA] === undefined) {
+        cache[keyA] = this.countSurrounding(a, word.length, board);
+      }
+      if (cache[keyB] === undefined) {
+        cache[keyB] = this.countSurrounding(b, word.length, board);
+      }
+      numA = cache[keyA];
+      numB = cache[keyB];
+      if (numA < numB) {
+        return -1;
+      }
+      if (numA > numB) {
+        return 1;
+      }
+      return 0;
+    });
+
     return fits;
+  }
+
+  private placementKey(p: Placement): string {
+    return p.x + ':' + p.y + ':' + p.orientation;
+  }
+
+  private countSurrounding(p: Placement, len: number, board: LetterLoc[][]): number {
+    let x = p.x;
+    let y = p.y;
+    // List of positions to verify have a certain value.
+    const check: Array<{x: number, y: number}> = [];
+
+    let inc: () => void = () => { /* Blank until orientation is looked at */ };
+    let buf: () => Array<{x: number, y: number}> = () => [];
+    switch (p.orientation) {
+      case Orientation.Horizontal:
+        inc = () => x++;
+
+        // Check that there's nothing immediately before or after the word.
+        check.push({x: x - 1, y});
+        check.push({x: x + len, y});
+
+        buf = () => [{x, y: y - 1}, {x, y: y + 1}];
+
+        break;
+      case Orientation.Vertical:
+        inc = () => y++;
+
+        // Check that there's nothing immediately before or after the word.
+        check.push({x, y: y - 1});
+        check.push({x, y: y + len});
+
+        buf = () => [{x: x - 1, y}, {x: x + 1, y}];
+
+        break;
+    }
+
+    if (buf === undefined || inc === undefined) {
+      // This is the highest possible count.
+      return (len + 1) * 2;
+    }
+
+    for (let i = 0; i < len; i++) {
+      check.push(...buf());
+      inc();
+    }
+
+    let count = 0;
+    for (const pos of check) {
+      // If there's a character, increment our count.
+      if (pos.x >= 0
+         && pos.y >= 0
+         && pos.x < board.length
+         && pos.y < board[pos.x].length
+         && board[pos.x][pos.y].letter !== ''
+         && board[pos.x][pos.y].letter !== ' ') {
+        count++;
+      }
+    }
+
+    return count;
   }
 
   private overlaps(letters: { [s: string]: number[]; }, word: Word): Match[] {

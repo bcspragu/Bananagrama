@@ -48,7 +48,16 @@ func main() {
 
 	wrappedGRPC := grpcweb.WrapServer(grpcSrv)
 
-	http.ListenAndServe(*addr, wrappedGRPC)
+	httpSrv := &http.Server{
+		Addr:         *addr,
+		WriteTimeout: time.Hour,
+		ReadTimeout:  10 * time.Second,
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			wrappedGRPC.ServeHTTP(w, r)
+		}),
+	}
+
+	log.Printf("server: %v", httpSrv.ListenAndServe())
 }
 
 func loadDict(fn string) (banana.Dictionary, error) {

@@ -237,7 +237,9 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 			// Handle TileUpdate.
 		}
 
-		stream.Send(update)
+		if err := stream.Send(update); err != nil {
+			log.Printf("stream send error: %v", err)
+		}
 
 		if gameOver {
 			break
@@ -358,6 +360,7 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 	// If the board was valid, clear out their tiles and let everyone know what's
 	// up.
 	if peelable {
+		log.Printf("Peel by %q", p.Name)
 		if err := s.issuePeel(gid, p); err != nil {
 			log.Printf("failed to issue peels: %v", err)
 			return nil, fmt.Errorf("failed to issue peels: %v", err)
@@ -369,7 +372,6 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 		return nil, fmt.Errorf("failed to update players: %v", err)
 	}
 
-	log.Printf("successful response: %+v", bv)
 	// Convert the status to the wire format.
 	return &pb.UpdateBoardResponse{
 		InvalidWords:  charLocsListToWire(bv.InvalidWords),
@@ -408,6 +410,7 @@ func (s *Server) issuePeel(id banana.GameID, p *banana.Player) error {
 			return fmt.Errorf("failed to update player %q board: %v", pid, err)
 		}
 
+		log.Printf("Sending tiles to %q: %+v", sp.Name, sp.Tiles.AsList())
 		c <- &pb.GameUpdate{
 			Update: &pb.GameUpdate_TileUpdate{
 				TileUpdate: &pb.TileUpdate{

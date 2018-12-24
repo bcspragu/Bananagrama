@@ -22,7 +22,7 @@
       </div>
       <div class="column is-one-fifth right-side">
         <div class="players">
-          <div v-if="tilesInBunch">{{tilesInBunch}} tiles left in bunch</div>
+          <div v-if="tilesInBunch !== null">{{tilesInBunch}} tiles left in bunch</div>
           <ol>
             <li v-for="player in players">{{player.getName()}}: {{player.getTilesInHand()}} - {{player.getTilesInBunch()}}</li>
           </ol>
@@ -66,6 +66,7 @@ export default class Game extends Vue {
   private players: Player[] = [];
   private tilesInBunch: number | null = null;
   private logs: string[] = [];
+  private gameOver: boolean = false;
 
   private word: string = '';
   private notice: string[] = [];
@@ -168,8 +169,10 @@ export default class Game extends Vue {
       console.log(status.metadata);
     });
     stream.on('end', () => {
-      // Game over.
-      console.log('stream ended');
+      if (!this.gameOver) {
+        // Wait a second, then try joining again.
+        window.setTimeout(() => this.joinGame(), 1000);
+      }
     });
   }
 
@@ -185,6 +188,12 @@ export default class Game extends Vue {
   }
 
   private handleStatusUpdate(up: StatusUpdate): void {
+    if (up.getStatus() === StatusUpdate.Status.GAME_OVER) {
+      const t = new Date();
+      const message = `[${t.getHours()}:${t.getMinutes()}:${t.getSeconds()}] GAME OVAH`;
+      this.logs.unshift(message);
+      this.gameOver = true;
+    }
     return;
   }
 
@@ -302,13 +311,13 @@ export default class Game extends Vue {
 
     // Left
     if (e.keyCode === 37) {
-      this.next();
+      this.prev();
       return;
     }
 
     // Right
     if (e.keyCode === 39) {
-      this.prev();
+      this.next();
       return;
     }
 
@@ -498,6 +507,7 @@ export default class Game extends Vue {
   height: 50%;
   border-left: solid 1px black;
   border-top: solid 1px black;
+  overflow: auto;
 }
 .board {
   height: 70%;
