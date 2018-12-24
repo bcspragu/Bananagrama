@@ -14,7 +14,7 @@
     "grpc-web-client": "^0.7.0",
     "vue": "^2.5.17",
     "vue-class-component": "^6.0.0",
-    "vue-cookies": "^1.5.8",
+    "vue-cookies": "^1.5.12",
     "vue-property-decorator": "^7.0.0",
     "vue-router": "^3.0.1"
   },
