@@ -319,6 +319,7 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 	pid := banana.PlayerID(req.PlayerId)
 	p, err := s.db.Player(pid)
 	if err != nil {
+		log.Printf("failed to get player %q: %v", req.PlayerId, err)
 		return nil, fmt.Errorf("failed to get player %q: %v", req.PlayerId, err)
 	}
 
@@ -326,6 +327,7 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 	tiles := p.Tiles.Clone()
 	bts, err := p.Board.AsTiles()
 	if err != nil {
+		log.Printf("failed to get board tiles")
 		return nil, fmt.Errorf("failed to get board tiles")
 	}
 	tiles.Add(bts)
@@ -333,16 +335,19 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 	// Check if the board they sent is valid
 	bv, err := b.ValidateBoard(tiles)
 	if err != nil {
+		log.Printf("failed to validate board: %v", err)
 		return nil, fmt.Errorf("failed to validate board: %v", err)
 	}
 
 	// We'll write the board as long as they aren't using letters they don't
 	// have.
 	if len(bv.ExtraLetters) > 0 {
+		log.Printf("used letters you don't have: %v", bv.ExtraLetters)
 		return nil, fmt.Errorf("used letters you don't have: %v", bv.ExtraLetters)
 	}
 
 	if err := s.db.UpdatePlayer(pid, b, b.Diff(tiles)); err != nil {
+		log.Printf("failed to update player %q: %v", pid, err)
 		return nil, fmt.Errorf("failed to update player %q: %v", pid, err)
 	}
 	log.Printf("Player %q updated their board, result %+v", p.Name, bv)
@@ -354,14 +359,17 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 	// up.
 	if peelable {
 		if err := s.issuePeel(gid, p); err != nil {
+			log.Printf("failed to issue peels: %v", err)
 			return nil, fmt.Errorf("failed to issue peels: %v", err)
 		}
 	}
 
 	if err := s.sendPlayers(gid); err != nil {
+		log.Printf("failed to update players: %v", err)
 		return nil, fmt.Errorf("failed to update players: %v", err)
 	}
 
+	log.Printf("successful response: %+v", bv)
 	// Convert the status to the wire format.
 	return &pb.UpdateBoardResponse{
 		InvalidWords:  charLocsListToWire(bv.InvalidWords),
@@ -396,7 +404,7 @@ func (s *Server) issuePeel(id banana.GameID, p *banana.Player) error {
 		}
 		sp.Tiles.Add(tiles)
 
-		if err := s.db.UpdatePlayer(pid, p.Board, p.Tiles); err != nil {
+		if err := s.db.UpdatePlayer(pid, sp.Board, sp.Tiles); err != nil {
 			return fmt.Errorf("failed to update player %q board: %v", pid, err)
 		}
 
