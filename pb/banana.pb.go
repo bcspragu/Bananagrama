@@ -3,12 +3,13 @@
 
 package pb
 
+import proto "github.com/golang/protobuf/proto"
+import fmt "fmt"
+import math "math"
+
 import (
-	context "context"
-	fmt "fmt"
-	proto "github.com/golang/protobuf/proto"
+	context "golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
-	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -37,7 +38,6 @@ var Game_Status_name = map[int32]string{
 	2: "IN_PROGRESS",
 	3: "FINISHED",
 }
-
 var Game_Status_value = map[string]int32{
 	"UNKNOWN":             0,
 	"WAITING_FOR_PLAYERS": 1,
@@ -48,9 +48,8 @@ var Game_Status_value = map[string]int32{
 func (x Game_Status) String() string {
 	return proto.EnumName(Game_Status_name, int32(x))
 }
-
 func (Game_Status) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{4, 0}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{4, 0}
 }
 
 type StatusUpdate_Status int32
@@ -68,7 +67,6 @@ var StatusUpdate_Status_name = map[int32]string{
 	2: "GAME_STARTED",
 	3: "GAME_OVER",
 }
-
 var StatusUpdate_Status_value = map[string]int32{
 	"UNKNOWN":      0,
 	"WAITING":      1,
@@ -79,9 +77,8 @@ var StatusUpdate_Status_value = map[string]int32{
 func (x StatusUpdate_Status) String() string {
 	return proto.EnumName(StatusUpdate_Status_name, int32(x))
 }
-
 func (StatusUpdate_Status) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{12, 0}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{12, 0}
 }
 
 type TileUpdate_Event int32
@@ -101,7 +98,6 @@ var TileUpdate_Event_name = map[int32]string{
 	3: "DUMP",
 	4: "JOIN",
 }
-
 var TileUpdate_Event_value = map[string]int32{
 	"UNKNOWN": 0,
 	"SPLIT":   1,
@@ -113,9 +109,8 @@ var TileUpdate_Event_value = map[string]int32{
 func (x TileUpdate_Event) String() string {
 	return proto.EnumName(TileUpdate_Event_name, int32(x))
 }
-
 func (TileUpdate_Event) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{13, 0}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{13, 0}
 }
 
 type Word_Orientation int32
@@ -131,7 +126,6 @@ var Word_Orientation_name = map[int32]string{
 	1: "HORIZONTAL",
 	2: "VERTICAL",
 }
-
 var Word_Orientation_value = map[string]int32{
 	"UNKNOWN":    0,
 	"HORIZONTAL": 1,
@@ -141,9 +135,8 @@ var Word_Orientation_value = map[string]int32{
 func (x Word_Orientation) String() string {
 	return proto.EnumName(Word_Orientation_name, int32(x))
 }
-
 func (Word_Orientation) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{20, 0}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{21, 0}
 }
 
 type NewGameRequest struct {
@@ -158,17 +151,16 @@ func (m *NewGameRequest) Reset()         { *m = NewGameRequest{} }
 func (m *NewGameRequest) String() string { return proto.CompactTextString(m) }
 func (*NewGameRequest) ProtoMessage()    {}
 func (*NewGameRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{0}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{0}
 }
-
 func (m *NewGameRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_NewGameRequest.Unmarshal(m, b)
 }
 func (m *NewGameRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_NewGameRequest.Marshal(b, m, deterministic)
 }
-func (m *NewGameRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_NewGameRequest.Merge(m, src)
+func (dst *NewGameRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_NewGameRequest.Merge(dst, src)
 }
 func (m *NewGameRequest) XXX_Size() int {
 	return xxx_messageInfo_NewGameRequest.Size(m)
@@ -198,17 +190,16 @@ func (m *NewGameResponse) Reset()         { *m = NewGameResponse{} }
 func (m *NewGameResponse) String() string { return proto.CompactTextString(m) }
 func (*NewGameResponse) ProtoMessage()    {}
 func (*NewGameResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{1}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{1}
 }
-
 func (m *NewGameResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_NewGameResponse.Unmarshal(m, b)
 }
 func (m *NewGameResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_NewGameResponse.Marshal(b, m, deterministic)
 }
-func (m *NewGameResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_NewGameResponse.Merge(m, src)
+func (dst *NewGameResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_NewGameResponse.Merge(dst, src)
 }
 func (m *NewGameResponse) XXX_Size() int {
 	return xxx_messageInfo_NewGameResponse.Size(m)
@@ -236,17 +227,16 @@ func (m *ListGamesRequest) Reset()         { *m = ListGamesRequest{} }
 func (m *ListGamesRequest) String() string { return proto.CompactTextString(m) }
 func (*ListGamesRequest) ProtoMessage()    {}
 func (*ListGamesRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{2}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{2}
 }
-
 func (m *ListGamesRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ListGamesRequest.Unmarshal(m, b)
 }
 func (m *ListGamesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ListGamesRequest.Marshal(b, m, deterministic)
 }
-func (m *ListGamesRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ListGamesRequest.Merge(m, src)
+func (dst *ListGamesRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListGamesRequest.Merge(dst, src)
 }
 func (m *ListGamesRequest) XXX_Size() int {
 	return xxx_messageInfo_ListGamesRequest.Size(m)
@@ -268,17 +258,16 @@ func (m *ListGamesResponse) Reset()         { *m = ListGamesResponse{} }
 func (m *ListGamesResponse) String() string { return proto.CompactTextString(m) }
 func (*ListGamesResponse) ProtoMessage()    {}
 func (*ListGamesResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{3}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{3}
 }
-
 func (m *ListGamesResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ListGamesResponse.Unmarshal(m, b)
 }
 func (m *ListGamesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ListGamesResponse.Marshal(b, m, deterministic)
 }
-func (m *ListGamesResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ListGamesResponse.Merge(m, src)
+func (dst *ListGamesResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListGamesResponse.Merge(dst, src)
 }
 func (m *ListGamesResponse) XXX_Size() int {
 	return xxx_messageInfo_ListGamesResponse.Size(m)
@@ -310,17 +299,16 @@ func (m *Game) Reset()         { *m = Game{} }
 func (m *Game) String() string { return proto.CompactTextString(m) }
 func (*Game) ProtoMessage()    {}
 func (*Game) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{4}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{4}
 }
-
 func (m *Game) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Game.Unmarshal(m, b)
 }
 func (m *Game) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Game.Marshal(b, m, deterministic)
 }
-func (m *Game) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Game.Merge(m, src)
+func (dst *Game) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Game.Merge(dst, src)
 }
 func (m *Game) XXX_Size() int {
 	return xxx_messageInfo_Game.Size(m)
@@ -371,17 +359,16 @@ func (m *StartGameRequest) Reset()         { *m = StartGameRequest{} }
 func (m *StartGameRequest) String() string { return proto.CompactTextString(m) }
 func (*StartGameRequest) ProtoMessage()    {}
 func (*StartGameRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{5}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{5}
 }
-
 func (m *StartGameRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_StartGameRequest.Unmarshal(m, b)
 }
 func (m *StartGameRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_StartGameRequest.Marshal(b, m, deterministic)
 }
-func (m *StartGameRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_StartGameRequest.Merge(m, src)
+func (dst *StartGameRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_StartGameRequest.Merge(dst, src)
 }
 func (m *StartGameRequest) XXX_Size() int {
 	return xxx_messageInfo_StartGameRequest.Size(m)
@@ -409,17 +396,16 @@ func (m *StartGameResponse) Reset()         { *m = StartGameResponse{} }
 func (m *StartGameResponse) String() string { return proto.CompactTextString(m) }
 func (*StartGameResponse) ProtoMessage()    {}
 func (*StartGameResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{6}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{6}
 }
-
 func (m *StartGameResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_StartGameResponse.Unmarshal(m, b)
 }
 func (m *StartGameResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_StartGameResponse.Marshal(b, m, deterministic)
 }
-func (m *StartGameResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_StartGameResponse.Merge(m, src)
+func (dst *StartGameResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_StartGameResponse.Merge(dst, src)
 }
 func (m *StartGameResponse) XXX_Size() int {
 	return xxx_messageInfo_StartGameResponse.Size(m)
@@ -447,17 +433,16 @@ func (m *JoinGameRequest) Reset()         { *m = JoinGameRequest{} }
 func (m *JoinGameRequest) String() string { return proto.CompactTextString(m) }
 func (*JoinGameRequest) ProtoMessage()    {}
 func (*JoinGameRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{7}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{7}
 }
-
 func (m *JoinGameRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_JoinGameRequest.Unmarshal(m, b)
 }
 func (m *JoinGameRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_JoinGameRequest.Marshal(b, m, deterministic)
 }
-func (m *JoinGameRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_JoinGameRequest.Merge(m, src)
+func (dst *JoinGameRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_JoinGameRequest.Merge(dst, src)
 }
 func (m *JoinGameRequest) XXX_Size() int {
 	return xxx_messageInfo_JoinGameRequest.Size(m)
@@ -496,6 +481,7 @@ type GameUpdate struct {
 	//	*GameUpdate_StatusUpdate
 	//	*GameUpdate_TileUpdate
 	//	*GameUpdate_BoardUpdate
+	//	*GameUpdate_MoveUpdate
 	Update               isGameUpdate_Update `protobuf_oneof:"update"`
 	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
 	XXX_unrecognized     []byte              `json:"-"`
@@ -506,17 +492,16 @@ func (m *GameUpdate) Reset()         { *m = GameUpdate{} }
 func (m *GameUpdate) String() string { return proto.CompactTextString(m) }
 func (*GameUpdate) ProtoMessage()    {}
 func (*GameUpdate) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{8}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{8}
 }
-
 func (m *GameUpdate) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GameUpdate.Unmarshal(m, b)
 }
 func (m *GameUpdate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_GameUpdate.Marshal(b, m, deterministic)
 }
-func (m *GameUpdate) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GameUpdate.Merge(m, src)
+func (dst *GameUpdate) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GameUpdate.Merge(dst, src)
 }
 func (m *GameUpdate) XXX_Size() int {
 	return xxx_messageInfo_GameUpdate.Size(m)
@@ -551,6 +536,10 @@ type GameUpdate_BoardUpdate struct {
 	BoardUpdate *BoardUpdate `protobuf:"bytes,5,opt,name=board_update,json=boardUpdate,proto3,oneof"`
 }
 
+type GameUpdate_MoveUpdate struct {
+	MoveUpdate *MoveUpdate `protobuf:"bytes,6,opt,name=move_update,json=moveUpdate,proto3,oneof"`
+}
+
 func (*GameUpdate_YouUpdate) isGameUpdate_Update() {}
 
 func (*GameUpdate_PlayerUpdate) isGameUpdate_Update() {}
@@ -560,6 +549,8 @@ func (*GameUpdate_StatusUpdate) isGameUpdate_Update() {}
 func (*GameUpdate_TileUpdate) isGameUpdate_Update() {}
 
 func (*GameUpdate_BoardUpdate) isGameUpdate_Update() {}
+
+func (*GameUpdate_MoveUpdate) isGameUpdate_Update() {}
 
 func (m *GameUpdate) GetUpdate() isGameUpdate_Update {
 	if m != nil {
@@ -603,6 +594,13 @@ func (m *GameUpdate) GetBoardUpdate() *BoardUpdate {
 	return nil
 }
 
+func (m *GameUpdate) GetMoveUpdate() *MoveUpdate {
+	if x, ok := m.GetUpdate().(*GameUpdate_MoveUpdate); ok {
+		return x.MoveUpdate
+	}
+	return nil
+}
+
 // XXX_OneofFuncs is for the internal use of the proto package.
 func (*GameUpdate) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
 	return _GameUpdate_OneofMarshaler, _GameUpdate_OneofUnmarshaler, _GameUpdate_OneofSizer, []interface{}{
@@ -611,6 +609,7 @@ func (*GameUpdate) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) er
 		(*GameUpdate_StatusUpdate)(nil),
 		(*GameUpdate_TileUpdate)(nil),
 		(*GameUpdate_BoardUpdate)(nil),
+		(*GameUpdate_MoveUpdate)(nil),
 	}
 }
 
@@ -641,6 +640,11 @@ func _GameUpdate_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
 	case *GameUpdate_BoardUpdate:
 		b.EncodeVarint(5<<3 | proto.WireBytes)
 		if err := b.EncodeMessage(x.BoardUpdate); err != nil {
+			return err
+		}
+	case *GameUpdate_MoveUpdate:
+		b.EncodeVarint(6<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.MoveUpdate); err != nil {
 			return err
 		}
 	case nil:
@@ -693,6 +697,14 @@ func _GameUpdate_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buf
 		err := b.DecodeMessage(msg)
 		m.Update = &GameUpdate_BoardUpdate{msg}
 		return true, err
+	case 6: // update.move_update
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(MoveUpdate)
+		err := b.DecodeMessage(msg)
+		m.Update = &GameUpdate_MoveUpdate{msg}
+		return true, err
 	default:
 		return false, nil
 	}
@@ -727,6 +739,11 @@ func _GameUpdate_OneofSizer(msg proto.Message) (n int) {
 		n += 1 // tag and wire
 		n += proto.SizeVarint(uint64(s))
 		n += s
+	case *GameUpdate_MoveUpdate:
+		s := proto.Size(x.MoveUpdate)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
 	case nil:
 	default:
 		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
@@ -745,17 +762,16 @@ func (m *YouUpdate) Reset()         { *m = YouUpdate{} }
 func (m *YouUpdate) String() string { return proto.CompactTextString(m) }
 func (*YouUpdate) ProtoMessage()    {}
 func (*YouUpdate) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{9}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{9}
 }
-
 func (m *YouUpdate) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_YouUpdate.Unmarshal(m, b)
 }
 func (m *YouUpdate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_YouUpdate.Marshal(b, m, deterministic)
 }
-func (m *YouUpdate) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_YouUpdate.Merge(m, src)
+func (dst *YouUpdate) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_YouUpdate.Merge(dst, src)
 }
 func (m *YouUpdate) XXX_Size() int {
 	return xxx_messageInfo_YouUpdate.Size(m)
@@ -785,17 +801,16 @@ func (m *PlayerUpdate) Reset()         { *m = PlayerUpdate{} }
 func (m *PlayerUpdate) String() string { return proto.CompactTextString(m) }
 func (*PlayerUpdate) ProtoMessage()    {}
 func (*PlayerUpdate) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{10}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{10}
 }
-
 func (m *PlayerUpdate) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PlayerUpdate.Unmarshal(m, b)
 }
 func (m *PlayerUpdate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PlayerUpdate.Marshal(b, m, deterministic)
 }
-func (m *PlayerUpdate) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PlayerUpdate.Merge(m, src)
+func (dst *PlayerUpdate) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PlayerUpdate.Merge(dst, src)
 }
 func (m *PlayerUpdate) XXX_Size() int {
 	return xxx_messageInfo_PlayerUpdate.Size(m)
@@ -833,17 +848,16 @@ func (m *Player) Reset()         { *m = Player{} }
 func (m *Player) String() string { return proto.CompactTextString(m) }
 func (*Player) ProtoMessage()    {}
 func (*Player) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{11}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{11}
 }
-
 func (m *Player) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Player.Unmarshal(m, b)
 }
 func (m *Player) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Player.Marshal(b, m, deterministic)
 }
-func (m *Player) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Player.Merge(m, src)
+func (dst *Player) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Player.Merge(dst, src)
 }
 func (m *Player) XXX_Size() int {
 	return xxx_messageInfo_Player.Size(m)
@@ -886,17 +900,16 @@ func (m *StatusUpdate) Reset()         { *m = StatusUpdate{} }
 func (m *StatusUpdate) String() string { return proto.CompactTextString(m) }
 func (*StatusUpdate) ProtoMessage()    {}
 func (*StatusUpdate) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{12}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{12}
 }
-
 func (m *StatusUpdate) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_StatusUpdate.Unmarshal(m, b)
 }
 func (m *StatusUpdate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_StatusUpdate.Marshal(b, m, deterministic)
 }
-func (m *StatusUpdate) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_StatusUpdate.Merge(m, src)
+func (dst *StatusUpdate) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_StatusUpdate.Merge(dst, src)
 }
 func (m *StatusUpdate) XXX_Size() int {
 	return xxx_messageInfo_StatusUpdate.Size(m)
@@ -931,17 +944,16 @@ func (m *TileUpdate) Reset()         { *m = TileUpdate{} }
 func (m *TileUpdate) String() string { return proto.CompactTextString(m) }
 func (*TileUpdate) ProtoMessage()    {}
 func (*TileUpdate) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{13}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{13}
 }
-
 func (m *TileUpdate) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TileUpdate.Unmarshal(m, b)
 }
 func (m *TileUpdate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_TileUpdate.Marshal(b, m, deterministic)
 }
-func (m *TileUpdate) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TileUpdate.Merge(m, src)
+func (dst *TileUpdate) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TileUpdate.Merge(dst, src)
 }
 func (m *TileUpdate) XXX_Size() int {
 	return xxx_messageInfo_TileUpdate.Size(m)
@@ -984,17 +996,16 @@ func (m *BoardUpdate) Reset()         { *m = BoardUpdate{} }
 func (m *BoardUpdate) String() string { return proto.CompactTextString(m) }
 func (*BoardUpdate) ProtoMessage()    {}
 func (*BoardUpdate) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{14}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{14}
 }
-
 func (m *BoardUpdate) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_BoardUpdate.Unmarshal(m, b)
 }
 func (m *BoardUpdate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_BoardUpdate.Marshal(b, m, deterministic)
 }
-func (m *BoardUpdate) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BoardUpdate.Merge(m, src)
+func (dst *BoardUpdate) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_BoardUpdate.Merge(dst, src)
 }
 func (m *BoardUpdate) XXX_Size() int {
 	return xxx_messageInfo_BoardUpdate.Size(m)
@@ -1012,6 +1023,54 @@ func (m *BoardUpdate) GetBoard() *Board {
 	return nil
 }
 
+type MoveUpdate struct {
+	// The name of the player who made the move.
+	Player string `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	// The word the player played.
+	Word                 string   `protobuf:"bytes,2,opt,name=word,proto3" json:"word,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *MoveUpdate) Reset()         { *m = MoveUpdate{} }
+func (m *MoveUpdate) String() string { return proto.CompactTextString(m) }
+func (*MoveUpdate) ProtoMessage()    {}
+func (*MoveUpdate) Descriptor() ([]byte, []int) {
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{15}
+}
+func (m *MoveUpdate) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MoveUpdate.Unmarshal(m, b)
+}
+func (m *MoveUpdate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MoveUpdate.Marshal(b, m, deterministic)
+}
+func (dst *MoveUpdate) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MoveUpdate.Merge(dst, src)
+}
+func (m *MoveUpdate) XXX_Size() int {
+	return xxx_messageInfo_MoveUpdate.Size(m)
+}
+func (m *MoveUpdate) XXX_DiscardUnknown() {
+	xxx_messageInfo_MoveUpdate.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MoveUpdate proto.InternalMessageInfo
+
+func (m *MoveUpdate) GetPlayer() string {
+	if m != nil {
+		return m.Player
+	}
+	return ""
+}
+
+func (m *MoveUpdate) GetWord() string {
+	if m != nil {
+		return m.Word
+	}
+	return ""
+}
+
 type Tiles struct {
 	// Tiles are just lists of letters
 	Letters              []string `protobuf:"bytes,1,rep,name=letters,proto3" json:"letters,omitempty"`
@@ -1024,17 +1083,16 @@ func (m *Tiles) Reset()         { *m = Tiles{} }
 func (m *Tiles) String() string { return proto.CompactTextString(m) }
 func (*Tiles) ProtoMessage()    {}
 func (*Tiles) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{15}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{16}
 }
-
 func (m *Tiles) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Tiles.Unmarshal(m, b)
 }
 func (m *Tiles) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Tiles.Marshal(b, m, deterministic)
 }
-func (m *Tiles) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Tiles.Merge(m, src)
+func (dst *Tiles) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Tiles.Merge(dst, src)
 }
 func (m *Tiles) XXX_Size() int {
 	return xxx_messageInfo_Tiles.Size(m)
@@ -1068,17 +1126,16 @@ func (m *DumpRequest) Reset()         { *m = DumpRequest{} }
 func (m *DumpRequest) String() string { return proto.CompactTextString(m) }
 func (*DumpRequest) ProtoMessage()    {}
 func (*DumpRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{16}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{17}
 }
-
 func (m *DumpRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_DumpRequest.Unmarshal(m, b)
 }
 func (m *DumpRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_DumpRequest.Marshal(b, m, deterministic)
 }
-func (m *DumpRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DumpRequest.Merge(m, src)
+func (dst *DumpRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DumpRequest.Merge(dst, src)
 }
 func (m *DumpRequest) XXX_Size() int {
 	return xxx_messageInfo_DumpRequest.Size(m)
@@ -1120,17 +1177,16 @@ func (m *DumpResponse) Reset()         { *m = DumpResponse{} }
 func (m *DumpResponse) String() string { return proto.CompactTextString(m) }
 func (*DumpResponse) ProtoMessage()    {}
 func (*DumpResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{17}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{18}
 }
-
 func (m *DumpResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_DumpResponse.Unmarshal(m, b)
 }
 func (m *DumpResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_DumpResponse.Marshal(b, m, deterministic)
 }
-func (m *DumpResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DumpResponse.Merge(m, src)
+func (dst *DumpResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DumpResponse.Merge(dst, src)
 }
 func (m *DumpResponse) XXX_Size() int {
 	return xxx_messageInfo_DumpResponse.Size(m)
@@ -1145,8 +1201,10 @@ type UpdateBoardRequest struct {
 	// The unique identifier for the game you're placing in.
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// The unique identifier for the player peeling.
-	PlayerId             string   `protobuf:"bytes,2,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
-	Board                *Board   `protobuf:"bytes,3,opt,name=board,proto3" json:"board,omitempty"`
+	PlayerId string `protobuf:"bytes,2,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
+	Board    *Board `protobuf:"bytes,3,opt,name=board,proto3" json:"board,omitempty"`
+	// An optional word to include, to be shared with other players.
+	LatestWord           *Word    `protobuf:"bytes,4,opt,name=latest_word,json=latestWord,proto3" json:"latest_word,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -1156,17 +1214,16 @@ func (m *UpdateBoardRequest) Reset()         { *m = UpdateBoardRequest{} }
 func (m *UpdateBoardRequest) String() string { return proto.CompactTextString(m) }
 func (*UpdateBoardRequest) ProtoMessage()    {}
 func (*UpdateBoardRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{18}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{19}
 }
-
 func (m *UpdateBoardRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UpdateBoardRequest.Unmarshal(m, b)
 }
 func (m *UpdateBoardRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_UpdateBoardRequest.Marshal(b, m, deterministic)
 }
-func (m *UpdateBoardRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_UpdateBoardRequest.Merge(m, src)
+func (dst *UpdateBoardRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateBoardRequest.Merge(dst, src)
 }
 func (m *UpdateBoardRequest) XXX_Size() int {
 	return xxx_messageInfo_UpdateBoardRequest.Size(m)
@@ -1198,6 +1255,13 @@ func (m *UpdateBoardRequest) GetBoard() *Board {
 	return nil
 }
 
+func (m *UpdateBoardRequest) GetLatestWord() *Word {
+	if m != nil {
+		return m.LatestWord
+	}
+	return nil
+}
+
 type Board struct {
 	Words                []*Word  `protobuf:"bytes,1,rep,name=words,proto3" json:"words,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -1209,17 +1273,16 @@ func (m *Board) Reset()         { *m = Board{} }
 func (m *Board) String() string { return proto.CompactTextString(m) }
 func (*Board) ProtoMessage()    {}
 func (*Board) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{19}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{20}
 }
-
 func (m *Board) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Board.Unmarshal(m, b)
 }
 func (m *Board) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Board.Marshal(b, m, deterministic)
 }
-func (m *Board) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Board.Merge(m, src)
+func (dst *Board) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Board.Merge(dst, src)
 }
 func (m *Board) XXX_Size() int {
 	return xxx_messageInfo_Board.Size(m)
@@ -1253,17 +1316,16 @@ func (m *Word) Reset()         { *m = Word{} }
 func (m *Word) String() string { return proto.CompactTextString(m) }
 func (*Word) ProtoMessage()    {}
 func (*Word) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{20}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{21}
 }
-
 func (m *Word) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Word.Unmarshal(m, b)
 }
 func (m *Word) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Word.Marshal(b, m, deterministic)
 }
-func (m *Word) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Word.Merge(m, src)
+func (dst *Word) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Word.Merge(dst, src)
 }
 func (m *Word) XXX_Size() int {
 	return xxx_messageInfo_Word.Size(m)
@@ -1314,17 +1376,16 @@ func (m *CharLocs) Reset()         { *m = CharLocs{} }
 func (m *CharLocs) String() string { return proto.CompactTextString(m) }
 func (*CharLocs) ProtoMessage()    {}
 func (*CharLocs) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{21}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{22}
 }
-
 func (m *CharLocs) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CharLocs.Unmarshal(m, b)
 }
 func (m *CharLocs) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_CharLocs.Marshal(b, m, deterministic)
 }
-func (m *CharLocs) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CharLocs.Merge(m, src)
+func (dst *CharLocs) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CharLocs.Merge(dst, src)
 }
 func (m *CharLocs) XXX_Size() int {
 	return xxx_messageInfo_CharLocs.Size(m)
@@ -1362,17 +1423,16 @@ func (m *CharLoc) Reset()         { *m = CharLoc{} }
 func (m *CharLoc) String() string { return proto.CompactTextString(m) }
 func (*CharLoc) ProtoMessage()    {}
 func (*CharLoc) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{22}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{23}
 }
-
 func (m *CharLoc) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CharLoc.Unmarshal(m, b)
 }
 func (m *CharLoc) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_CharLoc.Marshal(b, m, deterministic)
 }
-func (m *CharLoc) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CharLoc.Merge(m, src)
+func (dst *CharLoc) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CharLoc.Merge(dst, src)
 }
 func (m *CharLoc) XXX_Size() int {
 	return xxx_messageInfo_CharLoc.Size(m)
@@ -1417,17 +1477,16 @@ func (m *UpdateBoardResponse) Reset()         { *m = UpdateBoardResponse{} }
 func (m *UpdateBoardResponse) String() string { return proto.CompactTextString(m) }
 func (*UpdateBoardResponse) ProtoMessage()    {}
 func (*UpdateBoardResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0022f69d17e210ba, []int{23}
+	return fileDescriptor_banana_c6662c97ea748aa1, []int{24}
 }
-
 func (m *UpdateBoardResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UpdateBoardResponse.Unmarshal(m, b)
 }
 func (m *UpdateBoardResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_UpdateBoardResponse.Marshal(b, m, deterministic)
 }
-func (m *UpdateBoardResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_UpdateBoardResponse.Merge(m, src)
+func (dst *UpdateBoardResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateBoardResponse.Merge(dst, src)
 }
 func (m *UpdateBoardResponse) XXX_Size() int {
 	return xxx_messageInfo_UpdateBoardResponse.Size(m)
@@ -1460,10 +1519,6 @@ func (m *UpdateBoardResponse) GetDetachedBoard() bool {
 }
 
 func init() {
-	proto.RegisterEnum("Game_Status", Game_Status_name, Game_Status_value)
-	proto.RegisterEnum("StatusUpdate_Status", StatusUpdate_Status_name, StatusUpdate_Status_value)
-	proto.RegisterEnum("TileUpdate_Event", TileUpdate_Event_name, TileUpdate_Event_value)
-	proto.RegisterEnum("Word_Orientation", Word_Orientation_name, Word_Orientation_value)
 	proto.RegisterType((*NewGameRequest)(nil), "NewGameRequest")
 	proto.RegisterType((*NewGameResponse)(nil), "NewGameResponse")
 	proto.RegisterType((*ListGamesRequest)(nil), "ListGamesRequest")
@@ -1479,6 +1534,7 @@ func init() {
 	proto.RegisterType((*StatusUpdate)(nil), "StatusUpdate")
 	proto.RegisterType((*TileUpdate)(nil), "TileUpdate")
 	proto.RegisterType((*BoardUpdate)(nil), "BoardUpdate")
+	proto.RegisterType((*MoveUpdate)(nil), "MoveUpdate")
 	proto.RegisterType((*Tiles)(nil), "Tiles")
 	proto.RegisterType((*DumpRequest)(nil), "DumpRequest")
 	proto.RegisterType((*DumpResponse)(nil), "DumpResponse")
@@ -1488,81 +1544,10 @@ func init() {
 	proto.RegisterType((*CharLocs)(nil), "CharLocs")
 	proto.RegisterType((*CharLoc)(nil), "CharLoc")
 	proto.RegisterType((*UpdateBoardResponse)(nil), "UpdateBoardResponse")
-}
-
-func init() { proto.RegisterFile("banana.proto", fileDescriptor_0022f69d17e210ba) }
-
-var fileDescriptor_0022f69d17e210ba = []byte{
-	// 1095 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x56, 0xcd, 0x6e, 0xdb, 0x46,
-	0x10, 0x0e, 0x29, 0x51, 0x12, 0x87, 0x94, 0x4c, 0xaf, 0x83, 0xc6, 0x50, 0x72, 0xb0, 0x37, 0x2e,
-	0x62, 0x20, 0xc5, 0x22, 0x55, 0x7a, 0xc8, 0xa1, 0x39, 0xc8, 0xb6, 0x62, 0x33, 0x95, 0x25, 0x61,
-	0x25, 0xc7, 0x88, 0x2f, 0x04, 0x25, 0xb2, 0x31, 0x01, 0x9a, 0x54, 0x45, 0xd2, 0xb1, 0x8e, 0x7d,
-	0x85, 0xf6, 0x19, 0xfa, 0x00, 0x79, 0x85, 0x3e, 0x59, 0xb1, 0x3f, 0xa4, 0x28, 0x59, 0xed, 0xa1,
-	0x37, 0xce, 0xb7, 0xf3, 0x0d, 0x67, 0xbf, 0x9d, 0xd9, 0x59, 0x30, 0xa7, 0x6e, 0xe4, 0x46, 0x2e,
-	0x99, 0x2f, 0xe2, 0x34, 0xc6, 0x47, 0xd0, 0x1a, 0xf8, 0x5f, 0xcf, 0xdd, 0x3b, 0x9f, 0xfa, 0xbf,
-	0x65, 0x7e, 0x92, 0x22, 0x04, 0xd5, 0xc8, 0xbd, 0xf3, 0xf7, 0x95, 0x03, 0xe5, 0x58, 0xa7, 0xfc,
-	0x1b, 0x1f, 0xc2, 0x4e, 0xe1, 0x95, 0xcc, 0xe3, 0x28, 0xf1, 0x51, 0x0b, 0xd4, 0xc0, 0x93, 0x4e,
-	0x6a, 0xe0, 0x61, 0x04, 0x56, 0x3f, 0x48, 0x52, 0xe6, 0x93, 0xc8, 0x50, 0xf8, 0x0d, 0xec, 0x96,
-	0x30, 0x49, 0x7c, 0x0e, 0xda, 0x17, 0x06, 0xec, 0x2b, 0x07, 0x95, 0x63, 0xa3, 0xa3, 0x11, 0x1e,
-	0x56, 0x60, 0xf8, 0x6f, 0x05, 0xaa, 0xcc, 0xde, 0x0c, 0x5f, 0x64, 0xa5, 0xae, 0xb2, 0x42, 0x47,
-	0x50, 0x4b, 0x52, 0x37, 0xcd, 0x92, 0xfd, 0xca, 0x81, 0x72, 0xdc, 0xea, 0x98, 0x3c, 0x14, 0x19,
-	0x73, 0x8c, 0xca, 0x35, 0x74, 0x08, 0xe6, 0x3c, 0x74, 0x97, 0xfe, 0xc2, 0x99, 0xc5, 0x59, 0x94,
-	0xee, 0x57, 0x0f, 0x94, 0x63, 0x8d, 0x1a, 0x02, 0x3b, 0x65, 0x10, 0xbe, 0x84, 0x9a, 0x20, 0x21,
-	0x03, 0xea, 0x57, 0x83, 0x5f, 0x06, 0xc3, 0xeb, 0x81, 0xf5, 0x04, 0x3d, 0x83, 0xbd, 0xeb, 0xae,
-	0x3d, 0xb1, 0x07, 0xe7, 0xce, 0x87, 0x21, 0x75, 0x46, 0xfd, 0xee, 0xe7, 0x1e, 0x1d, 0x5b, 0x0a,
-	0xda, 0x01, 0xc3, 0x1e, 0x38, 0x23, 0x3a, 0x3c, 0xa7, 0xbd, 0xf1, 0xd8, 0x52, 0x91, 0x09, 0x8d,
-	0x0f, 0xf6, 0xc0, 0x1e, 0x5f, 0xf4, 0xce, 0xac, 0x0a, 0xc6, 0x60, 0x8d, 0x53, 0x77, 0x91, 0x96,
-	0x55, 0xdd, 0x94, 0x6b, 0x0f, 0x76, 0x4b, 0x3e, 0x42, 0x1a, 0x4c, 0x61, 0xe7, 0x63, 0x1c, 0x44,
-	0xff, 0xc1, 0xdb, 0xaa, 0xc3, 0x73, 0xd0, 0xe5, 0x0e, 0x03, 0x8f, 0x4b, 0xa1, 0xd3, 0x86, 0x00,
-	0x6c, 0x0f, 0xff, 0xa1, 0x02, 0xb0, 0x80, 0x57, 0x73, 0xcf, 0x4d, 0x7d, 0xf4, 0x1a, 0x60, 0x19,
-	0x67, 0x4e, 0xc6, 0x2d, 0x1e, 0xd7, 0xe8, 0x00, 0xf9, 0x1c, 0x67, 0x62, 0xfd, 0xe2, 0x09, 0xd5,
-	0x97, 0xb9, 0x81, 0x7e, 0x82, 0xa6, 0x0c, 0x2c, 0xfd, 0x55, 0xee, 0xdf, 0x24, 0x23, 0x8e, 0x16,
-	0x14, 0x29, 0xf0, 0x8a, 0x25, 0xa4, 0xcf, 0x59, 0x15, 0xc9, 0x12, 0x1a, 0xaf, 0x58, 0x49, 0xc9,
-	0x46, 0x04, 0x8c, 0x34, 0x08, 0xfd, 0x9c, 0x53, 0xe5, 0x1c, 0x83, 0x4c, 0x82, 0xd0, 0x2f, 0x18,
-	0x90, 0x16, 0x16, 0xfa, 0x11, 0xcc, 0x69, 0xec, 0x2e, 0xbc, 0x9c, 0xa0, 0x71, 0x82, 0x49, 0x4e,
-	0x18, 0x58, 0x30, 0x8c, 0xe9, 0xca, 0x3c, 0x69, 0x40, 0x4d, 0x38, 0xe3, 0x23, 0xd0, 0x8b, 0x2d,
-	0xa3, 0x67, 0x50, 0x5f, 0xc6, 0x19, 0x17, 0x4f, 0xe8, 0x5c, 0x63, 0xa6, 0xed, 0xe1, 0x1b, 0x30,
-	0xcb, 0x1b, 0x45, 0x87, 0x50, 0x17, 0x1b, 0xcd, 0x6b, 0xb7, 0x2e, 0x85, 0xa0, 0x39, 0x8e, 0x5e,
-	0xc1, 0xce, 0xc2, 0xbf, 0x73, 0x83, 0x28, 0x88, 0xbe, 0x38, 0x2c, 0xdb, 0x84, 0x6b, 0xa6, 0xd1,
-	0x56, 0x01, 0xb3, 0x1d, 0x25, 0xf8, 0x57, 0xa8, 0x09, 0xee, 0xb6, 0x7e, 0x43, 0x18, 0x9a, 0x9c,
-	0xec, 0x04, 0x91, 0x73, 0xeb, 0x46, 0x9e, 0x0c, 0xc2, 0x15, 0x4a, 0xec, 0xe8, 0xc2, 0x8d, 0x3c,
-	0x74, 0x04, 0xad, 0xc2, 0x67, 0x9a, 0x45, 0xb3, 0x5b, 0xae, 0xb3, 0x46, 0x4d, 0xe9, 0x74, 0xc2,
-	0x30, 0xfc, 0xbb, 0x02, 0x66, 0x59, 0x77, 0xf4, 0x43, 0xd1, 0x34, 0x0a, 0x6f, 0x9a, 0xa7, 0x6b,
-	0xc7, 0xb2, 0xd1, 0x3c, 0xf8, 0x74, 0x7b, 0x67, 0x18, 0x50, 0x97, 0x9d, 0x61, 0x29, 0xc8, 0x02,
-	0xf3, 0xbc, 0x7b, 0xd9, 0x73, 0xc6, 0x93, 0x2e, 0x9d, 0xf4, 0xce, 0x2c, 0x15, 0x35, 0x41, 0xe7,
-	0xc8, 0xf0, 0x53, 0x8f, 0x5a, 0x15, 0xfc, 0x4d, 0x01, 0x58, 0x9d, 0x23, 0x7a, 0x05, 0x9a, 0x7f,
-	0xef, 0x47, 0xa9, 0x4c, 0x60, 0xb7, 0x74, 0xc6, 0xa4, 0xc7, 0x16, 0xa8, 0x58, 0x47, 0xdf, 0x41,
-	0x4d, 0xe8, 0x2a, 0xab, 0x5d, 0x5a, 0xe8, 0x25, 0xe8, 0x6e, 0x18, 0x4a, 0x79, 0x45, 0x71, 0xd5,
-	0x78, 0x90, 0x84, 0x36, 0xdc, 0x30, 0x14, 0x02, 0xbf, 0x07, 0x8d, 0x07, 0x5b, 0x4f, 0x5c, 0x07,
-	0x6d, 0x3c, 0xea, 0xdb, 0x13, 0x4b, 0x41, 0x0d, 0xa8, 0x8e, 0x7a, 0xbd, 0xbe, 0xa5, 0xb2, 0xaf,
-	0xb3, 0xab, 0xcb, 0x91, 0x55, 0x61, 0x5f, 0x1f, 0x87, 0xf6, 0xc0, 0xaa, 0xe2, 0xd7, 0x60, 0x94,
-	0x2a, 0x09, 0xbd, 0x00, 0x8d, 0x57, 0x92, 0xec, 0x98, 0x9a, 0x28, 0x33, 0x2a, 0x40, 0x7c, 0x08,
-	0x1a, 0xff, 0x29, 0xda, 0x87, 0x7a, 0xe8, 0xa7, 0x69, 0x5e, 0x21, 0x3a, 0xcd, 0x4d, 0x4c, 0xc1,
-	0x38, 0xcb, 0xee, 0xe6, 0xff, 0xd6, 0xd6, 0x6b, 0x2d, 0xac, 0xae, 0xb7, 0x30, 0xd3, 0x41, 0x84,
-	0x91, 0xcd, 0x2d, 0x2d, 0xdc, 0x02, 0x53, 0xc4, 0x94, 0xd7, 0x87, 0x03, 0x48, 0x56, 0x3a, 0x4f,
-	0xee, 0xff, 0xfc, 0xaa, 0xd8, 0x67, 0x65, 0xdb, 0x3e, 0x8f, 0x40, 0xe3, 0x36, 0xbb, 0xc3, 0xbf,
-	0xc6, 0x0b, 0x6f, 0x75, 0x87, 0x5f, 0xc7, 0xcc, 0x8b, 0x63, 0xf8, 0x2f, 0x05, 0xaa, 0xcc, 0x66,
-	0x95, 0x9d, 0xfa, 0x0f, 0x69, 0x5e, 0xd9, 0xec, 0x1b, 0xbd, 0x05, 0x23, 0x5e, 0x04, 0x7e, 0x94,
-	0xba, 0x69, 0x10, 0x47, 0xfc, 0xff, 0xac, 0x04, 0x98, 0x3f, 0x19, 0xae, 0x16, 0x68, 0xd9, 0x0b,
-	0x99, 0xa0, 0x3c, 0xc8, 0xea, 0x56, 0x1e, 0x98, 0xb5, 0x94, 0xb7, 0xb8, 0xb2, 0xc4, 0xef, 0xc0,
-	0x28, 0xf1, 0xd6, 0x4f, 0xbb, 0x05, 0x70, 0x31, 0xa4, 0xf6, 0xcd, 0x70, 0x30, 0xe9, 0xf6, 0x2d,
-	0x85, 0x5d, 0xd3, 0x9f, 0x7a, 0x74, 0x62, 0x9f, 0x76, 0xfb, 0x96, 0x8a, 0x7f, 0x86, 0xc6, 0xe9,
-	0xad, 0xbb, 0xe8, 0xc7, 0xb3, 0x64, 0x6b, 0xaa, 0x2f, 0xa0, 0x1a, 0xc6, 0x33, 0xd6, 0xc0, 0x6c,
-	0x8f, 0x0d, 0x22, 0x9d, 0x29, 0x47, 0xf1, 0x7b, 0xa8, 0x4b, 0xa0, 0x74, 0x3e, 0x4a, 0xf9, 0x7c,
-	0x44, 0xda, 0xea, 0x5a, 0xda, 0x95, 0x3c, 0xed, 0x3f, 0x15, 0xd8, 0x5b, 0x3b, 0x2c, 0x39, 0x1d,
-	0x09, 0x34, 0x83, 0xe8, 0xde, 0x0d, 0x03, 0xcf, 0x29, 0x2b, 0xac, 0xe7, 0x7f, 0x4f, 0xa8, 0x29,
-	0xd7, 0x99, 0x64, 0x09, 0xfa, 0x1e, 0x5a, 0x59, 0x94, 0x25, 0xbe, 0xe7, 0xe4, 0x85, 0xa7, 0xf2,
-	0xc2, 0x6b, 0x0a, 0xb4, 0x2f, 0x40, 0xe6, 0xe6, 0xf9, 0xa9, 0x3b, 0xbb, 0xf5, 0x3d, 0x67, 0x75,
-	0xc0, 0x0d, 0xda, 0xcc, 0x51, 0x9e, 0x45, 0xe7, 0x9b, 0x0a, 0xcd, 0x13, 0xfe, 0x3c, 0x18, 0xfb,
-	0x8b, 0xfb, 0x60, 0xc6, 0xae, 0x8b, 0xba, 0x9c, 0xfc, 0x68, 0x87, 0xac, 0xbf, 0x14, 0xda, 0x16,
-	0xd9, 0x7c, 0x14, 0x74, 0x40, 0x2f, 0x06, 0x3e, 0xda, 0x25, 0x9b, 0x0f, 0x82, 0x36, 0x22, 0x8f,
-	0xdf, 0x03, 0x1d, 0xd0, 0x8b, 0x49, 0x88, 0x76, 0xc9, 0xe6, 0xe4, 0x6c, 0x23, 0xf2, 0x68, 0x50,
-	0xa2, 0xd7, 0xd0, 0xc8, 0x07, 0x25, 0xb2, 0xc8, 0xc6, 0xcc, 0x6c, 0x1b, 0x64, 0x35, 0xf0, 0xde,
-	0x28, 0xe8, 0x1d, 0x18, 0x25, 0xa5, 0xd1, 0x1e, 0x79, 0xdc, 0x24, 0xed, 0xa7, 0x64, 0xdb, 0x61,
-	0xbc, 0x84, 0x2a, 0x6b, 0x30, 0x64, 0x92, 0x52, 0xef, 0xb6, 0x9b, 0xa4, 0xdc, 0x75, 0x27, 0xd5,
-	0x1b, 0x75, 0x3e, 0x9d, 0xd6, 0xf8, 0x73, 0xea, 0xed, 0x3f, 0x01, 0x00, 0x00, 0xff, 0xff, 0x1a,
-	0x0b, 0xe0, 0xdf, 0x5e, 0x09, 0x00, 0x00,
+	proto.RegisterEnum("Game_Status", Game_Status_name, Game_Status_value)
+	proto.RegisterEnum("StatusUpdate_Status", StatusUpdate_Status_name, StatusUpdate_Status_value)
+	proto.RegisterEnum("TileUpdate_Event", TileUpdate_Event_name, TileUpdate_Event_value)
+	proto.RegisterEnum("Word_Orientation", Word_Orientation_name, Word_Orientation_value)
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -1828,4 +1813,83 @@ var _BananaService_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Metadata: "banana.proto",
+}
+
+func init() { proto.RegisterFile("banana.proto", fileDescriptor_banana_c6662c97ea748aa1) }
+
+var fileDescriptor_banana_c6662c97ea748aa1 = []byte{
+	// 1153 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x56, 0xcd, 0x6e, 0xdb, 0x46,
+	0x10, 0x0e, 0x29, 0x51, 0x12, 0x87, 0x94, 0x4c, 0xaf, 0x83, 0xc6, 0x50, 0x72, 0xb0, 0x37, 0x6e,
+	0x63, 0x20, 0xc5, 0x22, 0x55, 0x7a, 0xf0, 0xa1, 0x39, 0xc8, 0xb6, 0x62, 0x33, 0x95, 0x25, 0x61,
+	0x25, 0xc7, 0x88, 0x2f, 0x04, 0x25, 0xb2, 0x31, 0x01, 0x89, 0x54, 0x45, 0xd2, 0xb1, 0x8e, 0x3d,
+	0xf5, 0x01, 0xfa, 0x0c, 0x7d, 0x80, 0xbc, 0x42, 0x9e, 0xac, 0xd8, 0x1f, 0x52, 0x94, 0xac, 0xf6,
+	0xd0, 0xdb, 0xce, 0xb7, 0x33, 0xb3, 0xb3, 0xdf, 0xcc, 0xec, 0x2c, 0x98, 0x63, 0x37, 0x74, 0x43,
+	0x97, 0xcc, 0x17, 0x51, 0x12, 0xe1, 0x23, 0x68, 0xf4, 0xfc, 0x2f, 0x17, 0xee, 0xcc, 0xa7, 0xfe,
+	0xef, 0xa9, 0x1f, 0x27, 0x08, 0x41, 0x39, 0x74, 0x67, 0xfe, 0xbe, 0x72, 0xa0, 0x1c, 0xeb, 0x94,
+	0xaf, 0xf1, 0x21, 0xec, 0xe4, 0x5a, 0xf1, 0x3c, 0x0a, 0x63, 0x1f, 0x35, 0x40, 0x0d, 0x3c, 0xa9,
+	0xa4, 0x06, 0x1e, 0x46, 0x60, 0x75, 0x83, 0x38, 0x61, 0x3a, 0xb1, 0x74, 0x85, 0xdf, 0xc0, 0x6e,
+	0x01, 0x93, 0x86, 0xcf, 0x41, 0xfb, 0xcc, 0x80, 0x7d, 0xe5, 0xa0, 0x74, 0x6c, 0xb4, 0x34, 0xc2,
+	0xdd, 0x0a, 0x0c, 0x7f, 0x53, 0xa0, 0xcc, 0xe4, 0x4d, 0xf7, 0x79, 0x54, 0xea, 0x2a, 0x2a, 0x74,
+	0x04, 0x95, 0x38, 0x71, 0x93, 0x34, 0xde, 0x2f, 0x1d, 0x28, 0xc7, 0x8d, 0x96, 0xc9, 0x5d, 0x91,
+	0x21, 0xc7, 0xa8, 0xdc, 0x43, 0x87, 0x60, 0xce, 0xa7, 0xee, 0xd2, 0x5f, 0x38, 0x93, 0x28, 0x0d,
+	0x93, 0xfd, 0xf2, 0x81, 0x72, 0xac, 0x51, 0x43, 0x60, 0x67, 0x0c, 0xc2, 0x57, 0x50, 0x11, 0x46,
+	0xc8, 0x80, 0xea, 0x75, 0xef, 0xd7, 0x5e, 0xff, 0xa6, 0x67, 0x3d, 0x41, 0xcf, 0x60, 0xef, 0xa6,
+	0x6d, 0x8f, 0xec, 0xde, 0x85, 0xf3, 0xbe, 0x4f, 0x9d, 0x41, 0xb7, 0xfd, 0xa9, 0x43, 0x87, 0x96,
+	0x82, 0x76, 0xc0, 0xb0, 0x7b, 0xce, 0x80, 0xf6, 0x2f, 0x68, 0x67, 0x38, 0xb4, 0x54, 0x64, 0x42,
+	0xed, 0xbd, 0xdd, 0xb3, 0x87, 0x97, 0x9d, 0x73, 0xab, 0x84, 0x31, 0x58, 0xc3, 0xc4, 0x5d, 0x24,
+	0x45, 0x56, 0x37, 0xe9, 0xda, 0x83, 0xdd, 0x82, 0x8e, 0xa0, 0x06, 0x53, 0xd8, 0xf9, 0x10, 0x05,
+	0xe1, 0x7f, 0xd8, 0x6d, 0xe5, 0xe1, 0x39, 0xe8, 0xf2, 0x86, 0x81, 0xc7, 0xa9, 0xd0, 0x69, 0x4d,
+	0x00, 0xb6, 0x87, 0xbf, 0xa9, 0x00, 0xcc, 0xe1, 0xf5, 0xdc, 0x73, 0x13, 0x1f, 0xbd, 0x06, 0x58,
+	0x46, 0xa9, 0x93, 0x72, 0x89, 0xfb, 0x35, 0x5a, 0x40, 0x3e, 0x45, 0xa9, 0xd8, 0xbf, 0x7c, 0x42,
+	0xf5, 0x65, 0x26, 0xa0, 0x9f, 0xa1, 0x2e, 0x1d, 0x4b, 0x7d, 0x95, 0xeb, 0xd7, 0xc9, 0x80, 0xa3,
+	0xb9, 0x89, 0x24, 0x78, 0x65, 0x25, 0xa8, 0xcf, 0xac, 0x4a, 0xd2, 0x4a, 0x70, 0xbc, 0xb2, 0x8a,
+	0x0b, 0x32, 0x22, 0x60, 0x24, 0xc1, 0xd4, 0xcf, 0x6c, 0xca, 0xdc, 0xc6, 0x20, 0xa3, 0x60, 0xea,
+	0xe7, 0x16, 0x90, 0xe4, 0x12, 0xfa, 0x09, 0xcc, 0x71, 0xe4, 0x2e, 0xbc, 0xcc, 0x40, 0xe3, 0x06,
+	0x26, 0x39, 0x65, 0x60, 0x6e, 0x61, 0x8c, 0x57, 0x22, 0x3b, 0x62, 0x16, 0xdd, 0xe7, 0x47, 0x54,
+	0xe4, 0x11, 0x57, 0xd1, 0x7d, 0xe1, 0x88, 0x59, 0x2e, 0x9d, 0xd6, 0xa0, 0x22, 0x54, 0xf1, 0x11,
+	0xe8, 0x39, 0x45, 0xe8, 0x19, 0x54, 0x97, 0x51, 0xca, 0xc9, 0x16, 0x79, 0xa9, 0x30, 0xd1, 0xf6,
+	0xf0, 0x2d, 0x98, 0x45, 0x62, 0xd0, 0x21, 0x54, 0x05, 0x31, 0x59, 0xad, 0x57, 0x25, 0x71, 0x34,
+	0xc3, 0xd1, 0x2b, 0xd8, 0x59, 0xf8, 0x33, 0x37, 0x08, 0x83, 0xf0, 0xb3, 0xc3, 0x6e, 0x17, 0x73,
+	0x8e, 0x35, 0xda, 0xc8, 0x61, 0xc6, 0x40, 0x8c, 0x7f, 0x83, 0x8a, 0xb0, 0xdd, 0xd6, 0x9f, 0x08,
+	0x43, 0x9d, 0x1b, 0x3b, 0x41, 0xe8, 0xdc, 0xb9, 0xa1, 0x27, 0x9d, 0x70, 0x46, 0x63, 0x3b, 0xbc,
+	0x74, 0x43, 0x0f, 0x1d, 0x41, 0x23, 0xd7, 0x19, 0xa7, 0xe1, 0xe4, 0x8e, 0xe7, 0x45, 0xa3, 0xa6,
+	0x54, 0x3a, 0x65, 0x18, 0xfe, 0x43, 0x01, 0xb3, 0x98, 0x27, 0xf4, 0x63, 0xde, 0x64, 0x0a, 0x6f,
+	0xb2, 0xa7, 0x6b, 0x69, 0xdc, 0x68, 0x36, 0x7c, 0xb6, 0xbd, 0x93, 0x0c, 0xa8, 0xca, 0x4e, 0xb2,
+	0x14, 0x64, 0x81, 0x79, 0xd1, 0xbe, 0xea, 0x38, 0xc3, 0x51, 0x9b, 0x8e, 0x3a, 0xe7, 0x96, 0x8a,
+	0xea, 0xa0, 0x73, 0xa4, 0xff, 0xb1, 0x43, 0xad, 0x12, 0xfe, 0xaa, 0x00, 0xac, 0xf2, 0x8e, 0x5e,
+	0x81, 0xe6, 0xdf, 0xfb, 0x61, 0x22, 0x03, 0xd8, 0x2d, 0xd4, 0x04, 0xe9, 0xb0, 0x0d, 0x2a, 0xf6,
+	0xd1, 0x77, 0x50, 0x11, 0xbc, 0xca, 0xee, 0x90, 0x12, 0x7a, 0x09, 0xba, 0x3b, 0x9d, 0x4a, 0x7a,
+	0x45, 0x31, 0x56, 0xb8, 0x93, 0x98, 0xd6, 0xdc, 0xe9, 0x54, 0x10, 0xfc, 0x0e, 0x34, 0xee, 0x6c,
+	0x3d, 0x70, 0x1d, 0xb4, 0xe1, 0xa0, 0x6b, 0x8f, 0x2c, 0x05, 0xd5, 0xa0, 0x3c, 0xe8, 0x74, 0xba,
+	0x96, 0xca, 0x56, 0xe7, 0xd7, 0x57, 0x03, 0xab, 0xc4, 0x56, 0x1f, 0xfa, 0x76, 0xcf, 0x2a, 0xe3,
+	0xd7, 0x60, 0x14, 0x2a, 0x0f, 0xbd, 0x00, 0x8d, 0x57, 0x9e, 0xec, 0xb0, 0x8a, 0x28, 0x4b, 0x2a,
+	0x40, 0x7c, 0x02, 0xb0, 0x2a, 0xba, 0x42, 0xd8, 0xca, 0x5a, 0xd8, 0x08, 0xca, 0x5f, 0xa2, 0x85,
+	0x97, 0xb5, 0x3a, 0x5b, 0xe3, 0x43, 0xd0, 0x78, 0xb8, 0x68, 0x1f, 0xaa, 0x53, 0x3f, 0x49, 0xb2,
+	0xda, 0xd2, 0x69, 0x26, 0x62, 0x0a, 0xc6, 0x79, 0x3a, 0x9b, 0xff, 0xdb, 0x03, 0xb2, 0xf6, 0x58,
+	0xa8, 0xeb, 0x8f, 0x05, 0x0b, 0x45, 0xb8, 0x91, 0xcf, 0x88, 0x94, 0x70, 0x03, 0x4c, 0xe1, 0x53,
+	0x3e, 0x54, 0x7f, 0x2a, 0x80, 0x64, 0x93, 0xf0, 0x7b, 0xfd, 0x9f, 0xb3, 0x72, 0x8a, 0x4a, 0x5b,
+	0x28, 0x42, 0x3f, 0x80, 0x31, 0x75, 0x13, 0x3f, 0x4e, 0x1c, 0xce, 0x81, 0x78, 0x0e, 0x34, 0x72,
+	0x13, 0x2d, 0x3c, 0x0a, 0x62, 0x87, 0xad, 0xf1, 0x11, 0x68, 0xdc, 0x8e, 0x8d, 0x15, 0xa6, 0xb9,
+	0x1a, 0x2b, 0x5c, 0x55, 0x60, 0xf8, 0x6f, 0x05, 0xca, 0x4c, 0x66, 0x9c, 0x26, 0xfe, 0x43, 0x92,
+	0x35, 0x0f, 0x5b, 0xa3, 0xb7, 0x60, 0x44, 0x8b, 0xc0, 0x0f, 0x13, 0x37, 0x09, 0xa2, 0x90, 0xc7,
+	0xc9, 0xaa, 0x8c, 0xe9, 0x93, 0xfe, 0x6a, 0x83, 0x16, 0xb5, 0x90, 0x09, 0xca, 0x83, 0x6c, 0x20,
+	0xe5, 0x81, 0x49, 0x4b, 0x39, 0x58, 0x94, 0x25, 0x3e, 0x01, 0xa3, 0x60, 0xb7, 0x5e, 0x50, 0x0d,
+	0x80, 0xcb, 0x3e, 0xb5, 0x6f, 0xfb, 0xbd, 0x51, 0xbb, 0x6b, 0x29, 0x6c, 0x72, 0x7c, 0xec, 0xd0,
+	0x91, 0x7d, 0xd6, 0xee, 0x5a, 0x2a, 0xfe, 0x05, 0x6a, 0x67, 0x77, 0xee, 0xa2, 0x1b, 0x4d, 0xe2,
+	0xad, 0xa1, 0xbe, 0x80, 0xf2, 0x34, 0x9a, 0xb0, 0x37, 0x82, 0xdd, 0xb1, 0x46, 0xa4, 0x32, 0xe5,
+	0x28, 0x7e, 0x07, 0x55, 0x09, 0x14, 0x12, 0xa9, 0x14, 0x13, 0x29, 0xc2, 0x56, 0xd7, 0xc2, 0x2e,
+	0x65, 0x61, 0xff, 0xa5, 0xc0, 0xde, 0x5a, 0x52, 0xe5, 0xc0, 0x26, 0x50, 0x0f, 0xc2, 0x7b, 0x77,
+	0x1a, 0x78, 0x4e, 0x91, 0x61, 0x3d, 0x3b, 0x3d, 0xa6, 0xa6, 0xdc, 0x67, 0x94, 0xc5, 0xe8, 0x7b,
+	0x68, 0xa4, 0x61, 0x1a, 0xfb, 0x9e, 0x93, 0x55, 0xa8, 0xca, 0x2b, 0xb4, 0x2e, 0xd0, 0xae, 0x00,
+	0x99, 0x9a, 0xe7, 0x27, 0xee, 0xe4, 0xce, 0xf7, 0x9c, 0x55, 0x21, 0xd4, 0x68, 0x3d, 0x43, 0x79,
+	0x14, 0xad, 0xaf, 0x2a, 0xd4, 0x4f, 0xf9, 0x8f, 0x65, 0xe8, 0x2f, 0xee, 0x83, 0x09, 0x7b, 0x91,
+	0xaa, 0xf2, 0x33, 0x82, 0x76, 0xc8, 0xfa, 0xe7, 0xa5, 0x69, 0x91, 0xcd, 0x7f, 0x4a, 0x0b, 0xf4,
+	0xfc, 0x0f, 0x82, 0x76, 0xc9, 0xe6, 0x1f, 0xa5, 0x89, 0xc8, 0xe3, 0x2f, 0x4a, 0x0b, 0xf4, 0x7c,
+	0x38, 0xa3, 0x5d, 0xb2, 0x39, 0xcc, 0x9b, 0x88, 0x3c, 0x9a, 0xdd, 0xe8, 0x35, 0xd4, 0xb2, 0xd9,
+	0x8d, 0x2c, 0xb2, 0x31, 0xc6, 0x9b, 0x06, 0x59, 0xcd, 0xe0, 0x37, 0x0a, 0x3a, 0x01, 0xa3, 0xc0,
+	0x34, 0xda, 0x23, 0x8f, 0x9b, 0xa9, 0xf9, 0x94, 0x6c, 0x4b, 0xc6, 0x4b, 0x28, 0xb3, 0x4e, 0x44,
+	0x26, 0x29, 0x34, 0x79, 0xb3, 0x4e, 0x8a, 0xed, 0x79, 0x5a, 0xbe, 0x55, 0xe7, 0xe3, 0x71, 0x85,
+	0xff, 0xf0, 0xde, 0xfe, 0x13, 0x00, 0x00, 0xff, 0xff, 0x7a, 0xab, 0x4e, 0x6b, 0xf1, 0x09, 0x00,
+	0x00,
 }

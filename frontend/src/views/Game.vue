@@ -49,7 +49,7 @@ import Notice from '@/components/Notice.vue'; // @ is an alias to /src
 import {Cell, Letter, PlacedWord, Orientation} from '@/data';
 import {Game as PBGame, Board as PBBoard, ListGamesRequest, JoinGameRequest,
         GameUpdate, YouUpdate, PlayerUpdate, TileUpdate,
-        StatusUpdate, StartGameRequest, Player, DumpRequest,
+        StatusUpdate, MoveUpdate, StartGameRequest, Player, DumpRequest,
         UpdateBoardRequest, BoardUpdate, Word} from '@/proto/banana_pb';
 
 @Component({
@@ -161,6 +161,10 @@ export default class Game extends Vue {
           console.log('received board');
           this.handleBoardUpdate(resp.getBoardUpdate()!);
           break;
+        case GameUpdate.UpdateCase.MOVE_UPDATE:
+          console.log('received move');
+          this.handleMoveUpdate(resp.getMoveUpdate()!);
+          break;
       }
     });
     stream.on('status', (status) => {
@@ -169,6 +173,7 @@ export default class Game extends Vue {
       console.log(status.metadata);
     });
     stream.on('end', () => {
+      console.log('closed');
       if (!this.gameOver) {
         // Wait a second, then try joining again.
         window.setTimeout(() => this.joinGame(), 1000);
@@ -248,6 +253,14 @@ export default class Game extends Vue {
       });
     }
     this.board.setWords(pws);
+  }
+
+  private handleMoveUpdate(up: MoveUpdate): void {
+    const t = new Date();
+    const message = `[${t.getHours()}:${t.getMinutes()}:${t.getSeconds()}] ${up.getPlayer()} played "${up.getWord()}"`;
+    this.logs.unshift(message);
+    this.gameOver = true;
+    return;
   }
 
   private getPlayerIDFromCookies(): string | undefined {
@@ -475,11 +488,14 @@ export default class Game extends Vue {
     this.letters.splice(idx, 1);
   }
 
-  private sendBoard(board: PBBoard): void {
+  private sendBoard(b: {board: PBBoard, latest: Word | null}): void {
     const req = new UpdateBoardRequest();
     req.setId(this.game!.getId());
     req.setPlayerId(this.playerID!);
-    req.setBoard(board);
+    req.setBoard(b.board);
+    if (b.latest) {
+      req.setLatestWord(b.latest);
+    }
     this.$client.updateBoard(req, (err, resp) => {
       if (!resp) {
         console.log(err);

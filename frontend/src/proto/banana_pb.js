@@ -1,8 +1,6 @@
 /**
  * @fileoverview
  * @enhanceable
- * @suppress {messageConventions} JS Compiler reports an error if a variable or
- *     field starts with 'MSG_' and isn't a translatable message.
  * @public
  */
 // GENERATED CODE -- DO NOT EDIT!
@@ -23,6 +21,7 @@ goog.exportSymbol('proto.GameUpdate', null, global);
 goog.exportSymbol('proto.JoinGameRequest', null, global);
 goog.exportSymbol('proto.ListGamesRequest', null, global);
 goog.exportSymbol('proto.ListGamesResponse', null, global);
+goog.exportSymbol('proto.MoveUpdate', null, global);
 goog.exportSymbol('proto.NewGameRequest', null, global);
 goog.exportSymbol('proto.NewGameResponse', null, global);
 goog.exportSymbol('proto.Player', null, global);
@@ -82,7 +81,6 @@ proto.NewGameRequest.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.NewGameRequest} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.NewGameRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -137,26 +135,35 @@ proto.NewGameRequest.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.NewGameRequest} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.NewGameRequest.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.NewGameRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.NewGameRequest.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.NewGameRequest} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.NewGameRequest.serializeBinaryToWriter = function(message, writer) {
+proto.NewGameRequest.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getName();
+  f = this.getName();
   if (f.length > 0) {
     writer.writeString(
       1,
@@ -177,7 +184,7 @@ proto.NewGameRequest.prototype.getName = function() {
 
 /** @param {string} value */
 proto.NewGameRequest.prototype.setName = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  jspb.Message.setField(this, 1, value);
 };
 
 
@@ -224,7 +231,6 @@ proto.NewGameResponse.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.NewGameResponse} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.NewGameResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -279,26 +285,35 @@ proto.NewGameResponse.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.NewGameResponse} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.NewGameResponse.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.NewGameResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.NewGameResponse.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.NewGameResponse} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.NewGameResponse.serializeBinaryToWriter = function(message, writer) {
+proto.NewGameResponse.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getId();
+  f = this.getId();
   if (f.length > 0) {
     writer.writeString(
       1,
@@ -319,7 +334,7 @@ proto.NewGameResponse.prototype.getId = function() {
 
 /** @param {string} value */
 proto.NewGameResponse.prototype.setId = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  jspb.Message.setField(this, 1, value);
 };
 
 
@@ -366,7 +381,6 @@ proto.ListGamesRequest.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.ListGamesRequest} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.ListGamesRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -417,24 +431,33 @@ proto.ListGamesRequest.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.ListGamesRequest} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.ListGamesRequest.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.ListGamesRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.ListGamesRequest.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.ListGamesRequest} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.ListGamesRequest.serializeBinaryToWriter = function(message, writer) {
+proto.ListGamesRequest.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
 };
 
@@ -489,7 +512,6 @@ proto.ListGamesResponse.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.ListGamesResponse} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.ListGamesResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -546,26 +568,35 @@ proto.ListGamesResponse.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.ListGamesResponse} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.ListGamesResponse.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.ListGamesResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.ListGamesResponse.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.ListGamesResponse} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.ListGamesResponse.serializeBinaryToWriter = function(message, writer) {
+proto.ListGamesResponse.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getGamesList();
+  f = this.getGamesList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
       1,
@@ -578,6 +609,8 @@ proto.ListGamesResponse.serializeBinaryToWriter = function(message, writer) {
 
 /**
  * repeated Game games = 1;
+ * If you change this array by adding, removing or replacing elements, or if you
+ * replace the array itself, then you must call the setter to update it.
  * @return {!Array.<!proto.Game>}
  */
 proto.ListGamesResponse.prototype.getGamesList = function() {
@@ -650,7 +683,6 @@ proto.Game.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.Game} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.Game.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -720,47 +752,56 @@ proto.Game.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.Game} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.Game.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.Game.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.Game.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.Game} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.Game.serializeBinaryToWriter = function(message, writer) {
+proto.Game.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getId();
+  f = this.getId();
   if (f.length > 0) {
     writer.writeString(
       1,
       f
     );
   }
-  f = message.getName();
+  f = this.getName();
   if (f.length > 0) {
     writer.writeString(
       2,
       f
     );
   }
-  f = message.getStatus();
+  f = this.getStatus();
   if (f !== 0.0) {
     writer.writeEnum(
       3,
       f
     );
   }
-  f = message.getPlayerCount();
+  f = this.getPlayerCount();
   if (f !== 0) {
     writer.writeInt32(
       4,
@@ -769,16 +810,6 @@ proto.Game.serializeBinaryToWriter = function(message, writer) {
   }
 };
 
-
-/**
- * @enum {number}
- */
-proto.Game.Status = {
-  UNKNOWN: 0,
-  WAITING_FOR_PLAYERS: 1,
-  IN_PROGRESS: 2,
-  FINISHED: 3
-};
 
 /**
  * optional string id = 1;
@@ -791,7 +822,7 @@ proto.Game.prototype.getId = function() {
 
 /** @param {string} value */
 proto.Game.prototype.setId = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  jspb.Message.setField(this, 1, value);
 };
 
 
@@ -806,7 +837,7 @@ proto.Game.prototype.getName = function() {
 
 /** @param {string} value */
 proto.Game.prototype.setName = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  jspb.Message.setField(this, 2, value);
 };
 
 
@@ -821,7 +852,7 @@ proto.Game.prototype.getStatus = function() {
 
 /** @param {!proto.Game.Status} value */
 proto.Game.prototype.setStatus = function(value) {
-  jspb.Message.setProto3EnumField(this, 3, value);
+  jspb.Message.setField(this, 3, value);
 };
 
 
@@ -836,9 +867,19 @@ proto.Game.prototype.getPlayerCount = function() {
 
 /** @param {number} value */
 proto.Game.prototype.setPlayerCount = function(value) {
-  jspb.Message.setProto3IntField(this, 4, value);
+  jspb.Message.setField(this, 4, value);
 };
 
+
+/**
+ * @enum {number}
+ */
+proto.Game.Status = {
+  UNKNOWN: 0,
+  WAITING_FOR_PLAYERS: 1,
+  IN_PROGRESS: 2,
+  FINISHED: 3
+};
 
 
 /**
@@ -883,7 +924,6 @@ proto.StartGameRequest.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.StartGameRequest} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.StartGameRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -938,26 +978,35 @@ proto.StartGameRequest.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.StartGameRequest} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.StartGameRequest.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.StartGameRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.StartGameRequest.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.StartGameRequest} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.StartGameRequest.serializeBinaryToWriter = function(message, writer) {
+proto.StartGameRequest.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getId();
+  f = this.getId();
   if (f.length > 0) {
     writer.writeString(
       1,
@@ -978,7 +1027,7 @@ proto.StartGameRequest.prototype.getId = function() {
 
 /** @param {string} value */
 proto.StartGameRequest.prototype.setId = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  jspb.Message.setField(this, 1, value);
 };
 
 
@@ -1025,7 +1074,6 @@ proto.StartGameResponse.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.StartGameResponse} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.StartGameResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -1076,24 +1124,33 @@ proto.StartGameResponse.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.StartGameResponse} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.StartGameResponse.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.StartGameResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.StartGameResponse.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.StartGameResponse} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.StartGameResponse.serializeBinaryToWriter = function(message, writer) {
+proto.StartGameResponse.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
 };
 
@@ -1141,7 +1198,6 @@ proto.JoinGameRequest.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.JoinGameRequest} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.JoinGameRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -1206,40 +1262,49 @@ proto.JoinGameRequest.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.JoinGameRequest} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.JoinGameRequest.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.JoinGameRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.JoinGameRequest.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.JoinGameRequest} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.JoinGameRequest.serializeBinaryToWriter = function(message, writer) {
+proto.JoinGameRequest.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getId();
+  f = this.getId();
   if (f.length > 0) {
     writer.writeString(
       1,
       f
     );
   }
-  f = message.getName();
+  f = this.getName();
   if (f.length > 0) {
     writer.writeString(
       2,
       f
     );
   }
-  f = message.getPlayerId();
+  f = this.getPlayerId();
   if (f.length > 0) {
     writer.writeString(
       3,
@@ -1260,7 +1325,7 @@ proto.JoinGameRequest.prototype.getId = function() {
 
 /** @param {string} value */
 proto.JoinGameRequest.prototype.setId = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  jspb.Message.setField(this, 1, value);
 };
 
 
@@ -1275,7 +1340,7 @@ proto.JoinGameRequest.prototype.getName = function() {
 
 /** @param {string} value */
 proto.JoinGameRequest.prototype.setName = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  jspb.Message.setField(this, 2, value);
 };
 
 
@@ -1290,7 +1355,7 @@ proto.JoinGameRequest.prototype.getPlayerId = function() {
 
 /** @param {string} value */
 proto.JoinGameRequest.prototype.setPlayerId = function(value) {
-  jspb.Message.setProto3StringField(this, 3, value);
+  jspb.Message.setField(this, 3, value);
 };
 
 
@@ -1320,7 +1385,7 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<!Array<number>>}
  * @const
  */
-proto.GameUpdate.oneofGroups_ = [[1,2,3,4,5]];
+proto.GameUpdate.oneofGroups_ = [[1,2,3,4,5,6]];
 
 /**
  * @enum {number}
@@ -1331,7 +1396,8 @@ proto.GameUpdate.UpdateCase = {
   PLAYER_UPDATE: 2,
   STATUS_UPDATE: 3,
   TILE_UPDATE: 4,
-  BOARD_UPDATE: 5
+  BOARD_UPDATE: 5,
+  MOVE_UPDATE: 6
 };
 
 /**
@@ -1366,7 +1432,6 @@ proto.GameUpdate.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.GameUpdate} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.GameUpdate.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -1374,7 +1439,8 @@ proto.GameUpdate.toObject = function(includeInstance, msg) {
     playerUpdate: (f = msg.getPlayerUpdate()) && proto.PlayerUpdate.toObject(includeInstance, f),
     statusUpdate: (f = msg.getStatusUpdate()) && proto.StatusUpdate.toObject(includeInstance, f),
     tileUpdate: (f = msg.getTileUpdate()) && proto.TileUpdate.toObject(includeInstance, f),
-    boardUpdate: (f = msg.getBoardUpdate()) && proto.BoardUpdate.toObject(includeInstance, f)
+    boardUpdate: (f = msg.getBoardUpdate()) && proto.BoardUpdate.toObject(includeInstance, f),
+    moveUpdate: (f = msg.getMoveUpdate()) && proto.MoveUpdate.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -1436,6 +1502,11 @@ proto.GameUpdate.deserializeBinaryFromReader = function(msg, reader) {
       reader.readMessage(value,proto.BoardUpdate.deserializeBinaryFromReader);
       msg.setBoardUpdate(value);
       break;
+    case 6:
+      var value = new proto.MoveUpdate;
+      reader.readMessage(value,proto.MoveUpdate.deserializeBinaryFromReader);
+      msg.setMoveUpdate(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1446,26 +1517,35 @@ proto.GameUpdate.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.GameUpdate} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.GameUpdate.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.GameUpdate.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.GameUpdate.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.GameUpdate} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.GameUpdate.serializeBinaryToWriter = function(message, writer) {
+proto.GameUpdate.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getYouUpdate();
+  f = this.getYouUpdate();
   if (f != null) {
     writer.writeMessage(
       1,
@@ -1473,7 +1553,7 @@ proto.GameUpdate.serializeBinaryToWriter = function(message, writer) {
       proto.YouUpdate.serializeBinaryToWriter
     );
   }
-  f = message.getPlayerUpdate();
+  f = this.getPlayerUpdate();
   if (f != null) {
     writer.writeMessage(
       2,
@@ -1481,7 +1561,7 @@ proto.GameUpdate.serializeBinaryToWriter = function(message, writer) {
       proto.PlayerUpdate.serializeBinaryToWriter
     );
   }
-  f = message.getStatusUpdate();
+  f = this.getStatusUpdate();
   if (f != null) {
     writer.writeMessage(
       3,
@@ -1489,7 +1569,7 @@ proto.GameUpdate.serializeBinaryToWriter = function(message, writer) {
       proto.StatusUpdate.serializeBinaryToWriter
     );
   }
-  f = message.getTileUpdate();
+  f = this.getTileUpdate();
   if (f != null) {
     writer.writeMessage(
       4,
@@ -1497,12 +1577,20 @@ proto.GameUpdate.serializeBinaryToWriter = function(message, writer) {
       proto.TileUpdate.serializeBinaryToWriter
     );
   }
-  f = message.getBoardUpdate();
+  f = this.getBoardUpdate();
   if (f != null) {
     writer.writeMessage(
       5,
       f,
       proto.BoardUpdate.serializeBinaryToWriter
+    );
+  }
+  f = this.getMoveUpdate();
+  if (f != null) {
+    writer.writeMessage(
+      6,
+      f,
+      proto.MoveUpdate.serializeBinaryToWriter
     );
   }
 };
@@ -1658,6 +1746,36 @@ proto.GameUpdate.prototype.hasBoardUpdate = function() {
 };
 
 
+/**
+ * optional MoveUpdate move_update = 6;
+ * @return {?proto.MoveUpdate}
+ */
+proto.GameUpdate.prototype.getMoveUpdate = function() {
+  return /** @type{?proto.MoveUpdate} */ (
+    jspb.Message.getWrapperField(this, proto.MoveUpdate, 6));
+};
+
+
+/** @param {?proto.MoveUpdate|undefined} value */
+proto.GameUpdate.prototype.setMoveUpdate = function(value) {
+  jspb.Message.setOneofWrapperField(this, 6, proto.GameUpdate.oneofGroups_[0], value);
+};
+
+
+proto.GameUpdate.prototype.clearMoveUpdate = function() {
+  this.setMoveUpdate(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.GameUpdate.prototype.hasMoveUpdate = function() {
+  return jspb.Message.getField(this, 6) != null;
+};
+
+
 
 /**
  * Generated by JsPbCodeGenerator.
@@ -1701,7 +1819,6 @@ proto.YouUpdate.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.YouUpdate} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.YouUpdate.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -1756,26 +1873,35 @@ proto.YouUpdate.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.YouUpdate} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.YouUpdate.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.YouUpdate.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.YouUpdate.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.YouUpdate} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.YouUpdate.serializeBinaryToWriter = function(message, writer) {
+proto.YouUpdate.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getYourId();
+  f = this.getYourId();
   if (f.length > 0) {
     writer.writeString(
       1,
@@ -1796,7 +1922,7 @@ proto.YouUpdate.prototype.getYourId = function() {
 
 /** @param {string} value */
 proto.YouUpdate.prototype.setYourId = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  jspb.Message.setField(this, 1, value);
 };
 
 
@@ -1850,7 +1976,6 @@ proto.PlayerUpdate.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.PlayerUpdate} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.PlayerUpdate.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -1912,26 +2037,35 @@ proto.PlayerUpdate.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.PlayerUpdate} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.PlayerUpdate.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.PlayerUpdate.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.PlayerUpdate.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.PlayerUpdate} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.PlayerUpdate.serializeBinaryToWriter = function(message, writer) {
+proto.PlayerUpdate.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getPlayersList();
+  f = this.getPlayersList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
       1,
@@ -1939,7 +2073,7 @@ proto.PlayerUpdate.serializeBinaryToWriter = function(message, writer) {
       proto.Player.serializeBinaryToWriter
     );
   }
-  f = message.getRemainingTiles();
+  f = this.getRemainingTiles();
   if (f !== 0) {
     writer.writeInt32(
       2,
@@ -1951,6 +2085,8 @@ proto.PlayerUpdate.serializeBinaryToWriter = function(message, writer) {
 
 /**
  * repeated Player players = 1;
+ * If you change this array by adding, removing or replacing elements, or if you
+ * replace the array itself, then you must call the setter to update it.
  * @return {!Array.<!proto.Player>}
  */
 proto.PlayerUpdate.prototype.getPlayersList = function() {
@@ -1991,7 +2127,7 @@ proto.PlayerUpdate.prototype.getRemainingTiles = function() {
 
 /** @param {number} value */
 proto.PlayerUpdate.prototype.setRemainingTiles = function(value) {
-  jspb.Message.setProto3IntField(this, 2, value);
+  jspb.Message.setField(this, 2, value);
 };
 
 
@@ -2038,7 +2174,6 @@ proto.Player.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.Player} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.Player.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -2103,40 +2238,49 @@ proto.Player.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.Player} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.Player.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.Player.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.Player.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.Player} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.Player.serializeBinaryToWriter = function(message, writer) {
+proto.Player.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getName();
+  f = this.getName();
   if (f.length > 0) {
     writer.writeString(
       1,
       f
     );
   }
-  f = message.getTilesInHand();
+  f = this.getTilesInHand();
   if (f !== 0) {
     writer.writeInt32(
       2,
       f
     );
   }
-  f = message.getTilesInBunch();
+  f = this.getTilesInBunch();
   if (f !== 0) {
     writer.writeInt32(
       3,
@@ -2157,7 +2301,7 @@ proto.Player.prototype.getName = function() {
 
 /** @param {string} value */
 proto.Player.prototype.setName = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  jspb.Message.setField(this, 1, value);
 };
 
 
@@ -2172,7 +2316,7 @@ proto.Player.prototype.getTilesInHand = function() {
 
 /** @param {number} value */
 proto.Player.prototype.setTilesInHand = function(value) {
-  jspb.Message.setProto3IntField(this, 2, value);
+  jspb.Message.setField(this, 2, value);
 };
 
 
@@ -2187,7 +2331,7 @@ proto.Player.prototype.getTilesInBunch = function() {
 
 /** @param {number} value */
 proto.Player.prototype.setTilesInBunch = function(value) {
-  jspb.Message.setProto3IntField(this, 3, value);
+  jspb.Message.setField(this, 3, value);
 };
 
 
@@ -2234,7 +2378,6 @@ proto.StatusUpdate.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.StatusUpdate} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.StatusUpdate.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -2289,26 +2432,35 @@ proto.StatusUpdate.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.StatusUpdate} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.StatusUpdate.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.StatusUpdate.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.StatusUpdate.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.StatusUpdate} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.StatusUpdate.serializeBinaryToWriter = function(message, writer) {
+proto.StatusUpdate.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getStatus();
+  f = this.getStatus();
   if (f !== 0.0) {
     writer.writeEnum(
       1,
@@ -2317,16 +2469,6 @@ proto.StatusUpdate.serializeBinaryToWriter = function(message, writer) {
   }
 };
 
-
-/**
- * @enum {number}
- */
-proto.StatusUpdate.Status = {
-  UNKNOWN: 0,
-  WAITING: 1,
-  GAME_STARTED: 2,
-  GAME_OVER: 3
-};
 
 /**
  * optional Status status = 1;
@@ -2339,9 +2481,19 @@ proto.StatusUpdate.prototype.getStatus = function() {
 
 /** @param {!proto.StatusUpdate.Status} value */
 proto.StatusUpdate.prototype.setStatus = function(value) {
-  jspb.Message.setProto3EnumField(this, 1, value);
+  jspb.Message.setField(this, 1, value);
 };
 
+
+/**
+ * @enum {number}
+ */
+proto.StatusUpdate.Status = {
+  UNKNOWN: 0,
+  WAITING: 1,
+  GAME_STARTED: 2,
+  GAME_OVER: 3
+};
 
 
 /**
@@ -2386,7 +2538,6 @@ proto.TileUpdate.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.TileUpdate} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.TileUpdate.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -2452,40 +2603,49 @@ proto.TileUpdate.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.TileUpdate} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.TileUpdate.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.TileUpdate.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.TileUpdate.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.TileUpdate} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.TileUpdate.serializeBinaryToWriter = function(message, writer) {
+proto.TileUpdate.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getEvent();
+  f = this.getEvent();
   if (f !== 0.0) {
     writer.writeEnum(
       1,
       f
     );
   }
-  f = message.getPlayer();
+  f = this.getPlayer();
   if (f.length > 0) {
     writer.writeString(
       2,
       f
     );
   }
-  f = message.getAllTiles();
+  f = this.getAllTiles();
   if (f != null) {
     writer.writeMessage(
       3,
@@ -2495,17 +2655,6 @@ proto.TileUpdate.serializeBinaryToWriter = function(message, writer) {
   }
 };
 
-
-/**
- * @enum {number}
- */
-proto.TileUpdate.Event = {
-  UNKNOWN: 0,
-  SPLIT: 1,
-  PEEL: 2,
-  DUMP: 3,
-  JOIN: 4
-};
 
 /**
  * optional Event event = 1;
@@ -2518,7 +2667,7 @@ proto.TileUpdate.prototype.getEvent = function() {
 
 /** @param {!proto.TileUpdate.Event} value */
 proto.TileUpdate.prototype.setEvent = function(value) {
-  jspb.Message.setProto3EnumField(this, 1, value);
+  jspb.Message.setField(this, 1, value);
 };
 
 
@@ -2533,7 +2682,7 @@ proto.TileUpdate.prototype.getPlayer = function() {
 
 /** @param {string} value */
 proto.TileUpdate.prototype.setPlayer = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  jspb.Message.setField(this, 2, value);
 };
 
 
@@ -2566,6 +2715,17 @@ proto.TileUpdate.prototype.hasAllTiles = function() {
   return jspb.Message.getField(this, 3) != null;
 };
 
+
+/**
+ * @enum {number}
+ */
+proto.TileUpdate.Event = {
+  UNKNOWN: 0,
+  SPLIT: 1,
+  PEEL: 2,
+  DUMP: 3,
+  JOIN: 4
+};
 
 
 /**
@@ -2610,7 +2770,6 @@ proto.BoardUpdate.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.BoardUpdate} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.BoardUpdate.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -2666,26 +2825,35 @@ proto.BoardUpdate.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.BoardUpdate} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.BoardUpdate.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.BoardUpdate.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.BoardUpdate.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.BoardUpdate} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.BoardUpdate.serializeBinaryToWriter = function(message, writer) {
+proto.BoardUpdate.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getBoard();
+  f = this.getBoard();
   if (f != null) {
     writer.writeMessage(
       1,
@@ -2723,6 +2891,183 @@ proto.BoardUpdate.prototype.clearBoard = function() {
  */
 proto.BoardUpdate.prototype.hasBoard = function() {
   return jspb.Message.getField(this, 1) != null;
+};
+
+
+
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.MoveUpdate = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.MoveUpdate, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  proto.MoveUpdate.displayName = 'proto.MoveUpdate';
+}
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto suitable for use in Soy templates.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     com.google.apps.jspb.JsClassTemplate.JS_RESERVED_WORDS.
+ * @param {boolean=} opt_includeInstance Whether to include the JSPB instance
+ *     for transitional soy proto support: http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.MoveUpdate.prototype.toObject = function(opt_includeInstance) {
+  return proto.MoveUpdate.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Whether to include the JSPB
+ *     instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.MoveUpdate} msg The msg instance to transform.
+ * @return {!Object}
+ */
+proto.MoveUpdate.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    player: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    word: jspb.Message.getFieldWithDefault(msg, 2, "")
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.MoveUpdate}
+ */
+proto.MoveUpdate.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.MoveUpdate;
+  return proto.MoveUpdate.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.MoveUpdate} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.MoveUpdate}
+ */
+proto.MoveUpdate.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPlayer(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setWord(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.MoveUpdate} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.MoveUpdate.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.MoveUpdate.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  this.serializeBinaryToWriter(writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.MoveUpdate.prototype.serializeBinaryToWriter = function (writer) {
+  var f = undefined;
+  f = this.getPlayer();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+  f = this.getWord();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional string player = 1;
+ * @return {string}
+ */
+proto.MoveUpdate.prototype.getPlayer = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/** @param {string} value */
+proto.MoveUpdate.prototype.setPlayer = function(value) {
+  jspb.Message.setField(this, 1, value);
+};
+
+
+/**
+ * optional string word = 2;
+ * @return {string}
+ */
+proto.MoveUpdate.prototype.getWord = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/** @param {string} value */
+proto.MoveUpdate.prototype.setWord = function(value) {
+  jspb.Message.setField(this, 2, value);
 };
 
 
@@ -2776,11 +3121,10 @@ proto.Tiles.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.Tiles} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.Tiles.toObject = function(includeInstance, msg) {
   var f, obj = {
-    lettersList: jspb.Message.getRepeatedField(msg, 1)
+    lettersList: jspb.Message.getField(msg, 1)
   };
 
   if (includeInstance) {
@@ -2831,26 +3175,35 @@ proto.Tiles.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.Tiles} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.Tiles.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.Tiles.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.Tiles.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.Tiles} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.Tiles.serializeBinaryToWriter = function(message, writer) {
+proto.Tiles.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getLettersList();
+  f = this.getLettersList();
   if (f.length > 0) {
     writer.writeRepeatedString(
       1,
@@ -2862,10 +3215,12 @@ proto.Tiles.serializeBinaryToWriter = function(message, writer) {
 
 /**
  * repeated string letters = 1;
+ * If you change this array by adding, removing or replacing elements, or if you
+ * replace the array itself, then you must call the setter to update it.
  * @return {!Array.<string>}
  */
 proto.Tiles.prototype.getLettersList = function() {
-  return /** @type {!Array.<string>} */ (jspb.Message.getRepeatedField(this, 1));
+  return /** @type {!Array.<string>} */ (jspb.Message.getField(this, 1));
 };
 
 
@@ -2932,7 +3287,6 @@ proto.DumpRequest.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.DumpRequest} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.DumpRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -2997,40 +3351,49 @@ proto.DumpRequest.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.DumpRequest} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.DumpRequest.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.DumpRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.DumpRequest.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.DumpRequest} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.DumpRequest.serializeBinaryToWriter = function(message, writer) {
+proto.DumpRequest.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getId();
+  f = this.getId();
   if (f.length > 0) {
     writer.writeString(
       1,
       f
     );
   }
-  f = message.getPlayerId();
+  f = this.getPlayerId();
   if (f.length > 0) {
     writer.writeString(
       2,
       f
     );
   }
-  f = message.getLetter();
+  f = this.getLetter();
   if (f.length > 0) {
     writer.writeString(
       3,
@@ -3051,7 +3414,7 @@ proto.DumpRequest.prototype.getId = function() {
 
 /** @param {string} value */
 proto.DumpRequest.prototype.setId = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  jspb.Message.setField(this, 1, value);
 };
 
 
@@ -3066,7 +3429,7 @@ proto.DumpRequest.prototype.getPlayerId = function() {
 
 /** @param {string} value */
 proto.DumpRequest.prototype.setPlayerId = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  jspb.Message.setField(this, 2, value);
 };
 
 
@@ -3081,7 +3444,7 @@ proto.DumpRequest.prototype.getLetter = function() {
 
 /** @param {string} value */
 proto.DumpRequest.prototype.setLetter = function(value) {
-  jspb.Message.setProto3StringField(this, 3, value);
+  jspb.Message.setField(this, 3, value);
 };
 
 
@@ -3128,7 +3491,6 @@ proto.DumpResponse.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.DumpResponse} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.DumpResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -3179,24 +3541,33 @@ proto.DumpResponse.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.DumpResponse} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.DumpResponse.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.DumpResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.DumpResponse.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.DumpResponse} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.DumpResponse.serializeBinaryToWriter = function(message, writer) {
+proto.DumpResponse.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
 };
 
@@ -3244,13 +3615,13 @@ proto.UpdateBoardRequest.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.UpdateBoardRequest} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.UpdateBoardRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     id: jspb.Message.getFieldWithDefault(msg, 1, ""),
     playerId: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    board: (f = msg.getBoard()) && proto.Board.toObject(includeInstance, f)
+    board: (f = msg.getBoard()) && proto.Board.toObject(includeInstance, f),
+    latestWord: (f = msg.getLatestWord()) && proto.Word.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3300,6 +3671,11 @@ proto.UpdateBoardRequest.deserializeBinaryFromReader = function(msg, reader) {
       reader.readMessage(value,proto.Board.deserializeBinaryFromReader);
       msg.setBoard(value);
       break;
+    case 4:
+      var value = new proto.Word;
+      reader.readMessage(value,proto.Word.deserializeBinaryFromReader);
+      msg.setLatestWord(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -3310,45 +3686,62 @@ proto.UpdateBoardRequest.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.UpdateBoardRequest} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.UpdateBoardRequest.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.UpdateBoardRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.UpdateBoardRequest.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.UpdateBoardRequest} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.UpdateBoardRequest.serializeBinaryToWriter = function(message, writer) {
+proto.UpdateBoardRequest.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getId();
+  f = this.getId();
   if (f.length > 0) {
     writer.writeString(
       1,
       f
     );
   }
-  f = message.getPlayerId();
+  f = this.getPlayerId();
   if (f.length > 0) {
     writer.writeString(
       2,
       f
     );
   }
-  f = message.getBoard();
+  f = this.getBoard();
   if (f != null) {
     writer.writeMessage(
       3,
       f,
       proto.Board.serializeBinaryToWriter
+    );
+  }
+  f = this.getLatestWord();
+  if (f != null) {
+    writer.writeMessage(
+      4,
+      f,
+      proto.Word.serializeBinaryToWriter
     );
   }
 };
@@ -3365,7 +3758,7 @@ proto.UpdateBoardRequest.prototype.getId = function() {
 
 /** @param {string} value */
 proto.UpdateBoardRequest.prototype.setId = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  jspb.Message.setField(this, 1, value);
 };
 
 
@@ -3380,7 +3773,7 @@ proto.UpdateBoardRequest.prototype.getPlayerId = function() {
 
 /** @param {string} value */
 proto.UpdateBoardRequest.prototype.setPlayerId = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  jspb.Message.setField(this, 2, value);
 };
 
 
@@ -3411,6 +3804,36 @@ proto.UpdateBoardRequest.prototype.clearBoard = function() {
  */
 proto.UpdateBoardRequest.prototype.hasBoard = function() {
   return jspb.Message.getField(this, 3) != null;
+};
+
+
+/**
+ * optional Word latest_word = 4;
+ * @return {?proto.Word}
+ */
+proto.UpdateBoardRequest.prototype.getLatestWord = function() {
+  return /** @type{?proto.Word} */ (
+    jspb.Message.getWrapperField(this, proto.Word, 4));
+};
+
+
+/** @param {?proto.Word|undefined} value */
+proto.UpdateBoardRequest.prototype.setLatestWord = function(value) {
+  jspb.Message.setWrapperField(this, 4, value);
+};
+
+
+proto.UpdateBoardRequest.prototype.clearLatestWord = function() {
+  this.setLatestWord(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.UpdateBoardRequest.prototype.hasLatestWord = function() {
+  return jspb.Message.getField(this, 4) != null;
 };
 
 
@@ -3464,7 +3887,6 @@ proto.Board.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.Board} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.Board.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -3521,26 +3943,35 @@ proto.Board.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.Board} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.Board.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.Board.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.Board.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.Board} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.Board.serializeBinaryToWriter = function(message, writer) {
+proto.Board.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getWordsList();
+  f = this.getWordsList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
       1,
@@ -3553,6 +3984,8 @@ proto.Board.serializeBinaryToWriter = function(message, writer) {
 
 /**
  * repeated Word words = 1;
+ * If you change this array by adding, removing or replacing elements, or if you
+ * replace the array itself, then you must call the setter to update it.
  * @return {!Array.<!proto.Word>}
  */
 proto.Board.prototype.getWordsList = function() {
@@ -3625,7 +4058,6 @@ proto.Word.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.Word} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.Word.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -3695,47 +4127,56 @@ proto.Word.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.Word} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.Word.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.Word.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.Word.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.Word} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.Word.serializeBinaryToWriter = function(message, writer) {
+proto.Word.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getText();
+  f = this.getText();
   if (f.length > 0) {
     writer.writeString(
       1,
       f
     );
   }
-  f = message.getOrientation();
+  f = this.getOrientation();
   if (f !== 0.0) {
     writer.writeEnum(
       2,
       f
     );
   }
-  f = message.getX();
+  f = this.getX();
   if (f !== 0) {
     writer.writeInt32(
       3,
       f
     );
   }
-  f = message.getY();
+  f = this.getY();
   if (f !== 0) {
     writer.writeInt32(
       4,
@@ -3744,15 +4185,6 @@ proto.Word.serializeBinaryToWriter = function(message, writer) {
   }
 };
 
-
-/**
- * @enum {number}
- */
-proto.Word.Orientation = {
-  UNKNOWN: 0,
-  HORIZONTAL: 1,
-  VERTICAL: 2
-};
 
 /**
  * optional string text = 1;
@@ -3765,7 +4197,7 @@ proto.Word.prototype.getText = function() {
 
 /** @param {string} value */
 proto.Word.prototype.setText = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  jspb.Message.setField(this, 1, value);
 };
 
 
@@ -3780,7 +4212,7 @@ proto.Word.prototype.getOrientation = function() {
 
 /** @param {!proto.Word.Orientation} value */
 proto.Word.prototype.setOrientation = function(value) {
-  jspb.Message.setProto3EnumField(this, 2, value);
+  jspb.Message.setField(this, 2, value);
 };
 
 
@@ -3795,7 +4227,7 @@ proto.Word.prototype.getX = function() {
 
 /** @param {number} value */
 proto.Word.prototype.setX = function(value) {
-  jspb.Message.setProto3IntField(this, 3, value);
+  jspb.Message.setField(this, 3, value);
 };
 
 
@@ -3810,9 +4242,18 @@ proto.Word.prototype.getY = function() {
 
 /** @param {number} value */
 proto.Word.prototype.setY = function(value) {
-  jspb.Message.setProto3IntField(this, 4, value);
+  jspb.Message.setField(this, 4, value);
 };
 
+
+/**
+ * @enum {number}
+ */
+proto.Word.Orientation = {
+  UNKNOWN: 0,
+  HORIZONTAL: 1,
+  VERTICAL: 2
+};
 
 
 /**
@@ -3864,7 +4305,6 @@ proto.CharLocs.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.CharLocs} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.CharLocs.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -3926,33 +4366,42 @@ proto.CharLocs.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.CharLocs} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.CharLocs.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.CharLocs.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.CharLocs.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.CharLocs} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.CharLocs.serializeBinaryToWriter = function(message, writer) {
+proto.CharLocs.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getText();
+  f = this.getText();
   if (f.length > 0) {
     writer.writeString(
       1,
       f
     );
   }
-  f = message.getLocsList();
+  f = this.getLocsList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
       2,
@@ -3974,12 +4423,14 @@ proto.CharLocs.prototype.getText = function() {
 
 /** @param {string} value */
 proto.CharLocs.prototype.setText = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  jspb.Message.setField(this, 1, value);
 };
 
 
 /**
  * repeated CharLoc locs = 2;
+ * If you change this array by adding, removing or replacing elements, or if you
+ * replace the array itself, then you must call the setter to update it.
  * @return {!Array.<!proto.CharLoc>}
  */
 proto.CharLocs.prototype.getLocsList = function() {
@@ -4052,7 +4503,6 @@ proto.CharLoc.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.CharLoc} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.CharLoc.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -4117,40 +4567,49 @@ proto.CharLoc.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.CharLoc} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.CharLoc.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.CharLoc.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.CharLoc.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.CharLoc} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.CharLoc.serializeBinaryToWriter = function(message, writer) {
+proto.CharLoc.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getLetter();
+  f = this.getLetter();
   if (f.length > 0) {
     writer.writeString(
       1,
       f
     );
   }
-  f = message.getX();
+  f = this.getX();
   if (f !== 0) {
     writer.writeInt32(
       2,
       f
     );
   }
-  f = message.getY();
+  f = this.getY();
   if (f !== 0) {
     writer.writeInt32(
       3,
@@ -4171,7 +4630,7 @@ proto.CharLoc.prototype.getLetter = function() {
 
 /** @param {string} value */
 proto.CharLoc.prototype.setLetter = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  jspb.Message.setField(this, 1, value);
 };
 
 
@@ -4186,7 +4645,7 @@ proto.CharLoc.prototype.getX = function() {
 
 /** @param {number} value */
 proto.CharLoc.prototype.setX = function(value) {
-  jspb.Message.setProto3IntField(this, 2, value);
+  jspb.Message.setField(this, 2, value);
 };
 
 
@@ -4201,7 +4660,7 @@ proto.CharLoc.prototype.getY = function() {
 
 /** @param {number} value */
 proto.CharLoc.prototype.setY = function(value) {
-  jspb.Message.setProto3IntField(this, 3, value);
+  jspb.Message.setField(this, 3, value);
 };
 
 
@@ -4255,13 +4714,12 @@ proto.UpdateBoardResponse.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.UpdateBoardResponse} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.UpdateBoardResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     invalidWordsList: jspb.Message.toObjectList(msg.getInvalidWordsList(),
     proto.CharLocs.toObject, includeInstance),
-    unusedLettersList: jspb.Message.getRepeatedField(msg, 2),
+    unusedLettersList: jspb.Message.getField(msg, 2),
     detachedBoard: jspb.Message.getFieldWithDefault(msg, 3, false)
   };
 
@@ -4322,26 +4780,35 @@ proto.UpdateBoardResponse.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.UpdateBoardResponse} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.UpdateBoardResponse.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.UpdateBoardResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.UpdateBoardResponse.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.UpdateBoardResponse} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.UpdateBoardResponse.serializeBinaryToWriter = function(message, writer) {
+proto.UpdateBoardResponse.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getInvalidWordsList();
+  f = this.getInvalidWordsList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
       1,
@@ -4349,14 +4816,14 @@ proto.UpdateBoardResponse.serializeBinaryToWriter = function(message, writer) {
       proto.CharLocs.serializeBinaryToWriter
     );
   }
-  f = message.getUnusedLettersList();
+  f = this.getUnusedLettersList();
   if (f.length > 0) {
     writer.writeRepeatedString(
       2,
       f
     );
   }
-  f = message.getDetachedBoard();
+  f = this.getDetachedBoard();
   if (f) {
     writer.writeBool(
       3,
@@ -4368,6 +4835,8 @@ proto.UpdateBoardResponse.serializeBinaryToWriter = function(message, writer) {
 
 /**
  * repeated CharLocs invalid_words = 1;
+ * If you change this array by adding, removing or replacing elements, or if you
+ * replace the array itself, then you must call the setter to update it.
  * @return {!Array.<!proto.CharLocs>}
  */
 proto.UpdateBoardResponse.prototype.getInvalidWordsList = function() {
@@ -4399,10 +4868,12 @@ proto.UpdateBoardResponse.prototype.clearInvalidWordsList = function() {
 
 /**
  * repeated string unused_letters = 2;
+ * If you change this array by adding, removing or replacing elements, or if you
+ * replace the array itself, then you must call the setter to update it.
  * @return {!Array.<string>}
  */
 proto.UpdateBoardResponse.prototype.getUnusedLettersList = function() {
-  return /** @type {!Array.<string>} */ (jspb.Message.getRepeatedField(this, 2));
+  return /** @type {!Array.<string>} */ (jspb.Message.getField(this, 2));
 };
 
 
@@ -4439,7 +4910,7 @@ proto.UpdateBoardResponse.prototype.getDetachedBoard = function() {
 
 /** @param {boolean} value */
 proto.UpdateBoardResponse.prototype.setDetachedBoard = function(value) {
-  jspb.Message.setProto3BooleanField(this, 3, value);
+  jspb.Message.setField(this, 3, value);
 };
 
 

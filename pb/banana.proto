@@ -71,6 +71,8 @@ message GameUpdate {
     // Board updates happen when a player refreshes and joins a game thats
     // already underway.
     BoardUpdate board_update = 5;
+    // Move updates happen when someone places a word down.
+    MoveUpdate move_update = 6;
   }
 }
 
@@ -120,6 +122,13 @@ message BoardUpdate {
   Board board = 1;
 }
 
+message MoveUpdate {
+  // The name of the player who made the move.
+  string player = 1;
+  // The word the player played.
+  string word = 2;
+}
+
 message Tiles {
   // Tiles are just lists of letters
   repeated string letters = 1;
@@ -142,6 +151,8 @@ message UpdateBoardRequest {
   // The unique identifier for the player peeling.
   string player_id = 2;
   Board board = 3;
+  // An optional word to include, to be shared with other players.
+  Word latest_word = 4;
 }
 
 message Board {

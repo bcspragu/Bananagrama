@@ -249,6 +249,17 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 	return nil
 }
 
+func (s *Server) sendMove(id banana.GameID, name, word string) {
+	s.updateForGame(id, &pb.GameUpdate{
+		Update: &pb.GameUpdate_MoveUpdate{
+			MoveUpdate: &pb.MoveUpdate{
+				Player: name,
+				Word:   word,
+			},
+		},
+	})
+}
+
 func (s *Server) sendPlayers(id banana.GameID) error {
 	g, err := s.db.Game(id)
 	if err != nil {
@@ -370,6 +381,10 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 	if err := s.sendPlayers(gid); err != nil {
 		log.Printf("failed to update players: %v", err)
 		return nil, fmt.Errorf("failed to update players: %v", err)
+	}
+
+	if req.LatestWord != nil {
+		s.sendMove(gid, p.Name, req.LatestWord.Text)
 	}
 
 	// Convert the status to the wire format.

@@ -158,7 +158,7 @@ export default class Board extends Vue {
     }
 
     if (!word.suggestion) {
-      this.sendBoard();
+      this.sendBoard(word);
     }
   }
 
@@ -194,28 +194,37 @@ export default class Board extends Vue {
     }
   }
 
-  private sendBoard(): void {
+  private sendBoard(latest?: PlacedWord): void {
     const words: PBWord[] = [];
 
     for (const pw of this.placedWords) {
-      const word = new PBWord();
-      word.setX(pw.x);
-      word.setY(pw.y);
-      word.setText(pw.word);
-
-      if (pw.orientation === Orientation.Horizontal) {
-        word.setOrientation(PBWord.Orientation.HORIZONTAL);
-      } else if (pw.orientation === Orientation.Vertical) {
-        word.setOrientation(PBWord.Orientation.VERTICAL);
-      }
-
-      words.push(word);
+      words.push(this.toPBWord(pw));
     }
 
     const board = new PBBoard();
     board.setWordsList(words);
 
-    this.$emit('boardUpdated', board);
+    let lpb: PBWord | null = null;
+    if (latest) {
+      lpb = this.toPBWord(latest);
+    }
+
+    this.$emit('boardUpdated', {board, latest: lpb});
+  }
+
+  private toPBWord(pw: PlacedWord): PBWord {
+
+    const word = new PBWord();
+    word.setX(pw.x);
+    word.setY(pw.y);
+    word.setText(pw.word);
+
+    if (pw.orientation === Orientation.Horizontal) {
+      word.setOrientation(PBWord.Orientation.HORIZONTAL);
+    } else if (pw.orientation === Orientation.Vertical) {
+      word.setOrientation(PBWord.Orientation.VERTICAL);
+    }
+    return word;
   }
 
   get boardEmpty(): boolean {

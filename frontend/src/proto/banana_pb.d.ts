@@ -210,6 +210,11 @@ export class GameUpdate extends jspb.Message {
   getBoardUpdate(): BoardUpdate | undefined;
   setBoardUpdate(value?: BoardUpdate): void;
 
+  hasMoveUpdate(): boolean;
+  clearMoveUpdate(): void;
+  getMoveUpdate(): MoveUpdate | undefined;
+  setMoveUpdate(value?: MoveUpdate): void;
+
   getUpdateCase(): GameUpdate.UpdateCase;
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GameUpdate.AsObject;
@@ -228,6 +233,7 @@ export namespace GameUpdate {
     statusUpdate?: StatusUpdate.AsObject,
     tileUpdate?: TileUpdate.AsObject,
     boardUpdate?: BoardUpdate.AsObject,
+    moveUpdate?: MoveUpdate.AsObject,
   }
 
   export enum UpdateCase {
@@ -237,6 +243,7 @@ export namespace GameUpdate {
     STATUS_UPDATE = 3,
     TILE_UPDATE = 4,
     BOARD_UPDATE = 5,
+    MOVE_UPDATE = 6,
   }
 }
 
@@ -401,6 +408,30 @@ export namespace BoardUpdate {
   }
 }
 
+export class MoveUpdate extends jspb.Message {
+  getPlayer(): string;
+  setPlayer(value: string): void;
+
+  getWord(): string;
+  setWord(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): MoveUpdate.AsObject;
+  static toObject(includeInstance: boolean, msg: MoveUpdate): MoveUpdate.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: MoveUpdate, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): MoveUpdate;
+  static deserializeBinaryFromReader(message: MoveUpdate, reader: jspb.BinaryReader): MoveUpdate;
+}
+
+export namespace MoveUpdate {
+  export type AsObject = {
+    player: string,
+    word: string,
+  }
+}
+
 export class Tiles extends jspb.Message {
   clearLettersList(): void;
   getLettersList(): Array<string>;
@@ -479,6 +510,11 @@ export class UpdateBoardRequest extends jspb.Message {
   getBoard(): Board | undefined;
   setBoard(value?: Board): void;
 
+  hasLatestWord(): boolean;
+  clearLatestWord(): void;
+  getLatestWord(): Word | undefined;
+  setLatestWord(value?: Word): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): UpdateBoardRequest.AsObject;
   static toObject(includeInstance: boolean, msg: UpdateBoardRequest): UpdateBoardRequest.AsObject;
@@ -494,6 +530,7 @@ export namespace UpdateBoardRequest {
     id: string,
     playerId: string,
     board?: Board.AsObject,
+    latestWord?: Word.AsObject,
   }
 }
 
