@@ -133,11 +133,11 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 	var (
 		pChan chan *pb.GameUpdate
 		pid   banana.PlayerID
+		pName string
 	)
 
 	// Try to add a new player if they weren't already in the game.
 	if req.PlayerId == "" {
-
 		if g.Status != banana.WaitingForPlayers {
 			// Can't join an in-progess or finished game.
 			return fmt.Errorf("can't join game in state %q", g.Status)
@@ -147,8 +147,9 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 		if name == "" {
 			return errors.New("must specify a player name")
 		}
+		pName = name
 
-		if pid, err = s.db.AddPlayer(gid, req.Name); err != nil {
+		if pid, err = s.db.AddPlayer(gid, name); err != nil {
 			return err
 		}
 		s.Lock()
@@ -168,6 +169,7 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 				s.RLock()
 				pChan = s.updates[gid][p.ID]
 				pid = p.ID
+				pName = p.Name
 				s.RUnlock()
 				break
 			}
@@ -239,7 +241,9 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 
 		if err := stream.Send(update); err != nil {
 			log.Printf("stream send error: %v", err)
+			return nil
 		}
+		log.Printf("successfully sent to %q: %#v", pName, update)
 
 		if gameOver {
 			break

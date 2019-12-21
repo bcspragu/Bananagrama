@@ -9,24 +9,13 @@ docker run --rm \
   -v $DIR:/project/proto \
   banana protoc \
     --go_out="plugins=grpc:/project/proto" \
-    --plugin="protoc-gen-ts=/project/bin/protoc-gen-ts" \
     --proto_path="/project/proto" \
-    --ts_out="service=true:/project/proto" \
-    --js_out="import_style=commonjs,binary:/project/proto" \
+    --grpc-web_out="import_style=commonjs+dts,mode=grpcwebtext:/project/proto" \
+    --js_out="import_style=commonjs:/project/proto" \
     /project/proto/banana.proto
 
-# The output banana_pb_service.js file uses CommonJS exports.* style exports,
-# which don't play nice with our default Vue + Webpack configuration. I'm too
-# dumb to figure out how to convince Webpack to treat the proto/ directory as a
-# module and parse it correctly, but I do know how to use sed to blindly
-# replace strings in the generated file so that it works in our environment in
-# an extremely fragile way.
-sed -i '/^exports\./d' $DIR/banana_pb_service.js
-sed -i 's/^var BananaService/export var BananaService/g' $DIR/banana_pb_service.js
-sed -i 's/^function BananaServiceClient/export function BananaServiceClient/g' $DIR/banana_pb_service.js
-
+mv $DIR/banana_grpc_web_pb.d.ts $DIR/../frontend/src/proto/banana_pb_service.d.ts
+mv $DIR/banana_grpc_web_pb.js $DIR/../frontend/src/proto/banana_pb_service.js
 mv $DIR/banana_pb.d.ts \
-  $DIR/banana_pb_service.d.ts \
   $DIR/banana_pb.js \
-  $DIR/banana_pb_service.js \
   $DIR/../frontend/src/proto

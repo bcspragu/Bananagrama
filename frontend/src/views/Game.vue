@@ -41,7 +41,9 @@
 </template>
 
 <script lang="ts">
+import * as grpcWeb from 'grpc-web';
 import { Component, Vue } from 'vue-property-decorator';
+
 import Board from '@/components/Board.vue'; // @ is an alias to /src
 import UnusedLetters from '@/components/UnusedLetters.vue'; // @ is an alias to /src
 import ActiveWord from '@/components/ActiveWord.vue'; // @ is an alias to /src
@@ -82,7 +84,7 @@ export default class Game extends Vue {
   private requiredLetters: string[] = [];
 
   private mounted(): void {
-    this.$client.listGames(new ListGamesRequest(), (err, resp) => {
+    this.$client.listGames(new ListGamesRequest(), {}, (err, resp) => {
       if (!resp) {
         console.log(err);
         return;
@@ -113,7 +115,7 @@ export default class Game extends Vue {
     const req = new StartGameRequest();
     req.setId(this.game!.getId());
 
-    this.$client.startGame(req, (err, resp) => {
+    this.$client.startGame(req, {}, (err, resp) => {
       if (!resp) {
         console.log(err);
         return;
@@ -137,40 +139,38 @@ export default class Game extends Vue {
       req.setPlayerId(playerID);
     }
 
-    const stream = this.$client.joinGame(req);
+    const stream = this.$client.joinGame(req, {});
 
     stream.on('data', (resp) => {
       switch (resp.getUpdateCase()) {
         case GameUpdate.UpdateCase.YOU_UPDATE:
-          console.log('received id');
           this.handleYouUpdate(resp.getYouUpdate()!);
           break;
         case GameUpdate.UpdateCase.PLAYER_UPDATE:
-          console.log('received player list');
           this.handlePlayerUpdate(resp.getPlayerUpdate()!);
           break;
         case GameUpdate.UpdateCase.STATUS_UPDATE:
-          console.log('received status update');
           this.handleStatusUpdate(resp.getStatusUpdate()!);
           break;
         case GameUpdate.UpdateCase.TILE_UPDATE:
-          console.log('received tile list');
           this.handleTileUpdate(resp.getTileUpdate()!);
           break;
         case GameUpdate.UpdateCase.BOARD_UPDATE:
-          console.log('received board');
           this.handleBoardUpdate(resp.getBoardUpdate()!);
           break;
         case GameUpdate.UpdateCase.MOVE_UPDATE:
-          console.log('received move');
           this.handleMoveUpdate(resp.getMoveUpdate()!);
           break;
       }
     });
-    stream.on('status', (status) => {
+    stream.on('status', (status: grpcWeb.Status) => {
+      console.log('status');
       console.log(status.code);
       console.log(status.details);
       console.log(status.metadata);
+    });
+    stream.on('error', (err: grpcWeb.Error) => {
+      console.log('ERROR', err);
     });
     stream.on('end', () => {
       console.log('closed');
@@ -447,7 +447,7 @@ export default class Game extends Vue {
     req.setId(this.game!.getId());
     req.setPlayerId(this.playerID!);
     req.setLetter(letter);
-    this.$client.dump(req, (err, resp) => {
+    this.$client.dump(req, {}, (err, resp) => {
       if (err) {
         console.log(err);
       }
@@ -496,7 +496,7 @@ export default class Game extends Vue {
     if (b.latest) {
       req.setLatestWord(b.latest);
     }
-    this.$client.updateBoard(req, (err, resp) => {
+    this.$client.updateBoard(req, {}, (err, resp) => {
       if (!resp) {
         console.log(err);
         return;

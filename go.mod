@@ -1,10 +1,14 @@
 module github.com/bcspragu/Bananagrama
 
+go 1.13
+
 require (
-	github.com/golang/protobuf v1.2.0
-	github.com/gorilla/websocket v1.4.0 // indirect
-	github.com/improbable-eng/grpc-web v0.0.0-20181128220516-1c63d72d1d2f
-	github.com/rs/cors v1.6.0 // indirect
-	golang.org/x/net v0.0.0-20180826012351-8a410e7b638d
-	google.golang.org/grpc v1.17.0
+	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f // indirect
+	github.com/golang/protobuf v1.3.2
+	github.com/google/go-cmp v0.2.0
+	github.com/gorilla/websocket v1.4.1 // indirect
+	github.com/improbable-eng/grpc-web v0.12.0
+	github.com/rs/cors v1.7.0 // indirect
+	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
+	google.golang.org/grpc v1.26.0
 )

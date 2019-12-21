@@ -1,267 +1,544 @@
-// package: 
-// file: banana.proto
+/**
+ * @fileoverview gRPC-Web generated client stub for 
+ * @enhanceable
+ * @public
+ */
 
-var banana_pb = require("./banana_pb");
-var grpc = require("grpc-web-client").grpc;
+// GENERATED CODE -- DO NOT EDIT!
 
-export var BananaService = (function () {
-  function BananaService() {}
-  BananaService.serviceName = "BananaService";
-  return BananaService;
-}());
 
-BananaService.NewGame = {
-  methodName: "NewGame",
-  service: BananaService,
-  requestStream: false,
-  responseStream: false,
-  requestType: banana_pb.NewGameRequest,
-  responseType: banana_pb.NewGameResponse
-};
 
-BananaService.ListGames = {
-  methodName: "ListGames",
-  service: BananaService,
-  requestStream: false,
-  responseStream: false,
-  requestType: banana_pb.ListGamesRequest,
-  responseType: banana_pb.ListGamesResponse
-};
+const grpc = {};
+grpc.web = require('grpc-web');
 
-BananaService.StartGame = {
-  methodName: "StartGame",
-  service: BananaService,
-  requestStream: false,
-  responseStream: false,
-  requestType: banana_pb.StartGameRequest,
-  responseType: banana_pb.StartGameResponse
-};
+const proto = require('./banana_pb.js');
 
-BananaService.JoinGame = {
-  methodName: "JoinGame",
-  service: BananaService,
-  requestStream: false,
-  responseStream: true,
-  requestType: banana_pb.JoinGameRequest,
-  responseType: banana_pb.GameUpdate
-};
+/**
+ * @param {string} hostname
+ * @param {?Object} credentials
+ * @param {?Object} options
+ * @constructor
+ * @struct
+ * @final
+ */
+proto.BananaServiceClient =
+    function(hostname, credentials, options) {
+  if (!options) options = {};
+  options['format'] = 'text';
 
-BananaService.UpdateBoard = {
-  methodName: "UpdateBoard",
-  service: BananaService,
-  requestStream: false,
-  responseStream: false,
-  requestType: banana_pb.UpdateBoardRequest,
-  responseType: banana_pb.UpdateBoardResponse
-};
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
 
-BananaService.Dump = {
-  methodName: "Dump",
-  service: BananaService,
-  requestStream: false,
-  responseStream: false,
-  requestType: banana_pb.DumpRequest,
-  responseType: banana_pb.DumpResponse
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname;
+
 };
 
 
-export function BananaServiceClient(serviceHost, options) {
-  this.serviceHost = serviceHost;
-  this.options = options || {};
-}
+/**
+ * @param {string} hostname
+ * @param {?Object} credentials
+ * @param {?Object} options
+ * @constructor
+ * @struct
+ * @final
+ */
+proto.BananaServicePromiseClient =
+    function(hostname, credentials, options) {
+  if (!options) options = {};
+  options['format'] = 'text';
 
-BananaServiceClient.prototype.newGame = function newGame(requestMessage, metadata, callback) {
-  if (arguments.length === 2) {
-    callback = arguments[1];
-  }
-  var client = grpc.unary(BananaService.NewGame, {
-    request: requestMessage,
-    host: this.serviceHost,
-    metadata: metadata,
-    transport: this.options.transport,
-    debug: this.options.debug,
-    onEnd: function (response) {
-      if (callback) {
-        if (response.status !== grpc.Code.OK) {
-          var err = new Error(response.statusMessage);
-          err.code = response.status;
-          err.metadata = response.trailers;
-          callback(err, null);
-        } else {
-          callback(null, response.message);
-        }
-      }
-    }
-  });
-  return {
-    cancel: function () {
-      callback = null;
-      client.close();
-    }
-  };
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
+
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname;
+
 };
 
-BananaServiceClient.prototype.listGames = function listGames(requestMessage, metadata, callback) {
-  if (arguments.length === 2) {
-    callback = arguments[1];
-  }
-  var client = grpc.unary(BananaService.ListGames, {
-    request: requestMessage,
-    host: this.serviceHost,
-    metadata: metadata,
-    transport: this.options.transport,
-    debug: this.options.debug,
-    onEnd: function (response) {
-      if (callback) {
-        if (response.status !== grpc.Code.OK) {
-          var err = new Error(response.statusMessage);
-          err.code = response.status;
-          err.metadata = response.trailers;
-          callback(err, null);
-        } else {
-          callback(null, response.message);
-        }
-      }
-    }
-  });
-  return {
-    cancel: function () {
-      callback = null;
-      client.close();
-    }
-  };
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.NewGameRequest,
+ *   !proto.NewGameResponse>}
+ */
+const methodDescriptor_BananaService_NewGame = new grpc.web.MethodDescriptor(
+  '/BananaService/NewGame',
+  grpc.web.MethodType.UNARY,
+  proto.NewGameRequest,
+  proto.NewGameResponse,
+  /**
+   * @param {!proto.NewGameRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.NewGameResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.NewGameRequest,
+ *   !proto.NewGameResponse>}
+ */
+const methodInfo_BananaService_NewGame = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.NewGameResponse,
+  /**
+   * @param {!proto.NewGameRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.NewGameResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.NewGameRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.NewGameResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.NewGameResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.BananaServiceClient.prototype.newGame =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/BananaService/NewGame',
+      request,
+      metadata || {},
+      methodDescriptor_BananaService_NewGame,
+      callback);
 };
 
-BananaServiceClient.prototype.startGame = function startGame(requestMessage, metadata, callback) {
-  if (arguments.length === 2) {
-    callback = arguments[1];
-  }
-  var client = grpc.unary(BananaService.StartGame, {
-    request: requestMessage,
-    host: this.serviceHost,
-    metadata: metadata,
-    transport: this.options.transport,
-    debug: this.options.debug,
-    onEnd: function (response) {
-      if (callback) {
-        if (response.status !== grpc.Code.OK) {
-          var err = new Error(response.statusMessage);
-          err.code = response.status;
-          err.metadata = response.trailers;
-          callback(err, null);
-        } else {
-          callback(null, response.message);
-        }
-      }
-    }
-  });
-  return {
-    cancel: function () {
-      callback = null;
-      client.close();
-    }
-  };
+
+/**
+ * @param {!proto.NewGameRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.NewGameResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.BananaServicePromiseClient.prototype.newGame =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/BananaService/NewGame',
+      request,
+      metadata || {},
+      methodDescriptor_BananaService_NewGame);
 };
 
-BananaServiceClient.prototype.joinGame = function joinGame(requestMessage, metadata) {
-  var listeners = {
-    data: [],
-    end: [],
-    status: []
-  };
-  var client = grpc.invoke(BananaService.JoinGame, {
-    request: requestMessage,
-    host: this.serviceHost,
-    metadata: metadata,
-    transport: this.options.transport,
-    debug: this.options.debug,
-    onMessage: function (responseMessage) {
-      listeners.data.forEach(function (handler) {
-        handler(responseMessage);
-      });
-    },
-    onEnd: function (status, statusMessage, trailers) {
-      listeners.end.forEach(function (handler) {
-        handler();
-      });
-      listeners.status.forEach(function (handler) {
-        handler({ code: status, details: statusMessage, metadata: trailers });
-      });
-      listeners = null;
-    }
-  });
-  return {
-    on: function (type, handler) {
-      listeners[type].push(handler);
-      return this;
-    },
-    cancel: function () {
-      listeners = null;
-      client.close();
-    }
-  };
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.ListGamesRequest,
+ *   !proto.ListGamesResponse>}
+ */
+const methodDescriptor_BananaService_ListGames = new grpc.web.MethodDescriptor(
+  '/BananaService/ListGames',
+  grpc.web.MethodType.UNARY,
+  proto.ListGamesRequest,
+  proto.ListGamesResponse,
+  /**
+   * @param {!proto.ListGamesRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.ListGamesResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.ListGamesRequest,
+ *   !proto.ListGamesResponse>}
+ */
+const methodInfo_BananaService_ListGames = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.ListGamesResponse,
+  /**
+   * @param {!proto.ListGamesRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.ListGamesResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.ListGamesRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.ListGamesResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.ListGamesResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.BananaServiceClient.prototype.listGames =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/BananaService/ListGames',
+      request,
+      metadata || {},
+      methodDescriptor_BananaService_ListGames,
+      callback);
 };
 
-BananaServiceClient.prototype.updateBoard = function updateBoard(requestMessage, metadata, callback) {
-  if (arguments.length === 2) {
-    callback = arguments[1];
-  }
-  var client = grpc.unary(BananaService.UpdateBoard, {
-    request: requestMessage,
-    host: this.serviceHost,
-    metadata: metadata,
-    transport: this.options.transport,
-    debug: this.options.debug,
-    onEnd: function (response) {
-      if (callback) {
-        if (response.status !== grpc.Code.OK) {
-          var err = new Error(response.statusMessage);
-          err.code = response.status;
-          err.metadata = response.trailers;
-          callback(err, null);
-        } else {
-          callback(null, response.message);
-        }
-      }
-    }
-  });
-  return {
-    cancel: function () {
-      callback = null;
-      client.close();
-    }
-  };
+
+/**
+ * @param {!proto.ListGamesRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.ListGamesResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.BananaServicePromiseClient.prototype.listGames =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/BananaService/ListGames',
+      request,
+      metadata || {},
+      methodDescriptor_BananaService_ListGames);
 };
 
-BananaServiceClient.prototype.dump = function dump(requestMessage, metadata, callback) {
-  if (arguments.length === 2) {
-    callback = arguments[1];
-  }
-  var client = grpc.unary(BananaService.Dump, {
-    request: requestMessage,
-    host: this.serviceHost,
-    metadata: metadata,
-    transport: this.options.transport,
-    debug: this.options.debug,
-    onEnd: function (response) {
-      if (callback) {
-        if (response.status !== grpc.Code.OK) {
-          var err = new Error(response.statusMessage);
-          err.code = response.status;
-          err.metadata = response.trailers;
-          callback(err, null);
-        } else {
-          callback(null, response.message);
-        }
-      }
-    }
-  });
-  return {
-    cancel: function () {
-      callback = null;
-      client.close();
-    }
-  };
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.StartGameRequest,
+ *   !proto.StartGameResponse>}
+ */
+const methodDescriptor_BananaService_StartGame = new grpc.web.MethodDescriptor(
+  '/BananaService/StartGame',
+  grpc.web.MethodType.UNARY,
+  proto.StartGameRequest,
+  proto.StartGameResponse,
+  /**
+   * @param {!proto.StartGameRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.StartGameResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.StartGameRequest,
+ *   !proto.StartGameResponse>}
+ */
+const methodInfo_BananaService_StartGame = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.StartGameResponse,
+  /**
+   * @param {!proto.StartGameRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.StartGameResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.StartGameRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.StartGameResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.StartGameResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.BananaServiceClient.prototype.startGame =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/BananaService/StartGame',
+      request,
+      metadata || {},
+      methodDescriptor_BananaService_StartGame,
+      callback);
 };
 
+
+/**
+ * @param {!proto.StartGameRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.StartGameResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.BananaServicePromiseClient.prototype.startGame =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/BananaService/StartGame',
+      request,
+      metadata || {},
+      methodDescriptor_BananaService_StartGame);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.JoinGameRequest,
+ *   !proto.GameUpdate>}
+ */
+const methodDescriptor_BananaService_JoinGame = new grpc.web.MethodDescriptor(
+  '/BananaService/JoinGame',
+  grpc.web.MethodType.SERVER_STREAMING,
+  proto.JoinGameRequest,
+  proto.GameUpdate,
+  /**
+   * @param {!proto.JoinGameRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.GameUpdate.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.JoinGameRequest,
+ *   !proto.GameUpdate>}
+ */
+const methodInfo_BananaService_JoinGame = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.GameUpdate,
+  /**
+   * @param {!proto.JoinGameRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.GameUpdate.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.JoinGameRequest} request The request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.GameUpdate>}
+ *     The XHR Node Readable Stream
+ */
+proto.BananaServiceClient.prototype.joinGame =
+    function(request, metadata) {
+  return this.client_.serverStreaming(this.hostname_ +
+      '/BananaService/JoinGame',
+      request,
+      metadata || {},
+      methodDescriptor_BananaService_JoinGame);
+};
+
+
+/**
+ * @param {!proto.JoinGameRequest} request The request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.GameUpdate>}
+ *     The XHR Node Readable Stream
+ */
+proto.BananaServicePromiseClient.prototype.joinGame =
+    function(request, metadata) {
+  return this.client_.serverStreaming(this.hostname_ +
+      '/BananaService/JoinGame',
+      request,
+      metadata || {},
+      methodDescriptor_BananaService_JoinGame);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.UpdateBoardRequest,
+ *   !proto.UpdateBoardResponse>}
+ */
+const methodDescriptor_BananaService_UpdateBoard = new grpc.web.MethodDescriptor(
+  '/BananaService/UpdateBoard',
+  grpc.web.MethodType.UNARY,
+  proto.UpdateBoardRequest,
+  proto.UpdateBoardResponse,
+  /**
+   * @param {!proto.UpdateBoardRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.UpdateBoardResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.UpdateBoardRequest,
+ *   !proto.UpdateBoardResponse>}
+ */
+const methodInfo_BananaService_UpdateBoard = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.UpdateBoardResponse,
+  /**
+   * @param {!proto.UpdateBoardRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.UpdateBoardResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.UpdateBoardRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.UpdateBoardResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.UpdateBoardResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.BananaServiceClient.prototype.updateBoard =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/BananaService/UpdateBoard',
+      request,
+      metadata || {},
+      methodDescriptor_BananaService_UpdateBoard,
+      callback);
+};
+
+
+/**
+ * @param {!proto.UpdateBoardRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.UpdateBoardResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.BananaServicePromiseClient.prototype.updateBoard =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/BananaService/UpdateBoard',
+      request,
+      metadata || {},
+      methodDescriptor_BananaService_UpdateBoard);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.DumpRequest,
+ *   !proto.DumpResponse>}
+ */
+const methodDescriptor_BananaService_Dump = new grpc.web.MethodDescriptor(
+  '/BananaService/Dump',
+  grpc.web.MethodType.UNARY,
+  proto.DumpRequest,
+  proto.DumpResponse,
+  /**
+   * @param {!proto.DumpRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.DumpResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.DumpRequest,
+ *   !proto.DumpResponse>}
+ */
+const methodInfo_BananaService_Dump = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.DumpResponse,
+  /**
+   * @param {!proto.DumpRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.DumpResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.DumpRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.DumpResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.DumpResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.BananaServiceClient.prototype.dump =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/BananaService/Dump',
+      request,
+      metadata || {},
+      methodDescriptor_BananaService_Dump,
+      callback);
+};
+
+
+/**
+ * @param {!proto.DumpRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.DumpResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.BananaServicePromiseClient.prototype.dump =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/BananaService/Dump',
+      request,
+      metadata || {},
+      methodDescriptor_BananaService_Dump);
+};
+
+
+module.exports = proto;
 

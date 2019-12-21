@@ -118,7 +118,7 @@ export default class Home extends Vue {
   private createGame() {
     const req = new NewGameRequest();
     req.setName(this.gameName);
-    this.$client.newGame(req, (err, resp) => {
+    this.$client.newGame(req, {}, (err, resp) => {
       if (resp) {
         this.loadGames();
       }
@@ -126,7 +126,7 @@ export default class Home extends Vue {
   }
 
   private loadGames() {
-    this.$client.listGames(new ListGamesRequest(), (err, resp) => {
+    this.$client.listGames(new ListGamesRequest(), {}, (err, resp) => {
       if (!resp) {
         console.log(err);
         return;

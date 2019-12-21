@@ -1,7 +1,4 @@
-// package: 
-// file: banana.proto
-
-import * as jspb from "google-protobuf";
+import * as jspb from "google-protobuf"
 
 export class NewGameRequest extends jspb.Message {
   getName(): string;
@@ -10,8 +7,6 @@ export class NewGameRequest extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): NewGameRequest.AsObject;
   static toObject(includeInstance: boolean, msg: NewGameRequest): NewGameRequest.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: NewGameRequest, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): NewGameRequest;
   static deserializeBinaryFromReader(message: NewGameRequest, reader: jspb.BinaryReader): NewGameRequest;
@@ -30,8 +25,6 @@ export class NewGameResponse extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): NewGameResponse.AsObject;
   static toObject(includeInstance: boolean, msg: NewGameResponse): NewGameResponse.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: NewGameResponse, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): NewGameResponse;
   static deserializeBinaryFromReader(message: NewGameResponse, reader: jspb.BinaryReader): NewGameResponse;
@@ -47,8 +40,6 @@ export class ListGamesRequest extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ListGamesRequest.AsObject;
   static toObject(includeInstance: boolean, msg: ListGamesRequest): ListGamesRequest.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: ListGamesRequest, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): ListGamesRequest;
   static deserializeBinaryFromReader(message: ListGamesRequest, reader: jspb.BinaryReader): ListGamesRequest;
@@ -60,16 +51,14 @@ export namespace ListGamesRequest {
 }
 
 export class ListGamesResponse extends jspb.Message {
-  clearGamesList(): void;
   getGamesList(): Array<Game>;
   setGamesList(value: Array<Game>): void;
+  clearGamesList(): void;
   addGames(value?: Game, index?: number): Game;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ListGamesResponse.AsObject;
   static toObject(includeInstance: boolean, msg: ListGamesResponse): ListGamesResponse.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: ListGamesResponse, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): ListGamesResponse;
   static deserializeBinaryFromReader(message: ListGamesResponse, reader: jspb.BinaryReader): ListGamesResponse;
@@ -97,8 +86,6 @@ export class Game extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Game.AsObject;
   static toObject(includeInstance: boolean, msg: Game): Game.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: Game, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): Game;
   static deserializeBinaryFromReader(message: Game, reader: jspb.BinaryReader): Game;
@@ -112,7 +99,7 @@ export namespace Game {
     playerCount: number,
   }
 
-  export enum Status {
+  export enum Status { 
     UNKNOWN = 0,
     WAITING_FOR_PLAYERS = 1,
     IN_PROGRESS = 2,
@@ -127,8 +114,6 @@ export class StartGameRequest extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): StartGameRequest.AsObject;
   static toObject(includeInstance: boolean, msg: StartGameRequest): StartGameRequest.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: StartGameRequest, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): StartGameRequest;
   static deserializeBinaryFromReader(message: StartGameRequest, reader: jspb.BinaryReader): StartGameRequest;
@@ -144,8 +129,6 @@ export class StartGameResponse extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): StartGameResponse.AsObject;
   static toObject(includeInstance: boolean, msg: StartGameResponse): StartGameResponse.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: StartGameResponse, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): StartGameResponse;
   static deserializeBinaryFromReader(message: StartGameResponse, reader: jspb.BinaryReader): StartGameResponse;
@@ -169,8 +152,6 @@ export class JoinGameRequest extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): JoinGameRequest.AsObject;
   static toObject(includeInstance: boolean, msg: JoinGameRequest): JoinGameRequest.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: JoinGameRequest, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): JoinGameRequest;
   static deserializeBinaryFromReader(message: JoinGameRequest, reader: jspb.BinaryReader): JoinGameRequest;
@@ -185,42 +166,41 @@ export namespace JoinGameRequest {
 }
 
 export class GameUpdate extends jspb.Message {
-  hasYouUpdate(): boolean;
-  clearYouUpdate(): void;
   getYouUpdate(): YouUpdate | undefined;
   setYouUpdate(value?: YouUpdate): void;
+  hasYouUpdate(): boolean;
+  clearYouUpdate(): void;
 
-  hasPlayerUpdate(): boolean;
-  clearPlayerUpdate(): void;
   getPlayerUpdate(): PlayerUpdate | undefined;
   setPlayerUpdate(value?: PlayerUpdate): void;
+  hasPlayerUpdate(): boolean;
+  clearPlayerUpdate(): void;
 
-  hasStatusUpdate(): boolean;
-  clearStatusUpdate(): void;
   getStatusUpdate(): StatusUpdate | undefined;
   setStatusUpdate(value?: StatusUpdate): void;
+  hasStatusUpdate(): boolean;
+  clearStatusUpdate(): void;
 
-  hasTileUpdate(): boolean;
-  clearTileUpdate(): void;
   getTileUpdate(): TileUpdate | undefined;
   setTileUpdate(value?: TileUpdate): void;
+  hasTileUpdate(): boolean;
+  clearTileUpdate(): void;
 
-  hasBoardUpdate(): boolean;
-  clearBoardUpdate(): void;
   getBoardUpdate(): BoardUpdate | undefined;
   setBoardUpdate(value?: BoardUpdate): void;
+  hasBoardUpdate(): boolean;
+  clearBoardUpdate(): void;
 
-  hasMoveUpdate(): boolean;
-  clearMoveUpdate(): void;
   getMoveUpdate(): MoveUpdate | undefined;
   setMoveUpdate(value?: MoveUpdate): void;
+  hasMoveUpdate(): boolean;
+  clearMoveUpdate(): void;
 
   getUpdateCase(): GameUpdate.UpdateCase;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GameUpdate.AsObject;
   static toObject(includeInstance: boolean, msg: GameUpdate): GameUpdate.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: GameUpdate, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): GameUpdate;
   static deserializeBinaryFromReader(message: GameUpdate, reader: jspb.BinaryReader): GameUpdate;
@@ -236,7 +216,7 @@ export namespace GameUpdate {
     moveUpdate?: MoveUpdate.AsObject,
   }
 
-  export enum UpdateCase {
+  export enum UpdateCase { 
     UPDATE_NOT_SET = 0,
     YOU_UPDATE = 1,
     PLAYER_UPDATE = 2,
@@ -254,8 +234,6 @@ export class YouUpdate extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): YouUpdate.AsObject;
   static toObject(includeInstance: boolean, msg: YouUpdate): YouUpdate.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: YouUpdate, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): YouUpdate;
   static deserializeBinaryFromReader(message: YouUpdate, reader: jspb.BinaryReader): YouUpdate;
@@ -268,9 +246,9 @@ export namespace YouUpdate {
 }
 
 export class PlayerUpdate extends jspb.Message {
-  clearPlayersList(): void;
   getPlayersList(): Array<Player>;
   setPlayersList(value: Array<Player>): void;
+  clearPlayersList(): void;
   addPlayers(value?: Player, index?: number): Player;
 
   getRemainingTiles(): number;
@@ -279,8 +257,6 @@ export class PlayerUpdate extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PlayerUpdate.AsObject;
   static toObject(includeInstance: boolean, msg: PlayerUpdate): PlayerUpdate.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: PlayerUpdate, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): PlayerUpdate;
   static deserializeBinaryFromReader(message: PlayerUpdate, reader: jspb.BinaryReader): PlayerUpdate;
@@ -306,8 +282,6 @@ export class Player extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Player.AsObject;
   static toObject(includeInstance: boolean, msg: Player): Player.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: Player, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): Player;
   static deserializeBinaryFromReader(message: Player, reader: jspb.BinaryReader): Player;
@@ -328,8 +302,6 @@ export class StatusUpdate extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): StatusUpdate.AsObject;
   static toObject(includeInstance: boolean, msg: StatusUpdate): StatusUpdate.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: StatusUpdate, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): StatusUpdate;
   static deserializeBinaryFromReader(message: StatusUpdate, reader: jspb.BinaryReader): StatusUpdate;
@@ -340,7 +312,7 @@ export namespace StatusUpdate {
     status: StatusUpdate.Status,
   }
 
-  export enum Status {
+  export enum Status { 
     UNKNOWN = 0,
     WAITING = 1,
     GAME_STARTED = 2,
@@ -355,16 +327,14 @@ export class TileUpdate extends jspb.Message {
   getPlayer(): string;
   setPlayer(value: string): void;
 
-  hasAllTiles(): boolean;
-  clearAllTiles(): void;
   getAllTiles(): Tiles | undefined;
   setAllTiles(value?: Tiles): void;
+  hasAllTiles(): boolean;
+  clearAllTiles(): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): TileUpdate.AsObject;
   static toObject(includeInstance: boolean, msg: TileUpdate): TileUpdate.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: TileUpdate, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): TileUpdate;
   static deserializeBinaryFromReader(message: TileUpdate, reader: jspb.BinaryReader): TileUpdate;
@@ -377,7 +347,7 @@ export namespace TileUpdate {
     allTiles?: Tiles.AsObject,
   }
 
-  export enum Event {
+  export enum Event { 
     UNKNOWN = 0,
     SPLIT = 1,
     PEEL = 2,
@@ -387,16 +357,14 @@ export namespace TileUpdate {
 }
 
 export class BoardUpdate extends jspb.Message {
-  hasBoard(): boolean;
-  clearBoard(): void;
   getBoard(): Board | undefined;
   setBoard(value?: Board): void;
+  hasBoard(): boolean;
+  clearBoard(): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): BoardUpdate.AsObject;
   static toObject(includeInstance: boolean, msg: BoardUpdate): BoardUpdate.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: BoardUpdate, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): BoardUpdate;
   static deserializeBinaryFromReader(message: BoardUpdate, reader: jspb.BinaryReader): BoardUpdate;
@@ -418,8 +386,6 @@ export class MoveUpdate extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): MoveUpdate.AsObject;
   static toObject(includeInstance: boolean, msg: MoveUpdate): MoveUpdate.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: MoveUpdate, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): MoveUpdate;
   static deserializeBinaryFromReader(message: MoveUpdate, reader: jspb.BinaryReader): MoveUpdate;
@@ -433,16 +399,14 @@ export namespace MoveUpdate {
 }
 
 export class Tiles extends jspb.Message {
-  clearLettersList(): void;
   getLettersList(): Array<string>;
   setLettersList(value: Array<string>): void;
-  addLetters(value: string, index?: number): string;
+  clearLettersList(): void;
+  addLetters(value: string, index?: number): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Tiles.AsObject;
   static toObject(includeInstance: boolean, msg: Tiles): Tiles.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: Tiles, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): Tiles;
   static deserializeBinaryFromReader(message: Tiles, reader: jspb.BinaryReader): Tiles;
@@ -467,8 +431,6 @@ export class DumpRequest extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DumpRequest.AsObject;
   static toObject(includeInstance: boolean, msg: DumpRequest): DumpRequest.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: DumpRequest, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): DumpRequest;
   static deserializeBinaryFromReader(message: DumpRequest, reader: jspb.BinaryReader): DumpRequest;
@@ -486,8 +448,6 @@ export class DumpResponse extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DumpResponse.AsObject;
   static toObject(includeInstance: boolean, msg: DumpResponse): DumpResponse.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: DumpResponse, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): DumpResponse;
   static deserializeBinaryFromReader(message: DumpResponse, reader: jspb.BinaryReader): DumpResponse;
@@ -505,21 +465,19 @@ export class UpdateBoardRequest extends jspb.Message {
   getPlayerId(): string;
   setPlayerId(value: string): void;
 
-  hasBoard(): boolean;
-  clearBoard(): void;
   getBoard(): Board | undefined;
   setBoard(value?: Board): void;
+  hasBoard(): boolean;
+  clearBoard(): void;
 
-  hasLatestWord(): boolean;
-  clearLatestWord(): void;
   getLatestWord(): Word | undefined;
   setLatestWord(value?: Word): void;
+  hasLatestWord(): boolean;
+  clearLatestWord(): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): UpdateBoardRequest.AsObject;
   static toObject(includeInstance: boolean, msg: UpdateBoardRequest): UpdateBoardRequest.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: UpdateBoardRequest, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): UpdateBoardRequest;
   static deserializeBinaryFromReader(message: UpdateBoardRequest, reader: jspb.BinaryReader): UpdateBoardRequest;
@@ -535,16 +493,14 @@ export namespace UpdateBoardRequest {
 }
 
 export class Board extends jspb.Message {
-  clearWordsList(): void;
   getWordsList(): Array<Word>;
   setWordsList(value: Array<Word>): void;
+  clearWordsList(): void;
   addWords(value?: Word, index?: number): Word;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Board.AsObject;
   static toObject(includeInstance: boolean, msg: Board): Board.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: Board, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): Board;
   static deserializeBinaryFromReader(message: Board, reader: jspb.BinaryReader): Board;
@@ -572,8 +528,6 @@ export class Word extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Word.AsObject;
   static toObject(includeInstance: boolean, msg: Word): Word.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: Word, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): Word;
   static deserializeBinaryFromReader(message: Word, reader: jspb.BinaryReader): Word;
@@ -587,7 +541,7 @@ export namespace Word {
     y: number,
   }
 
-  export enum Orientation {
+  export enum Orientation { 
     UNKNOWN = 0,
     HORIZONTAL = 1,
     VERTICAL = 2,
@@ -598,16 +552,14 @@ export class CharLocs extends jspb.Message {
   getText(): string;
   setText(value: string): void;
 
-  clearLocsList(): void;
   getLocsList(): Array<CharLoc>;
   setLocsList(value: Array<CharLoc>): void;
+  clearLocsList(): void;
   addLocs(value?: CharLoc, index?: number): CharLoc;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): CharLocs.AsObject;
   static toObject(includeInstance: boolean, msg: CharLocs): CharLocs.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: CharLocs, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): CharLocs;
   static deserializeBinaryFromReader(message: CharLocs, reader: jspb.BinaryReader): CharLocs;
@@ -633,8 +585,6 @@ export class CharLoc extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): CharLoc.AsObject;
   static toObject(includeInstance: boolean, msg: CharLoc): CharLoc.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: CharLoc, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): CharLoc;
   static deserializeBinaryFromReader(message: CharLoc, reader: jspb.BinaryReader): CharLoc;
@@ -649,15 +599,15 @@ export namespace CharLoc {
 }
 
 export class UpdateBoardResponse extends jspb.Message {
-  clearInvalidWordsList(): void;
   getInvalidWordsList(): Array<CharLocs>;
   setInvalidWordsList(value: Array<CharLocs>): void;
+  clearInvalidWordsList(): void;
   addInvalidWords(value?: CharLocs, index?: number): CharLocs;
 
-  clearUnusedLettersList(): void;
   getUnusedLettersList(): Array<string>;
   setUnusedLettersList(value: Array<string>): void;
-  addUnusedLetters(value: string, index?: number): string;
+  clearUnusedLettersList(): void;
+  addUnusedLetters(value: string, index?: number): void;
 
   getDetachedBoard(): boolean;
   setDetachedBoard(value: boolean): void;
@@ -665,8 +615,6 @@ export class UpdateBoardResponse extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): UpdateBoardResponse.AsObject;
   static toObject(includeInstance: boolean, msg: UpdateBoardResponse): UpdateBoardResponse.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
   static serializeBinaryToWriter(message: UpdateBoardResponse, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): UpdateBoardResponse;
   static deserializeBinaryFromReader(message: UpdateBoardResponse, reader: jspb.BinaryReader): UpdateBoardResponse;

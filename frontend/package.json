@@ -11,7 +11,7 @@
     "buefy": "^0.7.1",
     "d3": "^5.7.0",
     "google-protobuf": "^3.6.1",
-    "grpc-web-client": "^0.7.0",
+    "grpc-web": "^1.0.7",
     "vue": "^2.5.17",
     "vue-class-component": "^6.0.0",
     "vue-cookies": "^1.5.12",
