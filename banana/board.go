@@ -8,8 +8,7 @@ import (
 
 // Board represents an individual players game board.
 type Board struct {
-	Words      []Word
-	Dictionary Dictionary
+	Words []Word
 
 	// The below fields are only for caching already-computed state
 
@@ -47,7 +46,6 @@ func (b *Board) Clone() *Board {
 
 	return &Board{
 		Words:      words,
-		Dictionary: b.Dictionary,
 		letterMap:  letterMap,
 		visitedMap: visitedMap,
 	}
@@ -164,10 +162,8 @@ func (b *Board) AsTiles() (*Tiles, error) {
 	return t, nil
 }
 
-// ValidateBoard returns the status of the board. The second parameter
-// determines if we should accept the board, which we should do unless they use
-// letters they don't have or have a board that doesn't make sense.
-func (b *Board) ValidateBoard(tiles *Tiles) (BoardValidation, error) {
+// Validate returns the status of the board.
+func (b *Board) Validate(tiles *Tiles, dict Dictionary) (*BoardValidation, error) {
 	// A board is considered valid if:
 	//   - the player used a subset of the letters in their hand
 	//   - the words given don't overlap in conflicting ways
@@ -177,22 +173,22 @@ func (b *Board) ValidateBoard(tiles *Tiles) (BoardValidation, error) {
 	// If precompute failed, we weren't able to make our intermediate
 	// representation, meaning the given words can't form a valid board
 	if err := b.precompute(); err != nil {
-		return BoardValidation{InvalidBoard: true}, err
+		return nil, err
 	}
 
 	unused, unowned := b.leftover(tiles)
 	if len(unowned) > 0 {
-		return BoardValidation{ExtraLetters: unowned}, nil
+		return &BoardValidation{ExtraLetters: unowned}, nil
 	}
 
 	var iws []CharLocs
 	for _, cls := range b.findWords() {
-		if !b.Dictionary.HasWord(cls.Word) {
+		if !dict.HasWord(cls.Word) {
 			iws = append(iws, cls)
 		}
 	}
 
-	return BoardValidation{
+	return &BoardValidation{
 		InvalidWords:  iws,
 		DetachedBoard: !b.connected(),
 		UnusedLetters: unused,
@@ -307,6 +303,11 @@ func (b *Board) findWords() []CharLocs {
 }
 
 func (b *Board) connected() bool {
+	// First, clear out the visited map, just in case.
+	for l := range b.visitedMap {
+		b.visitedMap[l] = false
+	}
+
 	var start Loc
 	for loc := range b.letterMap {
 		start = loc

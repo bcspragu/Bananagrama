@@ -109,11 +109,9 @@ func (d *DB) AddPlayer(id banana.GameID, name string) (banana.PlayerID, error) {
 	}
 
 	p := &banana.Player{
-		ID:   pid,
-		Name: name,
-		Board: &banana.Board{
-			Dictionary: d.dict,
-		},
+		ID:    pid,
+		Name:  name,
+		Board: &banana.Board{},
 		Tiles: banana.NewTiles(),
 	}
 

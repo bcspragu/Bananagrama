@@ -44,16 +44,13 @@ func wordToWire(w banana.Word) *pb.Word {
 	}
 }
 
-func boardFromWire(b *pb.Board, dict banana.Dictionary) *banana.Board {
+func boardFromWire(b *pb.Board) *banana.Board {
 	words := make([]banana.Word, len(b.Words))
 	for i, word := range b.Words {
 		words[i] = wordFromWire(word)
 	}
 
-	return &banana.Board{
-		Words:      words,
-		Dictionary: dict,
-	}
+	return &banana.Board{Words: words}
 }
 
 func wordFromWire(w *pb.Word) banana.Word {

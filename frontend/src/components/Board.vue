@@ -39,8 +39,16 @@ export default class Board extends Vue {
   private margin = 2;
   private grid: Selection<any, any, any, any> = d3.select('#grid');
 
-  public setInvalidWords(words: CharLocs[]): void {
+  public setInvalidWordsAndDetached(words: CharLocs[], detached: boolean): void {
     this.invalidWords = words;
+    const grid = document.getElementById('grid');
+    if (grid) {
+      if (detached) {
+        grid.classList.add('detached');
+      } else {
+        grid.classList.remove('detached');
+      }
+    }
     this.renderBoard();
   }
 
@@ -809,5 +817,9 @@ export default class Board extends Vue {
 
 #grid {
   height: 100%;
+}
+
+#grid.detached {
+  background-color: #FF6961;
 }
 </style>

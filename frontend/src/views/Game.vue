@@ -74,6 +74,7 @@ export default class Game extends Vue {
   private notice: string[] = [];
   private board: Board = new Board();
   private activeWord: ActiveWord = new ActiveWord();
+  private detachedBoard: boolean = false;
 
   // The component that renders our hand.
   private hand: UnusedLetters = new UnusedLetters();
@@ -385,6 +386,11 @@ export default class Game extends Vue {
   }
 
   private setNotice(fit: boolean): void {
+    if (this.detachedBoard) {
+      this.notice = ['Board is not all connected'];
+      return;
+    }
+
     const missing = this.missing();
     if (!fit) {
       this.notice = [`Couldn't find a place to put the word`];
@@ -501,7 +507,11 @@ export default class Game extends Vue {
         console.log(err);
         return;
       }
-      this.board.setInvalidWords(resp.getInvalidWordsList());
+      this.board.setInvalidWordsAndDetached(
+        resp.getInvalidWordsList(),
+        resp.getDetachedBoard());
+      this.detachedBoard = resp.getDetachedBoard();
+      this.setNotice(true);
     });
   }
 }

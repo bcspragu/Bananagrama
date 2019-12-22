@@ -331,7 +331,7 @@ func (s *Server) updateForGame(id banana.GameID, up *pb.GameUpdate) {
 func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*pb.UpdateBoardResponse, error) {
 	gid := banana.GameID(req.Id)
 	// Convert the board to our domain format.
-	b := boardFromWire(req.Board, s.dict)
+	b := boardFromWire(req.Board)
 
 	pid := banana.PlayerID(req.PlayerId)
 	p, err := s.db.Player(pid)
@@ -349,8 +349,8 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 	}
 	tiles.Add(bts)
 
-	// Check if the board they sent is valid
-	bv, err := b.ValidateBoard(tiles)
+	// Check if the board they sent is valid.
+	bv, err := b.Validate(tiles, s.dict)
 	if err != nil {
 		log.Printf("failed to validate board: %v", err)
 		return nil, fmt.Errorf("failed to validate board: %v", err)
