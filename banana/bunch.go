@@ -76,6 +76,20 @@ func Bananagrams() Distribution {
 	}
 }
 
+// TestDistribution returns a small distribution for more easily testing
+// end-game scenarios.
+func TestDistribution() Distribution {
+	return map[int][]Letter{
+		0: []Letter{'J', 'K', 'Q', 'X', 'Z'},
+		1: []Letter{'B', 'C', 'F', 'H', 'M', 'P', 'V', 'W', 'Y'},
+		2: []Letter{'G', 'L', 'D', 'S', 'U'},
+		4: []Letter{'N', 'T', 'R'},
+		5: []Letter{'O'},
+		6: []Letter{'I'},
+		7: []Letter{'A', 'E'},
+	}
+}
+
 func NewBunch(dist Distribution, scale int) (*Bunch, error) {
 	t, err := tilesFromDistribution(dist, scale)
 	if err != nil {

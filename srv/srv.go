@@ -45,7 +45,7 @@ func (s *Server) NewGame(ctx context.Context, req *pb.NewGameRequest) (*pb.NewGa
 	if name == "" {
 		return nil, errors.New("must specify a game name")
 	}
-	bunch, err := banana.NewBunch(banana.Bananagrams(), scaleFactor)
+	bunch, err := banana.NewBunch(banana.TestDistribution(), scaleFactor)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make bunch: %v", err)
 	}
@@ -240,10 +240,9 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 		}
 
 		if err := stream.Send(update); err != nil {
-			log.Printf("stream send error: %v", err)
+			log.Printf("stream closed for player %q: %v", pName, err)
 			return nil
 		}
-		log.Printf("successfully sent to %q: %#v", pName, update)
 
 		if gameOver {
 			break
@@ -367,7 +366,6 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 		log.Printf("failed to update player %q: %v", pid, err)
 		return nil, fmt.Errorf("failed to update player %q: %v", pid, err)
 	}
-	log.Printf("Player %q updated their board, result %+v", p.Name, bv)
 
 	// A board is peelable if all the words are valid
 	peelable := len(bv.InvalidWords) == 0 && len(bv.UnusedLetters) == 0 && !bv.DetachedBoard
@@ -375,7 +373,6 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 	// If the board was valid, clear out their tiles and let everyone know what's
 	// up.
 	if peelable {
-		log.Printf("Peel by %q", p.Name)
 		if err := s.issuePeel(gid, p); err != nil {
 			log.Printf("failed to issue peels: %v", err)
 			return nil, fmt.Errorf("failed to issue peels: %v", err)
@@ -429,7 +426,6 @@ func (s *Server) issuePeel(id banana.GameID, p *banana.Player) error {
 			return fmt.Errorf("failed to update player %q board: %v", pid, err)
 		}
 
-		log.Printf("Sending tiles to %q: %+v", sp.Name, sp.Tiles.AsList())
 		c <- &pb.GameUpdate{
 			Update: &pb.GameUpdate_TileUpdate{
 				TileUpdate: &pb.TileUpdate{
@@ -532,8 +528,6 @@ func (s *Server) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.DumpRespons
 	if err := s.sendPlayers(gid); err != nil {
 		return nil, err
 	}
-
-	log.Printf("Player %q dumped a %q", p.Name, letter)
 
 	return &pb.DumpResponse{}, nil
 }
