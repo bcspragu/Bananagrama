@@ -70,6 +70,26 @@ export namespace ListGamesResponse {
   }
 }
 
+export class GamesList extends jspb.Message {
+  getGamesList(): Array<Game>;
+  setGamesList(value: Array<Game>): void;
+  clearGamesList(): void;
+  addGames(value?: Game, index?: number): Game;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GamesList.AsObject;
+  static toObject(includeInstance: boolean, msg: GamesList): GamesList.AsObject;
+  static serializeBinaryToWriter(message: GamesList, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GamesList;
+  static deserializeBinaryFromReader(message: GamesList, reader: jspb.BinaryReader): GamesList;
+}
+
+export namespace GamesList {
+  export type AsObject = {
+    gamesList: Array<Game.AsObject>,
+  }
+}
+
 export class Game extends jspb.Message {
   getId(): string;
   setId(value: string): void;
@@ -415,6 +435,62 @@ export class Tiles extends jspb.Message {
 export namespace Tiles {
   export type AsObject = {
     lettersList: Array<string>,
+  }
+}
+
+export class SpectateRequest extends jspb.Message {
+  getId(): string;
+  setId(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): SpectateRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: SpectateRequest): SpectateRequest.AsObject;
+  static serializeBinaryToWriter(message: SpectateRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): SpectateRequest;
+  static deserializeBinaryFromReader(message: SpectateRequest, reader: jspb.BinaryReader): SpectateRequest;
+}
+
+export namespace SpectateRequest {
+  export type AsObject = {
+    id: string,
+  }
+}
+
+export class SpectateUpdate extends jspb.Message {
+  getPlayerId(): string;
+  setPlayerId(value: string): void;
+
+  getPlayerName(): string;
+  setPlayerName(value: string): void;
+
+  getBoard(): Board | undefined;
+  setBoard(value?: Board): void;
+  hasBoard(): boolean;
+  clearBoard(): void;
+
+  getInvalidWordsList(): Array<CharLocs>;
+  setInvalidWordsList(value: Array<CharLocs>): void;
+  clearInvalidWordsList(): void;
+  addInvalidWords(value?: CharLocs, index?: number): CharLocs;
+
+  getDetachedBoard(): boolean;
+  setDetachedBoard(value: boolean): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): SpectateUpdate.AsObject;
+  static toObject(includeInstance: boolean, msg: SpectateUpdate): SpectateUpdate.AsObject;
+  static serializeBinaryToWriter(message: SpectateUpdate, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): SpectateUpdate;
+  static deserializeBinaryFromReader(message: SpectateUpdate, reader: jspb.BinaryReader): SpectateUpdate;
+}
+
+export namespace SpectateUpdate {
+  export type AsObject = {
+    playerId: string,
+    playerName: string,
+    board?: Board.AsObject,
+    invalidWordsList: Array<CharLocs.AsObject>,
+    detachedBoard: boolean,
   }
 }
 

@@ -4,11 +4,14 @@ import {
   DumpRequest,
   DumpResponse,
   GameUpdate,
+  GamesList,
   JoinGameRequest,
   ListGamesRequest,
   ListGamesResponse,
   NewGameRequest,
   NewGameResponse,
+  SpectateRequest,
+  SpectateUpdate,
   StartGameRequest,
   StartGameResponse,
   UpdateBoardRequest,
@@ -33,6 +36,11 @@ export class BananaServiceClient {
                response: ListGamesResponse) => void
   ): grpcWeb.ClientReadableStream<ListGamesResponse>;
 
+  streamGames(
+    request: ListGamesRequest,
+    metadata?: grpcWeb.Metadata
+  ): grpcWeb.ClientReadableStream<GamesList>;
+
   startGame(
     request: StartGameRequest,
     metadata: grpcWeb.Metadata | undefined,
@@ -44,6 +52,11 @@ export class BananaServiceClient {
     request: JoinGameRequest,
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<GameUpdate>;
+
+  spectate(
+    request: SpectateRequest,
+    metadata?: grpcWeb.Metadata
+  ): grpcWeb.ClientReadableStream<SpectateUpdate>;
 
   updateBoard(
     request: UpdateBoardRequest,
@@ -76,6 +89,11 @@ export class BananaServicePromiseClient {
     metadata?: grpcWeb.Metadata
   ): Promise<ListGamesResponse>;
 
+  streamGames(
+    request: ListGamesRequest,
+    metadata?: grpcWeb.Metadata
+  ): grpcWeb.ClientReadableStream<GamesList>;
+
   startGame(
     request: StartGameRequest,
     metadata?: grpcWeb.Metadata
@@ -85,6 +103,11 @@ export class BananaServicePromiseClient {
     request: JoinGameRequest,
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<GameUpdate>;
+
+  spectate(
+    request: SpectateRequest,
+    metadata?: grpcWeb.Metadata
+  ): grpcWeb.ClientReadableStream<SpectateUpdate>;
 
   updateBoard(
     request: UpdateBoardRequest,

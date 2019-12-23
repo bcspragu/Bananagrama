@@ -35,6 +35,13 @@ export default class UnusedLetters extends Vue {
     }
   }
 
+  public flash(): void {
+    const letters = document.getElementById('letters');
+    letters.classList.remove('flash');
+    letters.classList.add('flash');
+    setTimeout(() => { letters.classList.remove('flash'); }, 1000);
+  }
+
   @Watch('letters')
   public renderLetters(): void {
     this.resizeSVG();
@@ -72,7 +79,7 @@ export default class UnusedLetters extends Vue {
     const offsetY = ((margin + (this.sizeY - (size + margin) * rows)) / 2);
 
     const letters = this.board.selectAll('g')
-      .data(this.letters, (d: any) => d.letter);
+    .data(this.letters, (d: any, i: number) => `${d.letter}-${i}`);
 
     letters.exit().remove();
 
@@ -91,18 +98,8 @@ export default class UnusedLetters extends Vue {
         this.$emit('dumpTile', d.letter);
       });
 
-    newLetters.append('rect');
-    newLetters.append('text');
-
-    letters.merge(newLetters).select('rect')
-        .attr('x', (d: any, i: number) => {
-          return (i % perRow) * (size + margin) + offsetX;
-        })
-        .attr('y', (d: any, i: number) => {
-          return Math.floor(i / perRow) * (size + margin) + offsetY;
-        })
-        .attr('width', size)
-        .attr('height', size)
+    // Animation behavior for new letters: appear directly at desired position.
+    newLetters.append('rect')
         .style('stroke', '#222')
         .style('fill', (d: any): string => {
           if (d.deleting) {
@@ -112,14 +109,55 @@ export default class UnusedLetters extends Vue {
             return '#afa';
           }
           return '#fff';
-        });
+        })
+        .attr('x', (d: any, i: number) => {
+          return (i % perRow) * (size + margin) + offsetX;
+        })
+        .attr('y', (d: any, i: number) => {
+          return Math.floor(i / perRow) * (size + margin) + offsetY;
+        })
+        .attr('width', size)
+        .attr('height', size);
 
-    letters.merge(newLetters).select('text')
-        .attr('x', (d: any, i: number) => (i % perRow) * (size + margin) + size / 2 + offsetX)
-        .attr('y', (d: any, i: number) => Math.floor(i / perRow) * (size + margin) + size / 2 + offsetY)
+    newLetters.append('text')
         .attr('text-anchor', 'middle')
         .attr('alignment-baseline', 'middle')
         .text((d: any) => d.letter)
+        .attr('x', (d: any, i: number) => (i % perRow) * (size + margin) + size / 2 + offsetX)
+        .attr('y', (d: any, i: number) => Math.floor(i / perRow) * (size + margin) + size / 2 + offsetY)
+        .style('font-size', (d: any) => {
+          return size * 0.5 + 'px';
+        });
+
+    // Animation behavior for existing letters: move and resize nicely.
+    letters.merge(newLetters).select('rect')
+        .style('stroke', '#222')
+        .transition()
+        .style('fill', (d: any): string => {
+          if (d.deleting) {
+            return '#faa';
+          }
+          if (d.selected) {
+            return '#afa';
+          }
+          return '#fff';
+        })
+        .attr('x', (d: any, i: number) => {
+          return (i % perRow) * (size + margin) + offsetX;
+        })
+        .attr('y', (d: any, i: number) => {
+          return Math.floor(i / perRow) * (size + margin) + offsetY;
+        })
+        .attr('width', size)
+        .attr('height', size);
+
+    letters.merge(newLetters).select('text')
+        .attr('text-anchor', 'middle')
+        .attr('alignment-baseline', 'middle')
+        .text((d: any) => d.letter)
+        .transition()
+        .attr('x', (d: any, i: number) => (i % perRow) * (size + margin) + size / 2 + offsetX)
+        .attr('y', (d: any, i: number) => Math.floor(i / perRow) * (size + margin) + size / 2 + offsetY)
         .style('font-size', (d: any) => {
           return size * 0.5 + 'px';
         });
@@ -180,4 +218,21 @@ export default class UnusedLetters extends Vue {
                                   supported by Chrome and Opera */
   height: 100%;
 }
+
+
+@-webkit-keyframes flash {
+    0% {
+        background-color: red;
+    }
+    100% {
+        background-color: #fff;
+    }
+}
+    
+.flash {
+    -webkit-animation-name: flash;
+    -webkit-animation-duration: 1000ms;
+    -webkit-animation-iteration-count: 1;
+    -webkit-animation-timing-function: ease-in-out;
+}  
 </style>

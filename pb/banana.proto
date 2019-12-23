@@ -5,8 +5,10 @@ option go_package = "pb";
 service BananaService {
   rpc NewGame(NewGameRequest) returns (NewGameResponse);
   rpc ListGames(ListGamesRequest) returns (ListGamesResponse);
+  rpc StreamGames(ListGamesRequest) returns (stream GamesList);
   rpc StartGame(StartGameRequest) returns (StartGameResponse);
   rpc JoinGame(JoinGameRequest) returns (stream GameUpdate);
+  rpc Spectate(SpectateRequest) returns (stream SpectateUpdate);
   rpc UpdateBoard(UpdateBoardRequest) returns (UpdateBoardResponse);
   rpc Dump(DumpRequest) returns (DumpResponse);
 }
@@ -24,6 +26,10 @@ message NewGameResponse {
 message ListGamesRequest { }
 
 message ListGamesResponse {
+  repeated Game games = 1;
+}
+
+message GamesList {
   repeated Game games = 1;
 }
 
@@ -132,6 +138,19 @@ message MoveUpdate {
 message Tiles {
   // Tiles are just lists of letters
   repeated string letters = 1;
+}
+
+message SpectateRequest {
+  // The unique identifier for the game to spectate.
+  string id = 1;
+}
+
+message SpectateUpdate {
+  string player_id = 1;
+  string player_name = 2;
+  Board board = 3;
+  repeated CharLocs invalid_words = 4;
+  bool detached_board = 5;
 }
 
 message DumpRequest {

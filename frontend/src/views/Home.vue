@@ -24,8 +24,8 @@
           <h2 class="has-text-centered is-size-3">Game List</h2>
           <ol>
             <li v-for="game in games">
-              <a @click="joinGame(game.getId())">{{game.getName()}}</a>
-              <span> ({{gameStatus(game)}}, {{game.getPlayerCount()}} joined)</span>
+              <a @click="joinGame(game.id)">{{game.name}}</a>
+              <span> ({{gameStatus(game.stat)}}, {{game.playerCount}} joined)</span>
             </li>
           </ol>
         </div>
@@ -60,7 +60,14 @@
 import { Component, Vue } from 'vue-property-decorator';
 
 // Import code-generated data structures.
-import {NewGameRequest, ListGamesRequest, Game} from '@/proto/banana_pb';
+import {NewGameRequest, ListGamesRequest, Game as PBGame} from '@/proto/banana_pb';
+
+interface Game {
+  id: string;
+  name: string;
+  playerCount: number;
+  stat: PBGame.Status;
+}
 
 @Component
 export default class Home extends Vue {
@@ -119,33 +126,57 @@ export default class Home extends Vue {
     const req = new NewGameRequest();
     req.setName(this.gameName);
     this.$client.newGame(req, {}, (err, resp) => {
-      if (resp) {
-        this.loadGames();
+      if (err) {
+        console.log(err);
       }
     });
   }
 
   private loadGames() {
-    this.$client.listGames(new ListGamesRequest(), {}, (err, resp) => {
-      if (!resp) {
-        console.log(err);
-        return;
+    const stream = this.$client.streamGames(new ListGamesRequest(), {});
+
+    stream.on('data', (resp) => {
+      const indexMap: { [s: string]: number; } = {};
+      let i = 0;
+      for (const game of this.games) {
+        indexMap[game.id] = i;
+        i++;
       }
-      this.games = resp.getGamesList();
+
+      const gameUpdates = resp.getGamesList();
+      for (const game of gameUpdates) {
+        // Game already exists, update it.
+        if (indexMap.hasOwnProperty(game.getId())) {
+          Vue.set(this.games, indexMap[game.getId()], this.toGame(game));
+          continue;
+        }
+
+        // Game doesn't exist yet, add it.
+        this.games.push(this.toGame(game));
+      }
     });
   }
 
-  private gameStatus(game: Game): string {
-    switch (game.getStatus()) {
-      case Game.Status.WAITING_FOR_PLAYERS:
+  private gameStatus(stat: PBGame.Status): string {
+    switch (stat) {
+      case PBGame.Status.WAITING_FOR_PLAYERS:
         return 'waiting for players';
-      case Game.Status.IN_PROGRESS:
+      case PBGame.Status.IN_PROGRESS:
         return 'in progress';
-      case Game.Status.FINISHED:
+      case PBGame.Status.FINISHED:
         return 'finished';
       default:
         return 'unknown';
     }
+  }
+
+  private toGame(g: PBGame): Game {
+    return {
+      id: g.getId(),
+      name: g.getName(),
+      playerCount: g.getPlayerCount(),
+      stat: g.getStatus(),
+    };
   }
 }
 </script>

@@ -64,6 +64,7 @@ func (g *Game) Clone() *Game {
 	}
 
 	return &Game{
+		ID:        g.ID,
 		Name:      g.Name,
 		Players:   players,
 		Bunch:     g.Bunch.Clone(),

@@ -228,6 +228,81 @@ proto.BananaServicePromiseClient.prototype.listGames =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.ListGamesRequest,
+ *   !proto.GamesList>}
+ */
+const methodDescriptor_BananaService_StreamGames = new grpc.web.MethodDescriptor(
+  '/BananaService/StreamGames',
+  grpc.web.MethodType.SERVER_STREAMING,
+  proto.ListGamesRequest,
+  proto.GamesList,
+  /**
+   * @param {!proto.ListGamesRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.GamesList.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.ListGamesRequest,
+ *   !proto.GamesList>}
+ */
+const methodInfo_BananaService_StreamGames = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.GamesList,
+  /**
+   * @param {!proto.ListGamesRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.GamesList.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.ListGamesRequest} request The request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.GamesList>}
+ *     The XHR Node Readable Stream
+ */
+proto.BananaServiceClient.prototype.streamGames =
+    function(request, metadata) {
+  return this.client_.serverStreaming(this.hostname_ +
+      '/BananaService/StreamGames',
+      request,
+      metadata || {},
+      methodDescriptor_BananaService_StreamGames);
+};
+
+
+/**
+ * @param {!proto.ListGamesRequest} request The request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.GamesList>}
+ *     The XHR Node Readable Stream
+ */
+proto.BananaServicePromiseClient.prototype.streamGames =
+    function(request, metadata) {
+  return this.client_.serverStreaming(this.hostname_ +
+      '/BananaService/StreamGames',
+      request,
+      metadata || {},
+      methodDescriptor_BananaService_StreamGames);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.StartGameRequest,
  *   !proto.StartGameResponse>}
  */
@@ -377,6 +452,81 @@ proto.BananaServicePromiseClient.prototype.joinGame =
       request,
       metadata || {},
       methodDescriptor_BananaService_JoinGame);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.SpectateRequest,
+ *   !proto.SpectateUpdate>}
+ */
+const methodDescriptor_BananaService_Spectate = new grpc.web.MethodDescriptor(
+  '/BananaService/Spectate',
+  grpc.web.MethodType.SERVER_STREAMING,
+  proto.SpectateRequest,
+  proto.SpectateUpdate,
+  /**
+   * @param {!proto.SpectateRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.SpectateUpdate.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.SpectateRequest,
+ *   !proto.SpectateUpdate>}
+ */
+const methodInfo_BananaService_Spectate = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.SpectateUpdate,
+  /**
+   * @param {!proto.SpectateRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.SpectateUpdate.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.SpectateRequest} request The request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.SpectateUpdate>}
+ *     The XHR Node Readable Stream
+ */
+proto.BananaServiceClient.prototype.spectate =
+    function(request, metadata) {
+  return this.client_.serverStreaming(this.hostname_ +
+      '/BananaService/Spectate',
+      request,
+      metadata || {},
+      methodDescriptor_BananaService_Spectate);
+};
+
+
+/**
+ * @param {!proto.SpectateRequest} request The request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.SpectateUpdate>}
+ *     The XHR Node Readable Stream
+ */
+proto.BananaServicePromiseClient.prototype.spectate =
+    function(request, metadata) {
+  return this.client_.serverStreaming(this.hostname_ +
+      '/BananaService/Spectate',
+      request,
+      metadata || {},
+      methodDescriptor_BananaService_Spectate);
 };
 
 

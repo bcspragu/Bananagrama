@@ -1,9 +1,13 @@
 package pubsub
 
+import "github.com/bcspragu/Bananagrama/banana"
+
 type PayloadType int
 
 const (
 	UnknownPayload PayloadType = iota
+	// A game has been created or updated.
+	PayloadTypeGameUpdated
 	// The game has started.
 	PayloadTypeGameStart
 	// The game has ended.
@@ -22,11 +26,19 @@ type Payload struct {
 	Type PayloadType
 	// The below messages are only populated for their given
 	// type.
-	GameOver   *GameOver
-	PlayerMove *PlayerMove
-	PlayerDump *PlayerDump
-	WordFail   *WordFail
-	BoardFail  *BoardFail
+	GameUpdated *GameUpdated
+	GameOver    *GameOver
+	PlayerMove  *PlayerMove
+	PlayerDump  *PlayerDump
+	WordFail    *WordFail
+	BoardFail   *BoardFail
+}
+
+type GameUpdated struct {
+	ID          banana.GameID
+	Name        string
+	PlayerCount int
+	Status      banana.GameStatus
 }
 
 type GameOver struct {
@@ -34,6 +46,7 @@ type GameOver struct {
 }
 
 type PlayerMove struct {
+	ID   banana.PlayerID
 	Name string
 	Word string
 }

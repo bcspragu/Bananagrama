@@ -12,6 +12,7 @@ import (
 
 	"github.com/bcspragu/Bananagrama/banana"
 	"github.com/bcspragu/Bananagrama/pb"
+	"github.com/bcspragu/Bananagrama/pubsub"
 )
 
 const (
@@ -22,20 +23,34 @@ const (
 
 type Server struct {
 	r    *rand.Rand
+	ps   *pubsub.PubSub
 	db   banana.DB
 	dict banana.Dictionary
 
+	// Standard channels
+	gameUpdateChannel pubsub.Channel
+
 	sync.RWMutex
-	updates map[banana.GameID]map[banana.PlayerID]chan *pb.GameUpdate
+	updates  map[banana.GameID]map[banana.PlayerID]chan *pb.GameUpdate
+	channels map[banana.GameID]pubsub.Channel
 }
 
-func New(r *rand.Rand, db banana.DB, dict banana.Dictionary) *Server {
-	return &Server{
-		r:       r,
-		db:      db,
-		dict:    dict,
-		updates: make(map[banana.GameID]map[banana.PlayerID]chan *pb.GameUpdate),
+func New(r *rand.Rand, db banana.DB, dict banana.Dictionary) (*Server, error) {
+	ps := pubsub.New()
+	gameUpdateChannel, err := ps.NewChannel("GAME_UPDATES")
+	if err != nil {
+		return nil, fmt.Errorf("failed to create new games PubSub channel: %v", err)
 	}
+
+	return &Server{
+		r:                 r,
+		ps:                ps,
+		db:                db,
+		dict:              dict,
+		gameUpdateChannel: gameUpdateChannel,
+		updates:           make(map[banana.GameID]map[banana.PlayerID]chan *pb.GameUpdate),
+		channels:          make(map[banana.GameID]pubsub.Channel),
+	}, nil
 }
 
 type update struct{}
@@ -50,13 +65,31 @@ func (s *Server) NewGame(ctx context.Context, req *pb.NewGameRequest) (*pb.NewGa
 		return nil, fmt.Errorf("failed to make bunch: %v", err)
 	}
 
-	id, err := s.db.NewGame(req.Name, bunch)
+	id, err := s.db.NewGame(name, bunch)
 	if err != nil {
 		return nil, err
 	}
 	s.Lock()
 	s.updates[id] = make(map[banana.PlayerID]chan *pb.GameUpdate)
+	ch, err := s.ps.NewChannel(string(id))
+	if err != nil {
+		log.Printf("failed to create channel for game %q: %v", id, err)
+		s.Unlock()
+		return nil, fmt.Errorf("failed to create channel for game %q: %v", id, err)
+	}
+	s.channels[id] = ch
 	s.Unlock()
+
+	if err := s.ps.Publish(s.gameUpdateChannel, &pubsub.Payload{
+		Type: pubsub.PayloadTypeGameUpdated,
+		GameUpdated: &pubsub.GameUpdated{
+			ID:     id,
+			Name:   name,
+			Status: banana.WaitingForPlayers,
+		},
+	}); err != nil {
+		log.Printf("failed to publish new game %q: %v", name, err)
+	}
 	return &pb.NewGameResponse{Id: string(id)}, nil
 }
 
@@ -78,6 +111,59 @@ func (s *Server) ListGames(ctx context.Context, req *pb.ListGamesRequest) (*pb.L
 	}
 
 	return &pb.ListGamesResponse{Games: pbgs}, nil
+}
+
+func (s *Server) StreamGames(req *pb.ListGamesRequest, stream pb.BananaService_StreamGamesServer) error {
+	gs, err := s.db.Games()
+	if err != nil {
+		return fmt.Errorf("failed to get games: %v", err)
+	}
+	sort.Slice(gs, func(i, j int) bool { return gs[i].CreatedAt.Before(gs[j].CreatedAt) })
+
+	var pbgs []*pb.Game
+	for _, g := range gs {
+		pbgs = append(pbgs, &pb.Game{
+			Id:          string(g.ID),
+			Name:        g.Name,
+			Status:      gameStatusMap[g.Status],
+			PlayerCount: int32(len(g.Players)),
+		})
+	}
+
+	if err := stream.Send(&pb.GamesList{Games: pbgs}); err != nil {
+		log.Printf("failed to send initial games list: %v", err)
+	}
+
+	sub, err := s.ps.Subscribe(s.gameUpdateChannel)
+	if err != nil {
+		log.Printf("failed to subscribe to new game updates: %v", err)
+		return nil
+	}
+	defer sub.Close()
+
+	for {
+		msg, done := sub.Next()
+		if done {
+			return nil
+		}
+		if msg.Channel != s.gameUpdateChannel || msg.Payload.Type != pubsub.PayloadTypeGameUpdated {
+			log.Printf("unexpected message from pubsub system: %#v", msg)
+			continue
+		}
+		update := msg.Payload.GameUpdated
+		stream.Send(&pb.GamesList{
+			Games: []*pb.Game{
+				&pb.Game{
+					Id:          string(update.ID),
+					Name:        update.Name,
+					Status:      gameStatusMap[update.Status],
+					PlayerCount: int32(update.PlayerCount),
+				},
+			},
+		})
+	}
+
+	return nil
 }
 
 func (s *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (*pb.StartGameResponse, error) {
@@ -152,6 +238,18 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 		if pid, err = s.db.AddPlayer(gid, name); err != nil {
 			return err
 		}
+		if err := s.ps.Publish(s.gameUpdateChannel, &pubsub.Payload{
+			Type: pubsub.PayloadTypeGameUpdated,
+			GameUpdated: &pubsub.GameUpdated{
+				ID:          g.ID,
+				Name:        g.Name,
+				Status:      g.Status,
+				PlayerCount: len(g.Players) + 1,
+			},
+		}); err != nil {
+			log.Printf("failed to publish new game %q: %v", name, err)
+		}
+
 		s.Lock()
 		if _, ok := s.updates[gid]; !ok {
 			s.Unlock()
@@ -175,8 +273,6 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 			}
 		}
 		log.Printf("Player %q rejoined game %q", pid, req.Id)
-
-		// TODO: Send them the info they need to get back up to speed.
 	}
 
 	if pChan == nil {
@@ -252,6 +348,71 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 	return nil
 }
 
+func (s *Server) Spectate(req *pb.SpectateRequest, stream pb.BananaService_SpectateServer) error {
+	gid := banana.GameID(req.Id)
+	g, err := s.db.Game(gid)
+	if err != nil {
+		return err
+	}
+
+	// Stream an initial board for each player.
+	for _, p := range g.Players {
+		err = stream.Send(&pb.SpectateUpdate{
+			PlayerId:   string(p.ID),
+			PlayerName: p.Name,
+			Board:      boardToWire(p.Board),
+		})
+		if err != nil {
+			log.Printf("failed to stream to spectator: %v", err)
+			return fmt.Errorf("failed to stream to spectator: %v", err)
+		}
+	}
+
+	s.RLock()
+	ch := s.channels[gid]
+	s.RUnlock()
+
+	sub, err := s.ps.Subscribe(ch)
+	if err != nil {
+		log.Printf("failed to subscribe to updates for game %q: %v", gid, err)
+		return fmt.Errorf("failed to subscribe to updates for game %q: %v", gid, err)
+	}
+	defer sub.Close()
+
+	for {
+		msg, done := sub.Next()
+		if done {
+			return nil
+		}
+		if msg.Channel != ch {
+			log.Printf("unexpected message from pubsub system: %#v", msg)
+			continue
+		}
+
+		if msg.Payload.Type != pubsub.PayloadTypePlayerMove {
+			continue
+		}
+
+		mv := msg.Payload.PlayerMove
+
+		p, err := s.db.Player(mv.ID)
+		if err != nil {
+			log.Printf("failed to load player: %v", err)
+			continue
+		}
+
+		err = stream.Send(&pb.SpectateUpdate{
+			PlayerId:   string(p.ID),
+			PlayerName: p.Name,
+			Board:      boardToWire(p.Board),
+		})
+		if err != nil {
+			log.Printf("failed to stream to spectator: %v", err)
+			return fmt.Errorf("failed to stream to spectator: %v", err)
+		}
+	}
+}
+
 func (s *Server) sendMove(id banana.GameID, name, word string) {
 	s.updateForGame(id, &pb.GameUpdate{
 		Update: &pb.GameUpdate_MoveUpdate{
@@ -281,7 +442,6 @@ func (s *Server) sendPlayers(id banana.GameID) error {
 			TilesInHand:  int32(p.Tiles.Count()),
 			TilesInBunch: int32(bc),
 		})
-		fmt.Printf("%+v\n", players[len(players)-1])
 	}
 
 	up := &pb.GameUpdate{
@@ -367,6 +527,21 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 		return nil, fmt.Errorf("failed to update player %q: %v", pid, err)
 	}
 
+	s.RLock()
+	ch := s.channels[gid]
+	s.RUnlock()
+
+	if err := s.ps.Publish(ch, &pubsub.Payload{
+		Type: pubsub.PayloadTypePlayerMove,
+		PlayerMove: &pubsub.PlayerMove{
+			ID:   pid,
+			Name: p.Name,
+			Word: req.LatestWord.Text,
+		},
+	}); err != nil {
+		log.Printf("failed to publish player move: %v", err)
+	}
+
 	// A board is peelable if all the words are valid
 	peelable := len(bv.InvalidWords) == 0 && len(bv.UnusedLetters) == 0 && !bv.DetachedBoard
 
@@ -405,40 +580,47 @@ func (s *Server) issuePeel(id banana.GameID, p *banana.Player) error {
 		return fmt.Errorf("failed to retreive game %q: %v", id, err)
 	}
 
+	var gameOver bool
 	// If there are less tiles than players, end the game.
 	if g.Bunch.Count() < len(g.Players) {
-		return s.endGame(id)
+		gameOver = true
 	}
 
-	for pid, c := range s.updates[id] {
-		sp, err := s.db.Player(pid)
-		if err != nil {
-			return fmt.Errorf("failed to retreive player %q: %v", pid, err)
-		}
+	if !gameOver {
+		for pid, c := range s.updates[id] {
+			sp, err := s.db.Player(pid)
+			if err != nil {
+				return fmt.Errorf("failed to retreive player %q: %v", pid, err)
+			}
 
-		tiles, err := g.Bunch.RemoveN(1, s.r)
-		if err != nil {
-			return err
-		}
-		sp.Tiles.Add(tiles)
+			tiles, err := g.Bunch.RemoveN(1, s.r)
+			if err != nil {
+				return err
+			}
+			sp.Tiles.Add(tiles)
 
-		if err := s.db.UpdatePlayer(pid, sp.Board, sp.Tiles); err != nil {
-			return fmt.Errorf("failed to update player %q board: %v", pid, err)
-		}
+			if err := s.db.UpdatePlayer(pid, sp.Board, sp.Tiles); err != nil {
+				return fmt.Errorf("failed to update player %q board: %v", pid, err)
+			}
 
-		c <- &pb.GameUpdate{
-			Update: &pb.GameUpdate_TileUpdate{
-				TileUpdate: &pb.TileUpdate{
-					Event:    pb.TileUpdate_PEEL,
-					Player:   p.Name,
-					AllTiles: &pb.Tiles{Letters: sp.Tiles.AsList()},
+			c <- &pb.GameUpdate{
+				Update: &pb.GameUpdate_TileUpdate{
+					TileUpdate: &pb.TileUpdate{
+						Event:    pb.TileUpdate_PEEL,
+						Player:   p.Name,
+						AllTiles: &pb.Tiles{Letters: sp.Tiles.AsList()},
+					},
 				},
-			},
+			}
 		}
 	}
 
 	if err := s.db.UpdateBunch(id, g.Bunch); err != nil {
 		return fmt.Errorf("UpdateBunch: %v", err)
+	}
+
+	if gameOver {
+		s.endGame(id)
 	}
 
 	return nil

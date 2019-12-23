@@ -225,6 +225,10 @@ export default class Game extends Vue {
       break;
     case TileUpdate.Event.PEEL:
       message += `${up.getPlayer()} peeled`;
+      console.log(this.$cookies.get('player-name'), up.getPlayer());
+      if (this.$cookies.get('player-name') !== up.getPlayer()) {
+        this.hand.flash();
+      }
       break;
     case TileUpdate.Event.DUMP:
       message += `${up.getPlayer()} dumped`;

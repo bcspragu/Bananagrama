@@ -38,7 +38,10 @@ func main() {
 	}
 
 	grpcSrv := grpc.NewServer()
-	server := srv.New(r, memdb.New(r, dict), dict)
+	server, err := srv.New(r, memdb.New(r, dict), dict)
+	if err != nil {
+		log.Fatalf("failed to init server: %v", err)
+	}
 	pb.RegisterBananaServiceServer(grpcSrv, server)
 	go func() {
 		if err := grpcSrv.Serve(lis); err != nil {

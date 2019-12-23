@@ -107,6 +107,7 @@ func (ps *PubSub) removeSubscription(id subscriptionID, channels []Channel) func
 						copy(ss[i:], ss[i+1:])
 					}
 					ss[len(ss)-1] = nil
+					ss = ss[:len(ss)-1]
 					ps.subscriptions[c] = ss
 					break
 				}
