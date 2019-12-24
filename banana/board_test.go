@@ -192,6 +192,11 @@ func TestConnected(t *testing.T) {
 			want:  true,
 		},
 		{
+			// Diagonal is not connected
+			words: []Word{{Horizontal, "cat", Loc{0, 0}}, {Horizontal, "bad", Loc{3, 1}}},
+			want:  false,
+		},
+		{
 			// horse radish, note the space
 			words: []Word{{Vertical, "radish", Loc{0, 6}}, {Vertical, "horse", Loc{0, 0}}},
 			want:  false,
@@ -282,7 +287,7 @@ func TestMalformedPrecompute(t *testing.T) {
 	}
 }
 
-func TestValidateBoard(t *testing.T) {
+func TestValidate(t *testing.T) {
 	dict := &dictImpl{
 		words: map[string]struct{}{
 			"bats":    struct{}{},
@@ -296,7 +301,7 @@ func TestValidateBoard(t *testing.T) {
 		desc    string
 		tiles   *Tiles
 		board   *Board
-		want    BoardValidation
+		want    *BoardValidation
 		wantErr bool
 	}{
 		{
@@ -312,13 +317,12 @@ func TestValidateBoard(t *testing.T) {
 				count: 6,
 			},
 			board: &Board{
-				Dictionary: dict,
 				Words: []Word{
 					{Horizontal, "attack", Loc{0, 0}},
 					{Vertical, "cats", Loc{4, 0}},
 				},
 			},
-			want: BoardValidation{},
+			want: &BoardValidation{},
 		},
 		{
 			desc: "invalid board",
@@ -334,7 +338,6 @@ func TestValidateBoard(t *testing.T) {
 				count: 6,
 			},
 			board: &Board{
-				Dictionary: dict,
 				Words: []Word{
 					{Horizontal, "attack", Loc{0, 0}},
 					{Vertical, "bats", Loc{4, 0}},
@@ -356,13 +359,12 @@ func TestValidateBoard(t *testing.T) {
 				count: 6,
 			},
 			board: &Board{
-				Dictionary: dict,
 				Words: []Word{
 					{Horizontal, "attacks", Loc{0, 0}},
 					{Vertical, "cats", Loc{4, 0}},
 				},
 			},
-			want: BoardValidation{
+			want: &BoardValidation{
 				UnusedLetters: []string{"q", "s"},
 			},
 		},
@@ -379,13 +381,12 @@ func TestValidateBoard(t *testing.T) {
 				count: 6,
 			},
 			board: &Board{
-				Dictionary: dict,
 				Words: []Word{
 					{Horizontal, "attacks", Loc{0, 0}},
 					{Vertical, "catsit", Loc{4, 0}},
 				},
 			},
-			want: BoardValidation{
+			want: &BoardValidation{
 				ExtraLetters: []string{"i", "s", "t"},
 			},
 		},
@@ -404,13 +405,12 @@ func TestValidateBoard(t *testing.T) {
 				count: 6,
 			},
 			board: &Board{
-				Dictionary: dict,
 				Words: []Word{
 					{Horizontal, "attacked", Loc{0, 0}},
 					{Vertical, "cats", Loc{4, 0}},
 				},
 			},
-			want: BoardValidation{
+			want: &BoardValidation{
 				InvalidWords: []CharLocs{
 					CharLocs{Word: "attacked", Locs: []CharLoc{{Letter: 'a'}, {Letter: 't', Loc: Loc{X: 1}}, {Letter: 't', Loc: Loc{X: 2}}, {Letter: 'a', Loc: Loc{X: 3}}, {Letter: 'c', Loc: Loc{X: 4}}, {Letter: 'k', Loc: Loc{X: 5}}, {Letter: 'e', Loc: Loc{X: 6}}, {Letter: 'd', Loc: Loc{X: 7}}}},
 				},
@@ -429,19 +429,18 @@ func TestValidateBoard(t *testing.T) {
 				count: 6,
 			},
 			board: &Board{
-				Dictionary: dict,
 				Words: []Word{
 					{Horizontal, "attack", Loc{0, 0}},
 					{Vertical, "cats", Loc{4, 2}},
 				},
 			},
-			want: BoardValidation{DetachedBoard: true},
+			want: &BoardValidation{DetachedBoard: true},
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			got, err := test.board.ValidateBoard(test.tiles)
+			got, err := test.board.Validate(test.tiles, dict)
 			if err != nil {
 				if test.wantErr {
 					// This is what we wanted.

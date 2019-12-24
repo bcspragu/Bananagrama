@@ -68,23 +68,12 @@ type Loc struct {
 }
 
 func (l Loc) surrounding() []Loc {
-	locs := []Loc{
-		{l.X + 1, l.Y},     // right
-		{l.X, l.Y + 1},     // down
-		{l.X + 1, l.Y + 1}, // down-right
+	return []Loc{
+		{l.X + 1, l.Y}, // right
+		{l.X - 1, l.Y}, // left
+		{l.X, l.Y - 1}, // up
+		{l.X, l.Y + 1}, // down
 	}
-
-	if l.X > 0 {
-		locs = append(locs, Loc{l.X - 1, l.Y} /* left */, Loc{l.X - 1, l.Y + 1} /* down-left */)
-	}
-	if l.Y > 0 {
-		locs = append(locs, Loc{l.X, l.Y - 1} /* up */, Loc{l.X + 1, l.Y - 1} /* up-left*/)
-	}
-
-	if l.X > 0 && l.Y > 0 {
-		locs = append(locs, Loc{l.X - 1, l.Y - 1}) // up-right
-	}
-	return locs
 }
 
 func (w Word) CharLocs() []CharLoc {

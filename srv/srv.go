@@ -60,7 +60,7 @@ func (s *Server) NewGame(ctx context.Context, req *pb.NewGameRequest) (*pb.NewGa
 	if name == "" {
 		return nil, errors.New("must specify a game name")
 	}
-	bunch, err := banana.NewBunch(banana.TestDistribution(), scaleFactor)
+	bunch, err := banana.NewBunch(banana.Bananagrams(), scaleFactor)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make bunch: %v", err)
 	}
@@ -531,12 +531,17 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 	ch := s.channels[gid]
 	s.RUnlock()
 
+	var latestWord string
+	if req.LatestWord != nil {
+		latestWord = req.LatestWord.Text
+	}
+
 	if err := s.ps.Publish(ch, &pubsub.Payload{
 		Type: pubsub.PayloadTypePlayerMove,
 		PlayerMove: &pubsub.PlayerMove{
 			ID:   pid,
 			Name: p.Name,
-			Word: req.LatestWord.Text,
+			Word: latestWord,
 		},
 	}); err != nil {
 		log.Printf("failed to publish player move: %v", err)
