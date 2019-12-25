@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"sort"
 	"sync"
 	"time"
 
@@ -16,19 +17,36 @@ var (
 )
 
 type DB struct {
+	dict banana.Dictionary
+	r    *rand.Rand
+	now  func() time.Time
+
 	sync.RWMutex
-	dict    banana.Dictionary
-	games   map[banana.GameID]*banana.Game
+	// Game-keyed maps
+	games         map[banana.GameID]*banana.Game
+	gameToPlayers map[banana.GameID][]banana.PlayerID
+	bunches       map[banana.GameID]*banana.Bunch
+
+	// Player-keyed maps
 	players map[banana.PlayerID]*banana.Player
-	r       *rand.Rand
+	boards  map[banana.PlayerID]*banana.Board
+	tiles   map[banana.PlayerID]*banana.Tiles
 }
 
 func New(r *rand.Rand, dict banana.Dictionary) *DB {
 	return &DB{
-		dict:    dict,
-		games:   make(map[banana.GameID]*banana.Game),
+		dict: dict,
+
+		games:         make(map[banana.GameID]*banana.Game),
+		gameToPlayers: make(map[banana.GameID][]banana.PlayerID),
+		bunches:       make(map[banana.GameID]*banana.Bunch),
+
 		players: make(map[banana.PlayerID]*banana.Player),
-		r:       r,
+		boards:  make(map[banana.PlayerID]*banana.Board),
+		tiles:   make(map[banana.PlayerID]*banana.Tiles),
+
+		r:   r,
+		now: time.Now,
 	}
 }
 
@@ -38,21 +56,21 @@ func (d *DB) NewGame(name string, b *banana.Bunch) (banana.GameID, error) {
 	defer d.Unlock()
 
 	for i := 0; i < 10; i++ {
-		id := banana.GameID(d.randomID())
-		if _, ok := d.games[id]; ok {
+		gID := banana.GameID(d.randomID())
+		if _, ok := d.games[gID]; ok {
 			// If this ID is taken, that's really unlikely and strange, but just try
 			// again.
 			continue
 		}
-		d.games[id] = &banana.Game{
-			ID:        id,
+		d.games[gID] = &banana.Game{
+			ID:        gID,
 			Name:      name,
-			Players:   []*banana.Player{},
-			Bunch:     b.Clone(),
 			Status:    banana.WaitingForPlayers,
 			CreatedAt: time.Now(),
 		}
-		return id, nil
+		d.gameToPlayers[gID] = []banana.PlayerID{}
+		d.bunches[gID] = b.Clone()
+		return gID, nil
 	}
 	return banana.GameID(""), errors.New("failed to find unique game ID after 10 tries, something is terribly wrong")
 }
@@ -63,8 +81,12 @@ func (d *DB) Games() ([]*banana.Game, error) {
 
 	var gs []*banana.Game
 	for _, g := range d.games {
-		gs = append(gs, g)
+		gs = append(gs, g.Clone())
 	}
+
+	sort.Slice(gs, func(i, j int) bool {
+		return gs[i].CreatedAt.Before(gs[j].CreatedAt)
+	})
 
 	return gs, nil
 }
@@ -81,116 +103,164 @@ func (d *DB) Game(id banana.GameID) (*banana.Game, error) {
 	return g.Clone(), nil
 }
 
-// Loads a player with the given ID.
-func (d *DB) Player(id banana.PlayerID) (*banana.Player, error) {
+// Loads the bunch for the game with the given ID.
+func (d *DB) Bunch(id banana.GameID) (*banana.Bunch, error) {
 	d.RLock()
 	defer d.RUnlock()
 
-	p, ok := d.players[id]
+	b, ok := d.bunches[id]
+	if !ok {
+		return nil, ErrGameNotFound
+	}
+	return b.Clone(), nil
+}
+
+// Adds a player to a game.
+func (d *DB) AddPlayer(gID banana.GameID, name string) (banana.PlayerID, error) {
+	d.Lock()
+	defer d.Unlock()
+
+	if _, ok := d.games[gID]; !ok {
+		return banana.PlayerID(""), ErrGameNotFound
+	}
+
+	for i := 0; i < 10; i++ {
+		pID := banana.PlayerID(d.randomID())
+		if _, ok := d.players[pID]; ok {
+			// If this ID is taken, that's really unlikely and strange, but just try
+			// again.
+			continue
+		}
+
+		// If we're here, we've found a unique ID that we can use and return.
+		p := &banana.Player{
+			ID:      pID,
+			Name:    name,
+			AddedAt: d.now(),
+		}
+		d.gameToPlayers[gID] = append(d.gameToPlayers[gID], pID)
+		d.players[pID] = p
+		d.boards[pID] = &banana.Board{}
+		d.tiles[pID] = banana.NewTiles()
+
+		return pID, nil
+	}
+
+	return banana.PlayerID(""), errors.New("failed to find unique player ID after 10 tries, something is terribly wrong")
+}
+
+// Get all the players for a given game.
+func (d *DB) Players(id banana.GameID) ([]*banana.Player, error) {
+	d.RLock()
+	defer d.RUnlock()
+
+	pIDs, ok := d.gameToPlayers[id]
+	if !ok {
+		return nil, ErrGameNotFound
+	}
+
+	var ps []*banana.Player
+	for _, pID := range pIDs {
+		ps = append(ps, d.players[pID].Clone())
+	}
+
+	return ps, nil
+}
+
+// Loads a player with the given ID.
+func (d *DB) Player(pID banana.PlayerID) (*banana.Player, error) {
+	d.RLock()
+	defer d.RUnlock()
+
+	p, ok := d.players[pID]
 	if !ok {
 		return nil, ErrPlayerNotFound
 	}
 	return p.Clone(), nil
 }
 
-// Adds a player to a not-yet-started game.
-func (d *DB) AddPlayer(id banana.GameID, name string) (banana.PlayerID, error) {
-	d.Lock()
-	defer d.Unlock()
+func (d *DB) Board(pID banana.PlayerID) (*banana.Board, error) {
+	d.RLock()
+	defer d.RUnlock()
 
-	g, ok := d.games[id]
+	b, ok := d.boards[pID]
 	if !ok {
-		return banana.PlayerID(""), ErrGameNotFound
+		return nil, ErrPlayerNotFound
 	}
-
-	pid, err := d.randomPlayerID(id)
-	if err != nil {
-		return banana.PlayerID(""), err
-	}
-
-	p := &banana.Player{
-		ID:    pid,
-		Name:  name,
-		Board: &banana.Board{},
-		Tiles: banana.NewTiles(),
-	}
-
-	g.Players = append(g.Players, p)
-	d.players[pid] = p
-
-	return pid, nil
+	return b.Clone(), nil
 }
 
-// randomPlayerID returns a random player ID that includes the given GameID.
-// This function expects that the caller already holds a lock on the internal
-// state of the DB.
-func (d *DB) randomPlayerID(id banana.GameID) (banana.PlayerID, error) {
-	for i := 0; i < 10; i++ {
-		pid := banana.PlayerID(string(id) + ":" + d.randomID())
-		if _, ok := d.players[pid]; ok {
-			// If this ID is taken, that's really unlikely and strange, but just try
-			// again.
-			continue
-		}
-		// If we're here, we've found a unique ID that we can return.
-		return pid, nil
+func (d *DB) Tiles(pID banana.PlayerID) (*banana.Tiles, error) {
+	d.RLock()
+	defer d.RUnlock()
+
+	t, ok := d.tiles[pID]
+	if !ok {
+		return nil, ErrPlayerNotFound
 	}
-	return banana.PlayerID(""), errors.New("failed to find unique player ID after 10 tries, something is terribly wrong")
+	return t.Clone(), nil
 }
 
 // Updates a player's board.
-func (d *DB) UpdatePlayer(id banana.PlayerID, board *banana.Board, tiles *banana.Tiles) error {
+func (d *DB) UpdateBoard(pID banana.PlayerID, board *banana.Board) error {
 	d.Lock()
 	defer d.Unlock()
 
-	p, ok := d.players[id]
-	if !ok {
+	if _, ok := d.boards[pID]; !ok {
 		return ErrPlayerNotFound
 	}
 
-	p.Board = board.Clone()
-	p.Tiles = tiles.Clone()
+	d.boards[pID] = board
+	return nil
+}
 
+// Updates a player's tiles.
+func (d *DB) UpdateTiles(pID banana.PlayerID, tiles *banana.Tiles) error {
+	d.Lock()
+	defer d.Unlock()
+
+	if _, ok := d.tiles[pID]; !ok {
+		return ErrPlayerNotFound
+	}
+
+	d.tiles[pID] = tiles
 	return nil
 }
 
 // Updates the bunch for the game.
-func (d *DB) UpdateBunch(id banana.GameID, bunch *banana.Bunch) error {
+func (d *DB) UpdateBunch(gID banana.GameID, bunch *banana.Bunch) error {
 	d.Lock()
 	defer d.Unlock()
 
-	g, ok := d.games[id]
-	if !ok {
+	if _, ok := d.bunches[gID]; !ok {
 		return ErrGameNotFound
 	}
 
-	g.Bunch = bunch.Clone()
-
+	d.bunches[gID] = bunch
 	return nil
 }
 
 // Starts a game, and sets everyone's initial tile sets.
-func (d *DB) StartGame(id banana.GameID, players map[banana.PlayerID]*banana.Tiles, bunch *banana.Bunch) error {
+func (d *DB) StartGame(gID banana.GameID, players map[banana.PlayerID]*banana.Tiles, bunch *banana.Bunch) error {
 	d.Lock()
 	defer d.Unlock()
 
-	g, ok := d.games[id]
+	g, ok := d.games[gID]
 	if !ok {
 		return ErrGameNotFound
 	}
 	g.Status = banana.InProgress
-	g.Bunch = bunch.Clone()
+	d.bunches[gID] = bunch.Clone()
 
-	if len(g.Players) != len(players) {
-		return fmt.Errorf("%d players in game, %d players in tile set map", len(g.Players), len(players))
+	if n := len(d.gameToPlayers[gID]); n != len(players) {
+		return fmt.Errorf("%d players in game, %d players in tile set map", n, len(players))
 	}
 
-	for pid, tiles := range players {
-		p, ok := d.players[pid]
-		if !ok {
+	for pID, tiles := range players {
+		if _, ok := d.tiles[pID]; !ok {
 			return ErrPlayerNotFound
 		}
-		p.Tiles = tiles.Clone()
+		d.tiles[pID] = tiles.Clone()
 	}
 
 	return nil
@@ -205,15 +275,15 @@ func (d *DB) EndGame(id banana.GameID) error {
 	if !ok {
 		return ErrGameNotFound
 	}
-
 	g.Status = banana.Finished
+
 	return nil
 }
 
 var letters = []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 func (d *DB) randomID() string {
-	b := make([]byte, 4)
+	b := make([]byte, 5)
 	for i := range b {
 		b[i] = letters[d.r.Intn(len(letters))]
 	}

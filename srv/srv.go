@@ -31,8 +31,8 @@ type Server struct {
 	gameUpdateChannel pubsub.Channel
 
 	sync.RWMutex
-	updates  map[banana.GameID]map[banana.PlayerID]chan *pb.GameUpdate
-	channels map[banana.GameID]pubsub.Channel
+	gameChannels   map[banana.GameID]pubsub.Channel
+	playerChannels map[banana.PlayerID]pubsub.Channel
 }
 
 func New(r *rand.Rand, db banana.DB, dict banana.Dictionary) (*Server, error) {
@@ -48,8 +48,8 @@ func New(r *rand.Rand, db banana.DB, dict banana.Dictionary) (*Server, error) {
 		db:                db,
 		dict:              dict,
 		gameUpdateChannel: gameUpdateChannel,
-		updates:           make(map[banana.GameID]map[banana.PlayerID]chan *pb.GameUpdate),
-		channels:          make(map[banana.GameID]pubsub.Channel),
+		gameChannels:      make(map[banana.GameID]pubsub.Channel),
+		playerChannels:    make(map[banana.PlayerID]pubsub.Channel),
 	}, nil
 }
 
@@ -60,7 +60,8 @@ func (s *Server) NewGame(ctx context.Context, req *pb.NewGameRequest) (*pb.NewGa
 	if name == "" {
 		return nil, errors.New("must specify a game name")
 	}
-	bunch, err := banana.NewBunch(banana.Bananagrams(), scaleFactor)
+
+	bunch, err := banana.NewBunch(banana.TestDistribution(), scaleFactor)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make bunch: %v", err)
 	}
@@ -69,15 +70,15 @@ func (s *Server) NewGame(ctx context.Context, req *pb.NewGameRequest) (*pb.NewGa
 	if err != nil {
 		return nil, err
 	}
+
 	s.Lock()
-	s.updates[id] = make(map[banana.PlayerID]chan *pb.GameUpdate)
 	ch, err := s.ps.NewChannel(string(id))
 	if err != nil {
 		log.Printf("failed to create channel for game %q: %v", id, err)
 		s.Unlock()
 		return nil, fmt.Errorf("failed to create channel for game %q: %v", id, err)
 	}
-	s.channels[id] = ch
+	s.gameChannels[id] = ch
 	s.Unlock()
 
 	if err := s.ps.Publish(s.gameUpdateChannel, &pubsub.Payload{
@@ -90,6 +91,7 @@ func (s *Server) NewGame(ctx context.Context, req *pb.NewGameRequest) (*pb.NewGa
 	}); err != nil {
 		log.Printf("failed to publish new game %q: %v", name, err)
 	}
+
 	return &pb.NewGameResponse{Id: string(id)}, nil
 }
 
@@ -102,11 +104,16 @@ func (s *Server) ListGames(ctx context.Context, req *pb.ListGamesRequest) (*pb.L
 
 	var pbgs []*pb.Game
 	for _, g := range gs {
+		ps, err := s.db.Players(g.ID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get players: %v", err)
+		}
+
 		pbgs = append(pbgs, &pb.Game{
 			Id:          string(g.ID),
 			Name:        g.Name,
 			Status:      gameStatusMap[g.Status],
-			PlayerCount: int32(len(g.Players)),
+			PlayerCount: int32(len(ps)),
 		})
 	}
 
@@ -118,15 +125,19 @@ func (s *Server) StreamGames(req *pb.ListGamesRequest, stream pb.BananaService_S
 	if err != nil {
 		return fmt.Errorf("failed to get games: %v", err)
 	}
-	sort.Slice(gs, func(i, j int) bool { return gs[i].CreatedAt.Before(gs[j].CreatedAt) })
 
 	var pbgs []*pb.Game
 	for _, g := range gs {
+		ps, err := s.db.Players(g.ID)
+		if err != nil {
+			return fmt.Errorf("failed to get players: %v", err)
+		}
+
 		pbgs = append(pbgs, &pb.Game{
 			Id:          string(g.ID),
 			Name:        g.Name,
 			Status:      gameStatusMap[g.Status],
-			PlayerCount: int32(len(g.Players)),
+			PlayerCount: int32(len(ps)),
 		})
 	}
 
@@ -167,8 +178,8 @@ func (s *Server) StreamGames(req *pb.ListGamesRequest, stream pb.BananaService_S
 }
 
 func (s *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (*pb.StartGameResponse, error) {
-	gid := banana.GameID(req.Id)
-	g, err := s.db.Game(gid)
+	gID := banana.GameID(req.Id)
+	g, err := s.db.Game(gID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retreive game id %q: %v", req.Id, err)
 	}
@@ -178,49 +189,62 @@ func (s *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (*pb.S
 		return nil, fmt.Errorf("can't start game in state %q", g.Status)
 	}
 
-	numTiles := banana.StartingTileCount(len(g.Players), scaleFactor)
+	ps, err := s.db.Players(gID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retreive players for game id %q: %v", req.Id, err)
+	}
+
+	bunch, err := s.db.Bunch(gID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retreive bunch for game id %q: %v", req.Id, err)
+	}
+
+	numTiles := banana.StartingTileCount(len(ps), scaleFactor)
+
 	players := make(map[banana.PlayerID]*banana.Tiles)
-	for _, p := range g.Players {
-		tls, err := g.Bunch.RemoveN(numTiles, s.r)
+	for _, p := range ps {
+		tls, err := bunch.RemoveN(numTiles, s.r)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get %d tiles for player (%q, %q): %v", numTiles, p.ID, p.Name, err)
 		}
 		players[p.ID] = tls
+
+		s.sendPlayerUpdate(p.ID, &pubsub.Payload{
+			Type:       pubsub.PayloadTypeTileUpdate,
+			TileUpdate: &pubsub.TileUpdate{Tiles: tls},
+		})
 	}
 
-	if err := s.db.StartGame(gid, players, g.Bunch); err != nil {
+	if err := s.db.StartGame(gID, players, bunch); err != nil {
 		return nil, err
 	}
 
-	s.updateForGame(gid, &pb.GameUpdate{
-		Update: &pb.GameUpdate_StatusUpdate{
-			StatusUpdate: &pb.StatusUpdate{Status: pb.StatusUpdate_GAME_STARTED},
+	s.sendGameUpdate(gID, &pubsub.Payload{
+		Type: pubsub.PayloadTypeGameStarted,
+		GameStarted: &pubsub.GameStarted{
+			NumStartingTiles: numTiles,
 		},
 	})
-
-	if err := s.sendTiles(gid, &pb.TileUpdate{Event: pb.TileUpdate_SPLIT}); err != nil {
-		return nil, fmt.Errorf("failed to send tiles: %v", err)
-	}
-
-	if err := s.sendPlayers(gid); err != nil {
-		return nil, fmt.Errorf("failed to send players: %v", err)
-	}
 
 	return &pb.StartGameResponse{}, nil
 }
 
 func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinGameServer) error {
-	gid := banana.GameID(req.Id)
-	g, err := s.db.Game(gid)
+	gID := banana.GameID(req.Id)
+	g, err := s.db.Game(gID)
 	if err != nil {
 		return fmt.Errorf("failed to retreive game id %q: %v", req.Id, err)
 	}
 
 	var (
-		pChan chan *pb.GameUpdate
-		pid   banana.PlayerID
+		pID   banana.PlayerID
 		pName string
 	)
+
+	players, err := s.db.Players(gID)
+	if err != nil {
+		return fmt.Errorf("failed to retreive players for game id %q: %v", gID, err)
+	}
 
 	// Try to add a new player if they weren't already in the game.
 	if req.PlayerId == "" {
@@ -235,7 +259,7 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 		}
 		pName = name
 
-		if pid, err = s.db.AddPlayer(gid, name); err != nil {
+		if pID, err = s.db.AddPlayer(gID, name); err != nil {
 			return err
 		}
 		if err := s.ps.Publish(s.gameUpdateChannel, &pubsub.Payload{
@@ -244,100 +268,162 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 				ID:          g.ID,
 				Name:        g.Name,
 				Status:      g.Status,
-				PlayerCount: len(g.Players) + 1,
+				PlayerCount: len(players) + 1,
 			},
 		}); err != nil {
 			log.Printf("failed to publish new game %q: %v", name, err)
 		}
 
+		s.sendGameUpdate(gID, &pubsub.Payload{
+			Type: pubsub.PayloadTypePlayerJoined,
+			PlayerJoined: &pubsub.PlayerJoined{
+				ID:   pID,
+				Name: name,
+			},
+		})
+
 		s.Lock()
-		if _, ok := s.updates[gid]; !ok {
+		pch, err := s.ps.NewChannel(string(pID))
+		if err != nil {
+			log.Printf("failed to create channel for player %q: %v", pID, err)
 			s.Unlock()
-			return fmt.Errorf("game %q not found", gid)
+			return fmt.Errorf("failed to create channel for player %q: %v", pName, err)
 		}
-		pChan = make(chan *pb.GameUpdate)
-		s.updates[gid][pid] = pChan
+		s.playerChannels[pID] = pch
 		s.Unlock()
-		log.Printf("Added player %q to game %q", pid, req.Id)
 	} else {
 		// Find the player in the game.
-		for _, p := range g.Players {
+		found := false
+		for _, p := range players {
 			if p.ID == banana.PlayerID(req.PlayerId) {
-				// TODO: Maybe add a check that updates[gid] exists, like above.
-				s.RLock()
-				pChan = s.updates[gid][p.ID]
-				pid = p.ID
+				pID = p.ID
 				pName = p.Name
-				s.RUnlock()
+				found = true
 				break
 			}
 		}
-		log.Printf("Player %q rejoined game %q", pid, req.Id)
+		if !found {
+			return fmt.Errorf("failed to add or find player: %+v", req)
+		}
 	}
 
-	if pChan == nil {
-		return fmt.Errorf("failed to add or find player: %+v", req)
+	wps, err := s.wirePlayers(gID)
+	if err != nil {
+		return err
 	}
 
-	stream.Send(&pb.GameUpdate{
-		Update: &pb.GameUpdate_YouUpdate{
-			YouUpdate: &pb.YouUpdate{YourId: string(pid)},
-		},
-	})
+	bunch, err := s.db.Bunch(gID)
+	if err != nil {
+		return err
+	}
 
-	p, err := s.db.Player(pid)
+	board, err := s.db.Board(pID)
+	if err != nil {
+		return err
+	}
+
+	tiles, err := s.db.Tiles(pID)
 	if err != nil {
 		return err
 	}
 
 	stream.Send(&pb.GameUpdate{
-		Update: &pb.GameUpdate_BoardUpdate{
-			BoardUpdate: &pb.BoardUpdate{Board: boardToWire(p.Board)},
-		},
-	})
-
-	stream.Send(&pb.GameUpdate{
-		Update: &pb.GameUpdate_TileUpdate{
-			TileUpdate: &pb.TileUpdate{
-				Event:    pb.TileUpdate_JOIN,
-				Player:   p.Name,
-				AllTiles: &pb.Tiles{Letters: p.Tiles.AsList()},
+		Update: &pb.GameUpdate_CurrentStatus{
+			CurrentStatus: &pb.CurrentStatus{
+				YourId:         string(pID),
+				Players:        wps,
+				RemainingTiles: int32(bunch.Count()),
+				Board:          boardToWire(board),
+				AllTiles: &pb.Tiles{
+					Letters: tiles.AsList(),
+				},
 			},
 		},
 	})
 
-	go func() {
-		s.updateForGame(gid, &pb.GameUpdate{
-			Update: &pb.GameUpdate_StatusUpdate{
-				StatusUpdate: &pb.StatusUpdate{Status: pb.StatusUpdate_GAME_STARTED},
-			},
-		})
+	s.RLock()
+	gch := s.gameChannels[gID]
+	pch := s.playerChannels[pID]
+	s.RUnlock()
 
-		if err := s.sendPlayers(gid); err != nil {
-			log.Printf("Failed to send player list for game %q: %v", gid, err)
-		}
-	}()
+	sub, err := s.ps.Subscribe(gch, pch)
+	if err != nil {
+		log.Printf("failed to subscribe to new game updates: %v", err)
+		return nil
+	}
+	defer sub.Close()
 
 	for {
-		update := <-s.updates[gid][pid]
-
-		gameOver := false
-		switch u := update.Update.(type) {
-		case *pb.GameUpdate_PlayerUpdate:
-			// Handle PlayerUpdate.
-		case *pb.GameUpdate_StatusUpdate:
-			su := u.StatusUpdate
-			// Handle StatusUpdate.
-			if su.Status == pb.StatusUpdate_GAME_OVER {
-				gameOver = true
-			}
-		case *pb.GameUpdate_TileUpdate:
-			// Handle TileUpdate.
+		msg, done := sub.Next()
+		if done {
+			return nil
 		}
 
-		if err := stream.Send(update); err != nil {
-			log.Printf("stream closed for player %q: %v", pName, err)
-			return nil
+		gameOver := false
+		var update *pb.GameUpdate
+		switch msg.Payload.Type {
+		case pubsub.PayloadTypeGameStarted:
+			update = &pb.GameUpdate{
+				Update: &pb.GameUpdate_GameStarted{
+					GameStarted: &pb.GameStarted{
+						NumStartingTiles: int32(msg.Payload.GameStarted.NumStartingTiles),
+					},
+				},
+			}
+		case pubsub.PayloadTypeGameEnded:
+			update = &pb.GameUpdate{
+				Update: &pb.GameUpdate_GameEnded{
+					GameEnded: &pb.GameEnded{
+						// TODO: Populate the final standings.
+					},
+				},
+			}
+			gameOver = true
+		case pubsub.PayloadTypePlayerJoined:
+			update = &pb.GameUpdate{
+				Update: &pb.GameUpdate_PlayerUpdate{
+					PlayerUpdate: &pb.PlayerUpdate{
+						Player: &pb.Player{
+							Id:   string(msg.Payload.PlayerJoined.ID),
+							Name: msg.Payload.PlayerJoined.Name,
+						},
+						RemainingTiles: int32(-1),
+					},
+				},
+			}
+		case pubsub.PayloadTypePlayerMove:
+			update = &pb.GameUpdate{
+				Update: &pb.GameUpdate_PlayerUpdate{
+					PlayerUpdate: &pb.PlayerUpdate{
+						Player: &pb.Player{
+							Id:           string(msg.Payload.PlayerMove.ID),
+							Name:         msg.Payload.PlayerMove.Name,
+							TilesInHand:  int32(msg.Payload.PlayerMove.TilesInHand),
+							TilesInBoard: int32(msg.Payload.PlayerMove.TilesInBoard),
+						},
+						RemainingTiles: int32(msg.Payload.PlayerMove.TilesInBunch),
+					},
+				},
+			}
+		case pubsub.PayloadTypeTileUpdate:
+			update = &pb.GameUpdate{
+				Update: &pb.GameUpdate_TileUpdate{
+					TileUpdate: &pb.TileUpdate{
+						AllTiles: &pb.Tiles{
+							Letters: msg.Payload.TileUpdate.Tiles.AsList(),
+						},
+					},
+				},
+			}
+		case pubsub.PayloadTypeWordFail:
+		case pubsub.PayloadTypeBoardFail:
+		}
+
+		if update != nil {
+			if err := stream.Send(update); err != nil {
+				log.Printf("stream closed for player %q: %v", pName, err)
+				return nil
+			}
 		}
 
 		if gameOver {
@@ -349,18 +435,24 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 }
 
 func (s *Server) Spectate(req *pb.SpectateRequest, stream pb.BananaService_SpectateServer) error {
-	gid := banana.GameID(req.Id)
-	g, err := s.db.Game(gid)
+	gID := banana.GameID(req.Id)
+
+	ps, err := s.db.Players(gID)
 	if err != nil {
 		return err
 	}
 
 	// Stream an initial board for each player.
-	for _, p := range g.Players {
+	for _, p := range ps {
+		board, err := s.db.Board(p.ID)
+		if err != nil {
+			return err
+		}
+
 		err = stream.Send(&pb.SpectateUpdate{
 			PlayerId:   string(p.ID),
 			PlayerName: p.Name,
-			Board:      boardToWire(p.Board),
+			Board:      boardToWire(board),
 		})
 		if err != nil {
 			log.Printf("failed to stream to spectator: %v", err)
@@ -369,13 +461,13 @@ func (s *Server) Spectate(req *pb.SpectateRequest, stream pb.BananaService_Spect
 	}
 
 	s.RLock()
-	ch := s.channels[gid]
+	ch := s.gameChannels[gID]
 	s.RUnlock()
 
 	sub, err := s.ps.Subscribe(ch)
 	if err != nil {
-		log.Printf("failed to subscribe to updates for game %q: %v", gid, err)
-		return fmt.Errorf("failed to subscribe to updates for game %q: %v", gid, err)
+		log.Printf("failed to subscribe to updates for game %q: %v", gID, err)
+		return fmt.Errorf("failed to subscribe to updates for game %q: %v", gID, err)
 	}
 	defer sub.Close()
 
@@ -401,10 +493,16 @@ func (s *Server) Spectate(req *pb.SpectateRequest, stream pb.BananaService_Spect
 			continue
 		}
 
+		board, err := s.db.Board(mv.ID)
+		if err != nil {
+			log.Printf("failed to load board: %v", err)
+			continue
+		}
+
 		err = stream.Send(&pb.SpectateUpdate{
 			PlayerId:   string(p.ID),
 			PlayerName: p.Name,
-			Board:      boardToWire(p.Board),
+			Board:      boardToWire(board),
 		})
 		if err != nil {
 			log.Printf("failed to stream to spectator: %v", err)
@@ -413,95 +511,49 @@ func (s *Server) Spectate(req *pb.SpectateRequest, stream pb.BananaService_Spect
 	}
 }
 
-func (s *Server) sendMove(id banana.GameID, name, word string) {
-	s.updateForGame(id, &pb.GameUpdate{
-		Update: &pb.GameUpdate_MoveUpdate{
-			MoveUpdate: &pb.MoveUpdate{
-				Player: name,
-				Word:   word,
-			},
-		},
-	})
-}
-
-func (s *Server) sendPlayers(id banana.GameID) error {
-	g, err := s.db.Game(id)
-	if err != nil {
-		return err
-	}
-
-	var players []*pb.Player
-	for _, p := range g.Players {
-		bc, err := p.Board.Count()
-		if err != nil {
-			return fmt.Errorf("failed to get board count: %v", err)
-		}
-
-		players = append(players, &pb.Player{
-			Name:         p.Name,
-			TilesInHand:  int32(p.Tiles.Count()),
-			TilesInBunch: int32(bc),
-		})
-	}
-
-	up := &pb.GameUpdate{
-		Update: &pb.GameUpdate_PlayerUpdate{
-			PlayerUpdate: &pb.PlayerUpdate{
-				Players:        players,
-				RemainingTiles: int32(g.Bunch.Count()),
-			},
-		},
-	}
-
-	s.updateForGame(id, up)
-	return nil
-}
-
-func (s *Server) sendTiles(id banana.GameID, base *pb.TileUpdate) error {
-	g, err := s.db.Game(id)
-	if err != nil {
-		return err
-	}
-
+func (s *Server) sendPlayerUpdate(pID banana.PlayerID, up *pubsub.Payload) {
 	s.RLock()
-	for _, p := range g.Players {
-		s.updates[id][p.ID] <- &pb.GameUpdate{
-			Update: &pb.GameUpdate_TileUpdate{
-				TileUpdate: &pb.TileUpdate{
-					Event:    base.Event,
-					Player:   base.Player,
-					AllTiles: &pb.Tiles{Letters: p.Tiles.AsList()},
-				},
-			},
-		}
-	}
+	ch := s.playerChannels[pID]
 	s.RUnlock()
-	return nil
+
+	if err := s.ps.Publish(ch, up); err != nil {
+		log.Printf("failed to publish player update: %v", err)
+	}
 }
 
-func (s *Server) updateForGame(id banana.GameID, up *pb.GameUpdate) {
+func (s *Server) sendGameUpdate(id banana.GameID, up *pubsub.Payload) {
 	s.RLock()
-	for _, pc := range s.updates[id] {
-		pc <- up
-	}
+	ch := s.gameChannels[id]
 	s.RUnlock()
+
+	if err := s.ps.Publish(ch, up); err != nil {
+		log.Printf("failed to publish game update: %v", err)
+	}
 }
 
 func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*pb.UpdateBoardResponse, error) {
-	gid := banana.GameID(req.Id)
 	// Convert the board to our domain format.
 	b := boardFromWire(req.Board)
 
-	pid := banana.PlayerID(req.PlayerId)
-	p, err := s.db.Player(pid)
+	pID := banana.PlayerID(req.PlayerId)
+	p, err := s.db.Player(pID)
 	if err != nil {
 		log.Printf("failed to get player %q: %v", req.PlayerId, err)
 		return nil, fmt.Errorf("failed to get player %q: %v", req.PlayerId, err)
 	}
 
+	board, err := s.db.Board(pID)
+	if err != nil {
+		return nil, err
+	}
+
+	tiles, err := s.db.Tiles(pID)
+	if err != nil {
+		return nil, err
+	}
+
 	// Add existing board to tiles.
-	tiles := p.Tiles.Clone()
-	bts, err := p.Board.AsTiles()
+	bts, err := board.AsTiles()
 	if err != nil {
 		log.Printf("failed to get board tiles")
 		return nil, fmt.Errorf("failed to get board tiles")
@@ -522,51 +574,108 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 		return nil, fmt.Errorf("used letters you don't have: %v", bv.ExtraLetters)
 	}
 
-	if err := s.db.UpdatePlayer(pid, b, b.Diff(tiles)); err != nil {
-		log.Printf("failed to update player %q: %v", pid, err)
-		return nil, fmt.Errorf("failed to update player %q: %v", pid, err)
+	if err := s.db.UpdateBoard(pID, b); err != nil {
+		log.Printf("failed to update board %q: %v", pID, err)
+		return nil, fmt.Errorf("failed to update board %q: %v", pID, err)
 	}
 
-	s.RLock()
-	ch := s.channels[gid]
-	s.RUnlock()
-
-	var latestWord string
-	if req.LatestWord != nil {
-		latestWord = req.LatestWord.Text
-	}
-
-	if err := s.ps.Publish(ch, &pubsub.Payload{
-		Type: pubsub.PayloadTypePlayerMove,
-		PlayerMove: &pubsub.PlayerMove{
-			ID:   pid,
-			Name: p.Name,
-			Word: latestWord,
-		},
-	}); err != nil {
-		log.Printf("failed to publish player move: %v", err)
+	tilesInHand := b.Diff(tiles)
+	if err := s.db.UpdateTiles(pID, tilesInHand); err != nil {
+		log.Printf("failed to update tiles %q: %v", pID, err)
+		return nil, fmt.Errorf("failed to update tiles %q: %v", pID, err)
 	}
 
 	// A board is peelable if all the words are valid
 	peelable := len(bv.InvalidWords) == 0 && len(bv.UnusedLetters) == 0 && !bv.DetachedBoard
 
+	gID := banana.GameID(req.Id)
+	bunch, err := s.db.Bunch(gID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retreive bunch for game %q: %v", gID, err)
+	}
+
 	// If the board was valid, clear out their tiles and let everyone know what's
 	// up.
 	if peelable {
-		if err := s.issuePeel(gid, p); err != nil {
-			log.Printf("failed to issue peels: %v", err)
-			return nil, fmt.Errorf("failed to issue peels: %v", err)
+		ps, err := s.db.Players(gID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to retreive players for game %q: %v", gID, err)
+		}
+
+		var gameOver bool
+		// If there are less tiles than players, end the game.
+		if bunch.Count() < len(ps) {
+			gameOver = true
+		}
+
+		tileCounts := make(map[banana.PlayerID]int)
+		if !gameOver {
+			for _, p := range ps {
+				newTile, err := bunch.RemoveN(1, s.r)
+				if err != nil {
+					return nil, err
+				}
+
+				tiles, err := s.db.Tiles(p.ID)
+				if err != nil {
+					return nil, err
+				}
+				tiles.Add(newTile)
+
+				if err := s.db.UpdateTiles(p.ID, tiles); err != nil {
+					return nil, fmt.Errorf("failed to update player %q tiles: %v", p.ID, err)
+				}
+				tileCounts[p.ID] = tiles.Count()
+
+				s.sendPlayerUpdate(p.ID, &pubsub.Payload{
+					Type: pubsub.PayloadTypeTileUpdate,
+					TileUpdate: &pubsub.TileUpdate{
+						Tiles: tiles,
+					},
+				})
+			}
+		}
+
+		for _, p := range ps {
+			board, err := s.db.Board(p.ID)
+			if err != nil {
+				return nil, err
+			}
+
+			bc, err := board.Count()
+			if err != nil {
+				return nil, err
+			}
+
+			s.sendGameUpdate(gID, &pubsub.Payload{
+				Type: pubsub.PayloadTypePlayerMove,
+				PlayerMove: &pubsub.PlayerMove{
+					ID:           p.ID,
+					Name:         p.Name,
+					TilesInHand:  tileCounts[p.ID],
+					TilesInBoard: bc,
+					TilesInBunch: bunch.Count(),
+					Peeled:       true,
+				},
+			})
+		}
+
+		if err := s.db.UpdateBunch(gID, bunch); err != nil {
+			return nil, fmt.Errorf("UpdateBunch: %v", err)
+		}
+
+		if gameOver {
+			if err := s.endGame(gID, p.Name); err != nil {
+				return nil, fmt.Errorf("endGame: %v", err)
+			}
 		}
 	}
 
-	if err := s.sendPlayers(gid); err != nil {
-		log.Printf("failed to update players: %v", err)
-		return nil, fmt.Errorf("failed to update players: %v", err)
-	}
-
-	if req.LatestWord != nil {
-		s.sendMove(gid, p.Name, req.LatestWord.Text)
-	}
+	// TODO: Add latest word logging back.
+	//var latestWord string
+	//if req.LatestWord != nil {
+	//latestWord = req.LatestWord.Text
+	//}
 
 	// Convert the status to the wire format.
 	return &pb.UpdateBoardResponse{
@@ -576,84 +685,28 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 	}, nil
 }
 
-func (s *Server) issuePeel(id banana.GameID, p *banana.Player) error {
+func (s *Server) endGame(gID banana.GameID, name string) error {
 	s.RLock()
-	defer s.RUnlock()
+	ch := s.gameChannels[gID]
+	s.RUnlock()
 
-	g, err := s.db.Game(id)
-	if err != nil {
-		return fmt.Errorf("failed to retreive game %q: %v", id, err)
+	if err := s.ps.Publish(ch, &pubsub.Payload{
+		Type:      pubsub.PayloadTypeGameEnded,
+		GameEnded: &pubsub.GameEnded{Winner: name},
+	}); err != nil {
+		log.Printf("failed to publish player move: %v", err)
 	}
 
-	var gameOver bool
-	// If there are less tiles than players, end the game.
-	if g.Bunch.Count() < len(g.Players) {
-		gameOver = true
-	}
-
-	if !gameOver {
-		for pid, c := range s.updates[id] {
-			sp, err := s.db.Player(pid)
-			if err != nil {
-				return fmt.Errorf("failed to retreive player %q: %v", pid, err)
-			}
-
-			tiles, err := g.Bunch.RemoveN(1, s.r)
-			if err != nil {
-				return err
-			}
-			sp.Tiles.Add(tiles)
-
-			if err := s.db.UpdatePlayer(pid, sp.Board, sp.Tiles); err != nil {
-				return fmt.Errorf("failed to update player %q board: %v", pid, err)
-			}
-
-			c <- &pb.GameUpdate{
-				Update: &pb.GameUpdate_TileUpdate{
-					TileUpdate: &pb.TileUpdate{
-						Event:    pb.TileUpdate_PEEL,
-						Player:   p.Name,
-						AllTiles: &pb.Tiles{Letters: sp.Tiles.AsList()},
-					},
-				},
-			}
-		}
-	}
-
-	if err := s.db.UpdateBunch(id, g.Bunch); err != nil {
-		return fmt.Errorf("UpdateBunch: %v", err)
-	}
-
-	if gameOver {
-		s.endGame(id)
-	}
-
-	return nil
-}
-
-func (s *Server) endGame(id banana.GameID) error {
-	for _, c := range s.updates[id] {
-		c <- &pb.GameUpdate{
-			Update: &pb.GameUpdate_StatusUpdate{
-				StatusUpdate: &pb.StatusUpdate{Status: pb.StatusUpdate_GAME_OVER},
-			},
-		}
-	}
-	return s.db.EndGame(id)
+	return s.db.EndGame(gID)
 }
 
 // Dump exchanges a player's letter for three from the bunch
 func (s *Server) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.DumpResponse, error) {
-	gid := banana.GameID(req.Id)
-	pid := banana.PlayerID(req.PlayerId)
-	g, err := s.db.Game(gid)
+	gID := banana.GameID(req.Id)
+	pID := banana.PlayerID(req.PlayerId)
+	g, err := s.db.Game(gID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retreive game id %q: %v", req.Id, err)
-	}
-
-	p, err := s.db.Player(pid)
-	if err != nil {
-		return nil, fmt.Errorf("failed to retreive player id %q: %v", req.PlayerId, err)
 	}
 
 	if g.Status != banana.InProgress {
@@ -667,12 +720,22 @@ func (s *Server) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.DumpRespons
 
 	letter := banana.Letter(req.Letter[0])
 
-	if g.Bunch.Count() < DumpSize {
+	bunch, err := s.db.Bunch(gID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retreive bunch: %v", err)
+	}
+
+	if bunch.Count() < DumpSize {
 		// We don't have enough tiles to give them
 		return nil, errors.New("not enough tiles to dump")
 	}
 
-	if p.Tiles.Freq(letter) <= 0 {
+	tiles, err := s.db.Tiles(pID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retreive tiles: %v", err)
+	}
+
+	if tiles.Freq(letter) <= 0 {
 		// They don't actually even have this letter to give away.
 		return nil, fmt.Errorf("you don't even have %q in your hand", letter)
 	}
@@ -680,41 +743,70 @@ func (s *Server) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.DumpRespons
 	// If we're here, it's probably safe to go ahead with the dump.
 
 	// Take the shit letter from them.
-	p.Tiles.Dec(letter)
+	tiles.Dec(letter)
 
 	// Give them three tiles, before we throw their shit tile back in.
-	tls, err := g.Bunch.RemoveN(DumpSize, s.r)
+	tls, err := bunch.RemoveN(DumpSize, s.r)
 	if err != nil {
 		return nil, err
 	}
-	p.Tiles.Add(tls)
+	tiles.Add(tls)
 
 	// We put their letter back in the pot after we take out their shit letter.
-	g.Bunch.Inc(letter)
+	bunch.Inc(letter)
 
-	if err := s.db.UpdatePlayer(pid, p.Board, p.Tiles); err != nil {
+	if err := s.db.UpdateTiles(pID, tiles); err != nil {
 		return nil, err
 	}
 
-	if err := s.db.UpdateBunch(gid, g.Bunch); err != nil {
+	if err := s.db.UpdateBunch(gID, bunch); err != nil {
 		return nil, err
 	}
 
-	s.RLock()
-	s.updates[gid][pid] <- &pb.GameUpdate{
-		Update: &pb.GameUpdate_TileUpdate{
-			TileUpdate: &pb.TileUpdate{
-				Event:    pb.TileUpdate_DUMP,
-				Player:   p.Name,
-				AllTiles: &pb.Tiles{Letters: p.Tiles.AsList()},
-			},
+	s.sendPlayerUpdate(pID, &pubsub.Payload{
+		Type: pubsub.PayloadTypeTileUpdate,
+		TileUpdate: &pubsub.TileUpdate{
+			Tiles: tiles,
 		},
-	}
-	s.RUnlock()
+	})
 
-	if err := s.sendPlayers(gid); err != nil {
-		return nil, err
+	return &pb.DumpResponse{
+		AllTiles: &pb.Tiles{
+			Letters: tiles.AsList(),
+		},
+	}, nil
+}
+
+func (s *Server) wirePlayers(gID banana.GameID) ([]*pb.Player, error) {
+	players, err := s.db.Players(gID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retreive players for game id %q: %v", gID, err)
 	}
 
-	return &pb.DumpResponse{}, nil
+	var out []*pb.Player
+	for _, p := range players {
+		board, err := s.db.Board(p.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		tob, err := board.Count()
+		if err != nil {
+			return nil, err
+		}
+
+		tiles, err := s.db.Tiles(p.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		out = append(out, &pb.Player{
+			Id:           string(p.ID),
+			Name:         p.Name,
+			TilesInHand:  int32(tiles.Count()),
+			TilesInBoard: int32(tob),
+		})
+	}
+
+	return out, nil
 }

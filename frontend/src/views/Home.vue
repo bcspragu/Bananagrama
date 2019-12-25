@@ -25,7 +25,8 @@
           <ol>
             <li v-for="game in games">
               <a @click="joinGame(game.id)">{{game.name}}</a>
-              <span> ({{gameStatus(game.stat)}}, {{game.playerCount}} joined)</span>
+              <span> ({{gameStatus(game.stat)}}, {{game.playerCount}} joined) </span>
+              <a @click="spectate(game.id)">Spectate</a>
             </li>
           </ol>
         </div>
@@ -112,6 +113,10 @@ export default class Home extends Vue {
 
     // Show a login modal.
     this.showModal = true;
+  }
+
+  private spectate(id: string): void {
+    this.$router.push({ name: 'spectate', params: { id } });
   }
 
   private playerNameFromCookies(): string | undefined {

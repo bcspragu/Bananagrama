@@ -30,35 +30,15 @@ interface Board {
   },
 })
 export default class Spectate extends Vue {
-  private game: PBGame | null = null;
   private boards: Board[] = [];
 
   private mounted(): void {
-    this.$client.listGames(new ListGamesRequest(), {}, (err, resp) => {
-      if (!resp) {
-        console.log(err);
-        return;
-      }
-      for (const game of resp.getGamesList()) {
-        if (game.getId() === this.$route.params.id) {
-          this.game = game;
-          break;
-        }
-      }
-
-      if (!this.game || this.game.getStatus() === PBGame.Status.WAITING_FOR_PLAYERS) {
-        this.$router.push({ name: 'home' });
-        console.log(`Couldn't find game ID ${this.$route.params.id}, or it hadn't started yet`);
-        return;
-      }
-
-      this.spectateGame();
-    });
+    this.spectateGame();
   }
 
   private spectateGame(): void {
     const req = new SpectateRequest();
-    req.setId(this.game!.getId());
+    req.setId(this.$route.params.id);
 
     const stream = this.$client.spectate(req, {});
 

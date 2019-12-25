@@ -65,80 +65,77 @@ message JoinGameRequest {
 
 message GameUpdate {
   oneof update {
-    // A YouUpdate only occurs once, when you join the game successfully.
-    YouUpdate you_update = 1;
-    // Player updates happen when people join or leave a game.
+    // Sent once when you join the game, tells you the current status of the
+    // game and players. All other updates happen live afterwards.
+    CurrentStatus current_status = 1;
+
+    // Player updates happen when a player joins the game.
     PlayerUpdate player_update = 2;
+
     // Status updates happen when a game starts or ends.
-    StatusUpdate status_update = 3;
+    GameStarted game_started = 3;
+    GameEnded game_ended = 4;
+
     // Tile updates happen whenever the player's set of tiles changes, like at
     // the start of a game, when someone peels, or when the player dumps.
-    TileUpdate tile_update = 4;
-    // Board updates happen when a player refreshes and joins a game thats
-    // already underway.
-    BoardUpdate board_update = 5;
-    // Move updates happen when someone places a word down.
-    MoveUpdate move_update = 6;
+    TileUpdate tile_update = 5;
+
+    // Log events are anything that should be logged.
+    LogEvent log_event = 6;
   }
 }
 
-message YouUpdate {
+message CurrentStatus {
   string your_id = 1;
-}
-
-message PlayerUpdate {
-  repeated Player players = 1;
-  int32 remaining_tiles = 2;
-}
-
-message Player {
-  string name = 1;
-  int32 tiles_in_hand = 2;
-  int32 tiles_in_bunch = 3;
-}
-
-message StatusUpdate {
-  enum Status {
-    UNKNOWN = 0;
-    WAITING = 1;
-    GAME_STARTED = 2;
-    GAME_OVER = 3;
-  }
-  Status status = 1;
-}
-
-message TileUpdate {
-  enum Event {
-    UNKNOWN = 0;
-    SPLIT = 1;
-    PEEL = 2;
-    DUMP = 3;
-    JOIN = 4;
-  }
-  // Why we're updating our tile set.
-  Event event = 1;
-  // The player who caused this to occur, mainly for UI purposes. For a dump,
-  // it's always the name of this player. For a peel, it's the player who
-  // peeled.
-  string player = 2;
-  Tiles all_tiles = 3;
-}
-
-message BoardUpdate {
-  Board board = 1;
-}
-
-message MoveUpdate {
-  // The name of the player who made the move.
-  string player = 1;
-  // The word the player played.
-  string word = 2;
+  repeated Player players = 2;
+  int32 remaining_tiles = 3;
+  Board board = 4;
+  Tiles all_tiles = 5;
 }
 
 message Tiles {
   // Tiles are just lists of letters
   repeated string letters = 1;
 }
+
+message PlayerUpdate {
+  Player player = 1;
+  int32 remaining_tiles = 2;
+  bool peeled = 3;
+}
+
+message Player {
+  string id = 1;
+  string name = 2;
+  int32 tiles_in_hand = 3;
+  int32 tiles_in_board = 4;
+}
+
+message GameStarted {
+  int32 num_starting_tiles = 1;
+}
+
+message GameEnded {
+  repeated Player standings = 1;
+}
+
+message TileUpdate {
+  Tiles all_tiles = 1;
+}
+
+message LogEvent {
+  oneof log_event {
+    PlayerMove player_move = 1;
+    PlayerDump player_dump = 2;
+    WordFail word_fail = 3;
+    BoardFail board_fail = 4;
+  }
+}
+
+message PlayerMove { }
+message PlayerDump { }
+message WordFail { }
+message BoardFail { }
 
 message SpectateRequest {
   // The unique identifier for the game to spectate.
@@ -162,7 +159,9 @@ message DumpRequest {
   string letter = 3;
 }
 
-message DumpResponse { }
+message DumpResponse {
+  Tiles all_tiles = 1;
+}
 
 message UpdateBoardRequest {
   // The unique identifier for the game you're placing in.

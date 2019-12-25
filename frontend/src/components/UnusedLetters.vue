@@ -94,7 +94,6 @@ export default class UnusedLetters extends Vue {
       })
       .on('dblclick', (d: any) => {
         d.selected = false;
-        console.log(d);
         this.$emit('dumpTile', d.letter);
       });
 

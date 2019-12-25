@@ -8,16 +8,26 @@ type GameID string
 type DB interface {
 	// Creates a new game with the given name.
 	NewGame(name string, bunch *Bunch) (GameID, error)
-	// Loads a game with the given ID.
-	Game(id GameID) (*Game, error)
 	// Get all of the games.
 	Games() ([]*Game, error)
-	// Loads a player with the given ID.
-	Player(id PlayerID) (*Player, error)
+	// Loads a game with the given ID.
+	Game(id GameID) (*Game, error)
+	// Loads the bunch for the game with the given ID.
+	Bunch(id GameID) (*Bunch, error)
 	// Adds a player to a not-yet-started game.
 	AddPlayer(id GameID, name string) (PlayerID, error)
+	// Get all the players for a game.
+	Players(id GameID) ([]*Player, error)
+	// Loads a player with the given ID.
+	Player(id PlayerID) (*Player, error)
+	// Loads the board for the given player ID.
+	Board(id PlayerID) (*Board, error)
+	// Loads tiles for the given player ID.
+	Tiles(id PlayerID) (*Tiles, error)
 	// Updates a player's board.
-	UpdatePlayer(id PlayerID, board *Board, tiles *Tiles) error
+	UpdateBoard(id PlayerID, board *Board) error
+	// Updates a player's tiles.
+	UpdateTiles(id PlayerID, tiles *Tiles) error
 	// Updates the bunch for the game.
 	UpdateBunch(id GameID, bunch *Bunch) error
 	// Starts a game, and sets everyone's initial tile sets.
@@ -51,51 +61,32 @@ func (g GameStatus) String() string {
 type Game struct {
 	ID        GameID
 	Name      string
-	Players   []*Player
-	Bunch     *Bunch
 	Status    GameStatus
 	CreatedAt time.Time
 }
 
 func (g *Game) Clone() *Game {
-	players := make([]*Player, len(g.Players))
-	for i, p := range g.Players {
-		players[i] = p.Clone()
-	}
-
 	return &Game{
 		ID:        g.ID,
 		Name:      g.Name,
-		Players:   players,
-		Bunch:     g.Bunch.Clone(),
 		Status:    g.Status,
-		CreatedAt: cloneTime(g.CreatedAt),
+		CreatedAt: g.CreatedAt,
 	}
-}
-
-func cloneTime(t time.Time) time.Time {
-	if t.IsZero() {
-		return time.Time{}
-	}
-
-	return time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), t.Location())
 }
 
 type PlayerID string
 
 type Player struct {
-	ID    PlayerID
-	Name  string
-	Board *Board
-	Tiles *Tiles
+	ID      PlayerID
+	Name    string
+	AddedAt time.Time
 }
 
 func (p *Player) Clone() *Player {
 	return &Player{
-		ID:    p.ID,
-		Name:  p.Name,
-		Board: p.Board.Clone(),
-		Tiles: p.Tiles.Clone(),
+		ID:      p.ID,
+		Name:    p.Name,
+		AddedAt: p.AddedAt,
 	}
 }
 

@@ -6,12 +6,14 @@ type PayloadType int
 
 const (
 	UnknownPayload PayloadType = iota
-	// A game has been created or updated.
+	// A game has been created or a player has been added to it.
 	PayloadTypeGameUpdated
 	// The game has started.
-	PayloadTypeGameStart
+	PayloadTypeGameStarted
 	// The game has ended.
-	PayloadTypeGameOver
+	PayloadTypeGameEnded
+	// A player has joined a game.
+	PayloadTypePlayerJoined
 	// A player has played a word.
 	PayloadTypePlayerMove
 	// A player has dumped.
@@ -20,38 +22,56 @@ const (
 	PayloadTypeWordFail
 	// A player's board is in a rough state.
 	PayloadTypeBoardFail
+	// The set of player's tiles.
+	PayloadTypeTileUpdate
 )
 
 type Payload struct {
 	Type PayloadType
 	// The below messages are only populated for their given
 	// type.
-	GameUpdated *GameUpdated
-	GameOver    *GameOver
-	PlayerMove  *PlayerMove
-	PlayerDump  *PlayerDump
-	WordFail    *WordFail
-	BoardFail   *BoardFail
+	GameUpdated  *GameUpdated
+	GameStarted  *GameStarted
+	GameEnded    *GameEnded
+	PlayerJoined *PlayerJoined
+	PlayerMove   *PlayerMove
+	PlayerDump   *PlayerDump
+	WordFail     *WordFail
+	BoardFail    *BoardFail
+	TileUpdate   *TileUpdate
 }
 
 type GameUpdated struct {
 	ID          banana.GameID
 	Name        string
-	PlayerCount int
 	Status      banana.GameStatus
+	PlayerCount int
 }
 
-type GameOver struct {
+type GameStarted struct {
+	NumStartingTiles int
+}
+
+type GameEnded struct {
 	Winner string
 }
 
-type PlayerMove struct {
+type PlayerJoined struct {
 	ID   banana.PlayerID
 	Name string
-	Word string
+}
+
+type PlayerMove struct {
+	ID           banana.PlayerID
+	Name         string
+	TilesInHand  int
+	TilesInBoard int
+	TilesInBunch int
+	Peeled       bool
 }
 
 type PlayerDump struct {
+	ID   banana.PlayerID
 	Name string
 }
 
@@ -62,4 +82,8 @@ type WordFail struct {
 
 type BoardFail struct {
 	Name string
+}
+
+type TileUpdate struct {
+	Tiles *banana.Tiles
 }

@@ -24,7 +24,7 @@
         <div class="players">
           <div v-if="tilesInBunch !== null">{{tilesInBunch}} tiles left in bunch</div>
           <ol>
-            <li v-for="player in players">{{player.getName()}}: {{player.getTilesInHand()}} - {{player.getTilesInBunch()}}</li>
+            <li v-for="player in players">{{player.getName()}}: {{player.getTilesInBoard()}} - {{player.getTilesInHand()}}</li>
           </ol>
           <a class="button is-info" @click="startGame">
             Start Game
@@ -50,9 +50,8 @@ import ActiveWord from '@/components/ActiveWord.vue'; // @ is an alias to /src
 import Notice from '@/components/Notice.vue'; // @ is an alias to /src
 import {Cell, Letter, PlacedWord, Orientation} from '@/data';
 import {Game as PBGame, Board as PBBoard, ListGamesRequest, JoinGameRequest,
-        GameUpdate, YouUpdate, PlayerUpdate, TileUpdate,
-        StatusUpdate, MoveUpdate, StartGameRequest, Player, DumpRequest,
-        UpdateBoardRequest, BoardUpdate, Word} from '@/proto/banana_pb';
+        GameUpdate, CurrentStatus, PlayerUpdate, GameStarted, GameEnded, StartGameRequest,
+        Player, DumpRequest, UpdateBoardRequest, Word, Tiles} from '@/proto/banana_pb';
 
 @Component({
   components: {
@@ -144,23 +143,20 @@ export default class Game extends Vue {
 
     stream.on('data', (resp) => {
       switch (resp.getUpdateCase()) {
-        case GameUpdate.UpdateCase.YOU_UPDATE:
-          this.handleYouUpdate(resp.getYouUpdate()!);
+        case GameUpdate.UpdateCase.CURRENT_STATUS:
+          this.handleInitialGameState(resp.getCurrentStatus()!);
           break;
         case GameUpdate.UpdateCase.PLAYER_UPDATE:
           this.handlePlayerUpdate(resp.getPlayerUpdate()!);
           break;
-        case GameUpdate.UpdateCase.STATUS_UPDATE:
-          this.handleStatusUpdate(resp.getStatusUpdate()!);
+        case GameUpdate.UpdateCase.GAME_STARTED:
+          this.handleGameStarted(resp.getGameStarted()!);
+          break;
+        case GameUpdate.UpdateCase.GAME_ENDED:
+          this.handleGameOver(resp.getGameEnded()!);
           break;
         case GameUpdate.UpdateCase.TILE_UPDATE:
-          this.handleTileUpdate(resp.getTileUpdate()!);
-          break;
-        case GameUpdate.UpdateCase.BOARD_UPDATE:
-          this.handleBoardUpdate(resp.getBoardUpdate()!);
-          break;
-        case GameUpdate.UpdateCase.MOVE_UPDATE:
-          this.handleMoveUpdate(resp.getMoveUpdate()!);
+          this.updateTiles(resp.getTileUpdate()!.getAllTiles());
           break;
       }
     });
@@ -182,69 +178,30 @@ export default class Game extends Vue {
     });
   }
 
-  private handleYouUpdate(up: YouUpdate): void {
+  private handleInitialGameState(up: CurrentStatus): void {
     this.playerID = up.getYourId();
     this.setPlayerIDInCookies(this.playerID);
-  }
-
-  private handlePlayerUpdate(up: PlayerUpdate): void {
     this.players = up.getPlayersList();
     this.tilesInBunch = up.getRemainingTiles();
-    return;
+    this.updateBoard(up.getBoard()!);
+    this.updateTiles(up.getAllTiles()!);
   }
 
-  private handleStatusUpdate(up: StatusUpdate): void {
-    if (up.getStatus() === StatusUpdate.Status.GAME_OVER) {
-      const t = new Date();
-      const message = `[${t.getHours()}:${t.getMinutes()}:${t.getSeconds()}] GAME OVAH`;
-      this.logs.unshift(message);
-      this.gameOver = true;
+  private handleGameStarted(gameStarted: GameStarted): void {
+    const numTilesInHand = gameStarted.getNumStartingTiles();
+    for (const p of this.players) {
+      p.setTilesInHand(numTilesInHand);
     }
-    return;
   }
 
-  private handleTileUpdate(up: TileUpdate): void {
-    const letters: Letter[] = [];
-
-    for (const l of up.getAllTiles()!.getLettersList()) {
-      letters.push({
-        letter: l,
-        deleting: false,
-        selected: false,
-      });
-    }
-
-    this.letters = letters;
-
-    const t = new Date();
-    let message = `[${t.getHours()}:${t.getMinutes()}:${t.getSeconds()}] `;
-    let valid = true;
-    switch (up.getEvent()) {
-    case TileUpdate.Event.SPLIT:
-      message += 'The game has started!';
-      break;
-    case TileUpdate.Event.PEEL:
-      message += `${up.getPlayer()} peeled`;
-      console.log(this.$cookies.get('player-name'), up.getPlayer());
-      if (this.$cookies.get('player-name') !== up.getPlayer()) {
-        this.hand.flash();
-      }
-      break;
-    case TileUpdate.Event.DUMP:
-      message += `${up.getPlayer()} dumped`;
-      break;
-    default:
-      valid = false;
-    }
-    if (valid) {
-      this.logs.unshift(message);
-    }
-    return;
+  private handleGameOver(gameEnded: GameEnded): void {
+    this.notice = ['Game Over'];
+    this.gameOver = true;
   }
 
-  private handleBoardUpdate(up: BoardUpdate): void {
+  private updateBoard(board: PBBoard): void {
     const pws: PlacedWord[] = [];
-    for (const word of up.getBoard()!.getWordsList()) {
+    for (const word of board.getWordsList()) {
       let o = Orientation.Vertical;
       if (word.getOrientation() === Word.Orientation.HORIZONTAL) {
         o = Orientation.Horizontal;
@@ -260,12 +217,47 @@ export default class Game extends Vue {
     this.board.setWords(pws);
   }
 
-  private handleMoveUpdate(up: MoveUpdate): void {
-    const t = new Date();
-    const message = `[${t.getHours()}:${t.getMinutes()}:${t.getSeconds()}] ${up.getPlayer()} played "${up.getWord()}"`;
-    this.logs.unshift(message);
-    this.gameOver = true;
-    return;
+  private updateTiles(tiles: Tiles): void {
+    const letters: Letter[] = [];
+
+    for (const l of tiles.getLettersList()) {
+      letters.push({
+        letter: l,
+        deleting: false,
+        selected: false,
+      });
+    }
+
+    this.letters = letters;
+  }
+
+  private handlePlayerUpdate(pu: PlayerUpdate): void {
+    if (pu.getPeeled() && pu.getPlayer().getId() !== this.playerID) {
+      this.hand.flash();
+    }
+
+    const remainingTiles = pu.getRemainingTiles();
+    if (remainingTiles >= 0) {
+      this.tilesInBunch = remainingTiles;
+    }
+
+    const indexMap: { [s: string]: number; } = {};
+    let i = 0;
+    for (const p of this.players) {
+      indexMap[p.getId()] = i;
+      i++;
+    }
+
+    const player = pu.getPlayer();
+    // Player already exists, update them.
+    if (indexMap.hasOwnProperty(player.getId())) {
+      Vue.set(this.players, indexMap[player.getId()], player);
+      console.log(player.getId(), player.getName(), player.getTilesInHand());
+      return;
+    }
+
+    // Board doesn't exist yet, add it.
+    this.players.push(player);
   }
 
   private getPlayerIDFromCookies(): string | undefined {
@@ -325,6 +317,10 @@ export default class Game extends Vue {
   }
 
   private keyup(e: KeyboardEvent): void {
+    if (this.gameOver) {
+      return;
+    }
+
     e.stopPropagation();
 
     // Left
@@ -448,11 +444,17 @@ export default class Game extends Vue {
   }
 
   private addTileToHand(letter: string): void {
+    if (this.gameOver) {
+      return;
+    }
     this.letters.push({letter, deleting: false, selected: false});
     this.letters.sort((a, b) => a.letter > b.letter ? 1 : (a.letter < b.letter ? -1 : 0));
   }
 
   private dumpTile(letter: string): void {
+    if (this.gameOver) {
+      return;
+    }
     const req = new DumpRequest();
     req.setId(this.game!.getId());
     req.setPlayerId(this.playerID!);
@@ -460,7 +462,9 @@ export default class Game extends Vue {
     this.$client.dump(req, {}, (err, resp) => {
       if (err) {
         console.log(err);
+        return;
       }
+      this.updateTiles(resp.getAllTiles());
     });
   }
 
