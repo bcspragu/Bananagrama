@@ -404,7 +404,7 @@ export default class Game extends Vue {
   }
 
   private getSuggestions(): void {
-    const suggestion = this.board.suggestPlacement(this.word);
+    const suggestion = this.board.suggestPlacement(this.word, this.lettersAsStringArray());
     this.requiredLetters = suggestion.requiredLetters;
     this.setNotice(suggestion.valid);
   }
@@ -557,6 +557,14 @@ export default class Game extends Vue {
 
   get waitingForPlayers(): boolean {
     return this.gameStatus === GameStatus.WAITING_FOR_PLAYERS;
+  }
+
+  private lettersAsStringArray(): string[] {
+    const out: string[] = [];
+    for (const l of this.letters) {
+      out.push(l.letter);
+    }
+    return out;
   }
 }
 </script>

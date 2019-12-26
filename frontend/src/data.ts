@@ -22,6 +22,8 @@ export interface Placement {
   x: number;
   y: number;
   orientation: Orientation;
+  missing: string[];
+  fromHand: string[];
 }
 
 // Suggestion where to place a word, including the intersection.

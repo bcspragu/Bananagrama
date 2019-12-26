@@ -24,6 +24,12 @@ interface BoardData {
   data: Cell[][];
 }
 
+interface Fit {
+  fits: boolean;
+  missing: string[];
+  fromHand: string[];
+}
+
 @Component
 export default class Board extends Vue {
   @Prop() private gameOver!: boolean;
@@ -113,7 +119,7 @@ export default class Board extends Vue {
   }
 
   // Returns the letters required to place the given suggestion.
-  public suggestPlacement(word: string): Suggestion {
+  public suggestPlacement(word: string, inHand: string[]): Suggestion {
     word = word.toUpperCase();
     this.fitIndex = 0;
     this.currentWord = word;
@@ -122,8 +128,8 @@ export default class Board extends Vue {
     // in the center of the board.
     if (this.boardEmpty) {
       this.lastFits = [
-        {x: 0, y: 0, orientation: Orientation.Horizontal},
-        {x: 0, y: 0, orientation: Orientation.Vertical},
+        {x: 0, y: 0, orientation: Orientation.Horizontal, missing: [], fromHand: []},
+        {x: 0, y: 0, orientation: Orientation.Vertical, missing: [], fromHand: []},
       ];
       this.renderBoard();
       return {
@@ -132,7 +138,7 @@ export default class Board extends Vue {
       };
     }
 
-    this.lastFits = this.findFits(word);
+    this.lastFits = this.findFits(word, inHand);
     return this.renderBoard();
   }
 
@@ -251,7 +257,7 @@ export default class Board extends Vue {
   }
 
   // findFits returns a list of places the given word could fit on the board.
-  private findFits(word: string): Placement[] {
+  private findFits(word: string, inHand: string[]): Placement[] {
     // Build up a mapping of letters in our word to the index(es) they appear
     // at.
     const letters: { [s: string]: number[]; } = {};
@@ -269,14 +275,39 @@ export default class Board extends Vue {
       // Look and see if any letters of this word overlap with our words.
       const matches = this.overlaps(letters, pWord);
       for (const match of matches) {
-        if (this.fits(match, word, board)) {
-          fits.push(match);
+        const fit = this.fits(match, word, board, inHand);
+        if (fit.fits) {
+          fits.push({
+            x: match.x,
+            y: match.y,
+            orientation: match.orientation,
+            missing: fit.missing,
+            fromHand: fit.fromHand,
+          });
         }
       }
     }
 
     const cache: { [s: string]: number } = {};
     fits.sort((a, b) => {
+      // First, have a strong preference if only one word isn't missing any
+      // letters.
+      if (a.missing.length !== b.missing.length) {
+        if (a.missing.length === 0) {
+          return -1;
+        }
+        if (b.missing.length === 0) {
+          return 1;
+        }
+      }
+
+      // If they're both missing zero or any number of tiles, then sort by how
+      // many are coming from their hand. Preference is for the least coming
+      // from their hand.
+      if (a.fromHand.length !== b.fromHand.length) {
+        return a.fromHand.length < b.fromHand.length ? -1 : 1;
+      }
+
       const keyA = this.placementKey(a);
       const keyB = this.placementKey(b);
       let numA = (word.length + 1) * 2;
@@ -412,7 +443,7 @@ export default class Board extends Vue {
   }
 
   // fits returns if a given match fits on the board.
-  private fits(m: Match, word: string, board: LetterLoc[][]): boolean {
+  private fits(m: Match, word: string, board: LetterLoc[][], inHand: string[]): Fit {
     let x = m.x;
     let y = m.y;
 
@@ -445,27 +476,68 @@ export default class Board extends Vue {
     }
 
     if (buf === undefined || inc === undefined) {
-      return false;
+      return {fits: false, missing: [], fromHand: []};
     }
 
     for (let i = 0; i < word.length; i++) {
       check.push({x, y, letter: word.charAt(i)});
-      /* The commented-out code changes the overlap checking behavior.
-      if (!(x === m.intX && y === m.intY)) {
-        check.push(...buf());
-      }
-      */
       inc();
     }
 
+    const freq = this.toFreq(inHand);
+    const fromHand: string[] = [];
     for (const pos of check) {
-      if (!this.isValid(pos.x, pos.y, pos.letter, board)) {
-        return false;
+      // Means it's coming from our hand.
+      if (pos.x < 0
+          || pos.y < 0
+          || pos.x >= board.length
+          || pos.y >= board[pos.x].length
+          || board[pos.x][pos.y].letter === ''
+          || board[pos.x][pos.y].letter === ' ') {
+        if (pos.letter !== '') {
+          if (!freq.hasOwnProperty(pos.letter)) {
+            freq[pos.letter] = 0;
+          }
+          freq[pos.letter]--;
+          fromHand.push(pos.letter);
+        }
+        continue;
+      }
+
+      // Means it's not valid
+      if (board[pos.x][pos.y].letter !== pos.letter) {
+        return {fits: false, missing: [], fromHand: []};
       }
     }
 
 
-    return true;
+    return {fits: true, missing: this.aggregateMissing(freq), fromHand};
+  }
+
+  private toFreq(ss: string[]): { [s: string]: number; } {
+    const out: { [s: string]: number; } = {};
+    for (const s of ss) {
+      if (out[s] === undefined) {
+        out[s] = 0;
+      }
+      out[s]++;
+    }
+    return out;
+  }
+
+  private aggregateMissing(input: { [s: string]: number; }): string[] {
+    const out: string[] = [];
+    for (const letter in input) {
+      if (!input.hasOwnProperty(letter)) {
+        continue;
+      }
+      let n = input[letter];
+      while (n < 0) {
+        out.push(letter);
+        n++;
+      }
+    }
+    return out;
   }
 
   // isValid returns whether or not the given target is a valid location on the
