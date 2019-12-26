@@ -1,6 +1,7 @@
 <template>
-  <div id="spectator-board">
-    <div class="board" v-for="board in boards">
+  <div class="spectator-board">
+    <div class="board" v-for="board in boards"  :style="{'background-color': board.color}">
+      <div class="label">{{board.playerName}}</div>
       <BoardView 
         :board="board.board"
         :invalidWords="board.invalidWords"
@@ -74,8 +75,25 @@ export default class Spectate extends Vue {
 </script>
 
 <style scoped>
+.spectator-board {
+  display: flex;
+  flex-wrap: wrap;
+  height: 100%;
+}
+
 .board {
-  width: 350px;
-  height: 350px;
+  max-width: 50%;
+  max-height: 50%;
+
+  min-width: 25%;
+  min-height: 25%;
+
+  padding: 0.5rem;
+
+  border: 1px solid black;
+}
+
+.label {
+  position: absolute;
 }
 </style>
