@@ -61,7 +61,7 @@ func (s *Server) NewGame(ctx context.Context, req *pb.NewGameRequest) (*pb.NewGa
 		return nil, errors.New("must specify a game name")
 	}
 
-	bunch, err := banana.NewBunch(banana.TestDistribution(), scaleFactor)
+	bunch, err := banana.NewBunch(banana.Bananagrams(), scaleFactor)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make bunch: %v", err)
 	}
@@ -192,6 +192,10 @@ func (s *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (*pb.S
 	ps, err := s.db.Players(gID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retreive players for game id %q: %v", req.Id, err)
+	}
+
+	if len(ps) < 2 {
+		return nil, errors.New("can't start game with less than two people")
 	}
 
 	bunch, err := s.db.Bunch(gID)
@@ -597,21 +601,21 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 		return nil, fmt.Errorf("failed to retreive bunch for game %q: %v", gID, err)
 	}
 
+	ps, err := s.db.Players(gID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retreive players for game %q: %v", gID, err)
+	}
+
 	// If the board was valid, clear out their tiles and let everyone know what's
 	// up.
+	tileCounts := make(map[banana.PlayerID]int)
 	if peelable {
-		ps, err := s.db.Players(gID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to retreive players for game %q: %v", gID, err)
-		}
-
 		var gameOver bool
 		// If there are less tiles than players, end the game.
 		if bunch.Count() < len(ps) {
 			gameOver = true
 		}
 
-		tileCounts := make(map[banana.PlayerID]int)
 		if !gameOver {
 			for _, p := range ps {
 				newTile, err := bunch.RemoveN(1, s.r)
@@ -640,29 +644,6 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 			}
 		}
 
-		for _, p := range ps {
-			board, err := s.db.Board(p.ID)
-			if err != nil {
-				return nil, err
-			}
-
-			bc, err := board.Count()
-			if err != nil {
-				return nil, err
-			}
-
-			s.sendGameUpdate(gID, &pubsub.Payload{
-				Type: pubsub.PayloadTypePlayerMove,
-				PlayerMove: &pubsub.PlayerMove{
-					ID:           p.ID,
-					Name:         p.Name,
-					TilesInHand:  tileCounts[p.ID],
-					TilesInBoard: bc,
-					TilesInBunch: bunch.Count(),
-				},
-			})
-		}
-
 		if err := s.db.UpdateBunch(gID, bunch); err != nil {
 			return nil, fmt.Errorf("UpdateBunch: %v", err)
 		}
@@ -672,6 +653,29 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 				return nil, fmt.Errorf("endGame: %v", err)
 			}
 		}
+	}
+
+	for _, p := range ps {
+		board, err := s.db.Board(p.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		bc, err := board.Count()
+		if err != nil {
+			return nil, err
+		}
+
+		s.sendGameUpdate(gID, &pubsub.Payload{
+			Type: pubsub.PayloadTypePlayerMove,
+			PlayerMove: &pubsub.PlayerMove{
+				ID:           p.ID,
+				Name:         p.Name,
+				TilesInHand:  tileCounts[p.ID],
+				TilesInBoard: bc,
+				TilesInBunch: bunch.Count(),
+			},
+		})
 	}
 
 	// TODO: Add latest word logging back.
