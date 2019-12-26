@@ -3,13 +3,12 @@
     <div class="columns">
       <div class="column is-one-fifth"></div>
       <div class="column is-three-fifths">
-        <h1 class="has-text-centered is-size-3">Welcome to B(r)ananagrams</h1>
-        <h2 v-if="playerName" class="has-text-centered is-size-5">Playing as {{playerName}} <sup><a class="is-size-6" @click="changeName">(change name)</a></sup></h2>
-        <div class="columns is-centered">
-          <div class="column is-two-fifths">
-            <img src="@/assets/bananagrams.jpg">
-          </div>
+        <div>
+          <h1 class="has-text-centered is-size-3">Welcome to B(r)ananagrams</h1>
+          <img class="logo" src="@/assets/logo.svg">
         </div>
+        <hr>
+        <h2 v-if="playerName" class="has-text-centered is-size-5">Playing as {{playerName}} <sup><a class="is-size-6" @click="changeName">(change name)</a></sup></h2>
         <div class="field has-addons new-game-input">
           <div class="control">
             <input class="input" v-model="gameName" type="text" placeholder="New Game">
@@ -20,6 +19,7 @@
             </a>
           </div>
         </div>
+        <hr>
         <div>
           <h2 class="has-text-centered is-size-3">Game List</h2>
           <table class="games">
@@ -212,5 +212,9 @@ export default class Home extends Vue {
 }
 .games tr:last-child {
   border-bottom: none;
+}
+.logo {
+  display: block;
+  margin: 0 auto;
 }
 </style>
