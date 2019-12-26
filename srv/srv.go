@@ -337,6 +337,7 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 				AllTiles: &pb.Tiles{
 					Letters: tiles.AsList(),
 				},
+				Status: gameStatusMap[g.Status],
 			},
 		},
 	})
@@ -406,12 +407,14 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 				},
 			}
 		case pubsub.PayloadTypeTileUpdate:
+			tu := msg.Payload.TileUpdate
 			update = &pb.GameUpdate{
 				Update: &pb.GameUpdate_TileUpdate{
 					TileUpdate: &pb.TileUpdate{
 						AllTiles: &pb.Tiles{
-							Letters: msg.Payload.TileUpdate.Tiles.AsList(),
+							Letters: tu.Tiles.AsList(),
 						},
+						FromOtherPeel: tu.PeelFrom != pID && tu.PeelFrom != "",
 					},
 				},
 			}
@@ -630,7 +633,8 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 				s.sendPlayerUpdate(p.ID, &pubsub.Payload{
 					Type: pubsub.PayloadTypeTileUpdate,
 					TileUpdate: &pubsub.TileUpdate{
-						Tiles: tiles,
+						Tiles:    tiles,
+						PeelFrom: pID,
 					},
 				})
 			}
@@ -655,7 +659,6 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 					TilesInHand:  tileCounts[p.ID],
 					TilesInBoard: bc,
 					TilesInBunch: bunch.Count(),
-					Peeled:       true,
 				},
 			})
 		}
@@ -686,16 +689,10 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 }
 
 func (s *Server) endGame(gID banana.GameID, name string) error {
-	s.RLock()
-	ch := s.gameChannels[gID]
-	s.RUnlock()
-
-	if err := s.ps.Publish(ch, &pubsub.Payload{
+	s.sendGameUpdate(gID, &pubsub.Payload{
 		Type:      pubsub.PayloadTypeGameEnded,
 		GameEnded: &pubsub.GameEnded{Winner: name},
-	}); err != nil {
-		log.Printf("failed to publish player move: %v", err)
-	}
+	})
 
 	return s.db.EndGame(gID)
 }

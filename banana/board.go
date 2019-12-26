@@ -226,19 +226,12 @@ func (b *Board) containsExactly(tiles *Tiles) bool {
 
 // findWords builds a list of all the words in the grid
 func (b *Board) findWords() []CharLocs {
-	xx := make([]Word, len(b.Words))
-	yy := make([]Word, len(b.Words))
-
-	copy(xx, b.Words)
-	copy(yy, b.Words)
-
 	usedX := make(map[Loc]Letter)
 	usedY := make(map[Loc]Letter)
 
 	// 1. Bucket letters by X, map to lists of (Y, letter)
 	xm := make(map[int][]CharLoc)
-	sort.Sort(byY(yy))
-	for _, word := range yy {
+	for _, word := range b.Words {
 		for _, cl := range word.CharLocs() {
 			if _, ok := usedX[cl.Loc]; ok {
 				continue
@@ -249,8 +242,7 @@ func (b *Board) findWords() []CharLocs {
 	}
 
 	ym := make(map[int][]CharLoc)
-	sort.Sort(byX(xx))
-	for _, word := range xx {
+	for _, word := range b.Words {
 		for _, cl := range word.CharLocs() {
 			if _, ok := usedY[cl.Loc]; ok {
 				continue
@@ -258,6 +250,12 @@ func (b *Board) findWords() []CharLocs {
 			ym[cl.Loc.Y] = append(ym[cl.Loc.Y], cl)
 			usedY[cl.Loc] = cl.Letter
 		}
+	}
+	for _, xx := range ym {
+		sort.Sort(byX(xx))
+	}
+	for _, yy := range xm {
+		sort.Sort(byY(yy))
 	}
 
 	var wds []CharLocs

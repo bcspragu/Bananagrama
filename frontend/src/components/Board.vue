@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from 'vue-property-decorator';
 import * as d3 from 'd3';
 import {BaseType, Selection} from 'd3';
 
@@ -26,6 +26,8 @@ interface BoardData {
 
 @Component
 export default class Board extends Vue {
+  @Prop() private gameOver!: boolean;
+
   private placedWords: PlacedWord[] = [];
   private invalidWords: CharLocs[] = [];
 
@@ -75,6 +77,8 @@ export default class Board extends Vue {
         orientation: Orientation.Horizontal,
         suggestion: false,
       });
+    } else {
+      this.sendBoard();
     }
 
     this.renderBoard();
@@ -627,6 +631,9 @@ export default class Board extends Vue {
     const cells = column.enter().append('g')
         .attr('class', 'square')
         .on('click', (d: any) => {
+          if (this.gameOver) {
+            return;
+          }
           if (d.letterLoc.letter === '' || d.letterLoc.letter === ' ') {
             this.$emit('blankClicked', d);
             return;
@@ -788,7 +795,7 @@ export default class Board extends Vue {
       if (word.length === 0) {
         toRemove.push(wordIndex);
       }
-      this.placedWords[wordIndex].word = word.trim();
+      this.placedWords[wordIndex].word = word;
     }
 
     toRemove.sort().reverse();

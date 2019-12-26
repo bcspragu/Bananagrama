@@ -67,7 +67,6 @@ type PlayerMove struct {
 	TilesInHand  int
 	TilesInBoard int
 	TilesInBunch int
-	Peeled       bool
 }
 
 type PlayerDump struct {
@@ -85,5 +84,6 @@ type BoardFail struct {
 }
 
 type TileUpdate struct {
-	Tiles *banana.Tiles
+	Tiles    *banana.Tiles
+	PeelFrom banana.PlayerID
 }

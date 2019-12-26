@@ -23,6 +23,7 @@ interface BoardSizing {
 @Component
 export default class UnusedLetters extends Vue {
   @Prop() private letters!: Letter[];
+  @Prop() private gameOver!: boolean;
   private board: Selection<BaseType, any, HTMLElement, any> = d3.select('#letters');
 
   private sizeX = 0;
@@ -87,12 +88,18 @@ export default class UnusedLetters extends Vue {
 
     newLetters
       .on('click', (d: any) => {
+        if (this.gameOver) {
+          return;
+        }
         const toSet = !d.selected;
         this.clearSelected();
         d.selected = toSet;
         this.renderLetters();
       })
       .on('dblclick', (d: any) => {
+        if (this.gameOver) {
+          return;
+        }
         d.selected = false;
         this.$emit('dumpTile', d.letter);
       });

@@ -137,9 +137,9 @@ const (
 	InvalidBoard
 )
 
-// byX is a way of sorting a slice of words that sorts them first according to
+// byX is a way of sorting a slice of charlocs that sorts them first according to
 // their X position, then by their Y position.
-type byX []Word
+type byX []CharLoc
 
 func (x byX) Len() int { return len(x) }
 func (x byX) Less(i, j int) bool {
@@ -150,9 +150,9 @@ func (x byX) Less(i, j int) bool {
 }
 func (x byX) Swap(i, j int) { x[i], x[j] = x[j], x[i] }
 
-// byY is a way of sorting a slice of words that sorts them first according to
+// byY is a way of sorting a slice of charlocs that sorts them first according to
 // their Y position, then by their X position.
-type byY []Word
+type byY []CharLoc
 
 func (y byY) Len() int { return len(y) }
 func (y byY) Less(i, j int) bool {

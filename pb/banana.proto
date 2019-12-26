@@ -7,10 +7,12 @@ service BananaService {
   rpc ListGames(ListGamesRequest) returns (ListGamesResponse);
   rpc StreamGames(ListGamesRequest) returns (stream GamesList);
   rpc StartGame(StartGameRequest) returns (StartGameResponse);
+
   rpc JoinGame(JoinGameRequest) returns (stream GameUpdate);
-  rpc Spectate(SpectateRequest) returns (stream SpectateUpdate);
   rpc UpdateBoard(UpdateBoardRequest) returns (UpdateBoardResponse);
   rpc Dump(DumpRequest) returns (DumpResponse);
+
+  rpc Spectate(SpectateRequest) returns (stream SpectateUpdate);
 }
 
 message NewGameRequest {
@@ -33,16 +35,17 @@ message GamesList {
   repeated Game games = 1;
 }
 
+enum GameStatus {
+  UNKNOWN = 0;
+  WAITING_FOR_PLAYERS = 1;
+  IN_PROGRESS = 2;
+  FINISHED = 3;
+}
+
 message Game {
   string id = 1;
   string name = 2;
-  enum Status {
-    UNKNOWN = 0;
-    WAITING_FOR_PLAYERS = 1;
-    IN_PROGRESS = 2;
-    FINISHED = 3;
-  }
-  Status status = 3;
+  GameStatus status = 3;
   int32 player_count = 4;
 }
 
@@ -91,6 +94,7 @@ message CurrentStatus {
   int32 remaining_tiles = 3;
   Board board = 4;
   Tiles all_tiles = 5;
+  GameStatus status = 6;
 }
 
 message Tiles {
@@ -101,7 +105,6 @@ message Tiles {
 message PlayerUpdate {
   Player player = 1;
   int32 remaining_tiles = 2;
-  bool peeled = 3;
 }
 
 message Player {
@@ -121,6 +124,7 @@ message GameEnded {
 
 message TileUpdate {
   Tiles all_tiles = 1;
+  bool from_other_peel = 2;
 }
 
 message LogEvent {

@@ -19,9 +19,9 @@ goog.exportSymbol('proto.CurrentStatus', null, global);
 goog.exportSymbol('proto.DumpRequest', null, global);
 goog.exportSymbol('proto.DumpResponse', null, global);
 goog.exportSymbol('proto.Game', null, global);
-goog.exportSymbol('proto.Game.Status', null, global);
 goog.exportSymbol('proto.GameEnded', null, global);
 goog.exportSymbol('proto.GameStarted', null, global);
+goog.exportSymbol('proto.GameStatus', null, global);
 goog.exportSymbol('proto.GameUpdate', null, global);
 goog.exportSymbol('proto.GamesList', null, global);
 goog.exportSymbol('proto.JoinGameRequest', null, global);
@@ -877,7 +877,7 @@ proto.Game.deserializeBinaryFromReader = function(msg, reader) {
       msg.setName(value);
       break;
     case 3:
-      var value = /** @type {!proto.Game.Status} */ (reader.readEnum());
+      var value = /** @type {!proto.GameStatus} */ (reader.readEnum());
       msg.setStatus(value);
       break;
     case 4:
@@ -945,16 +945,6 @@ proto.Game.serializeBinaryToWriter = function(message, writer) {
 
 
 /**
- * @enum {number}
- */
-proto.Game.Status = {
-  UNKNOWN: 0,
-  WAITING_FOR_PLAYERS: 1,
-  IN_PROGRESS: 2,
-  FINISHED: 3
-};
-
-/**
  * optional string id = 1;
  * @return {string}
  */
@@ -985,15 +975,15 @@ proto.Game.prototype.setName = function(value) {
 
 
 /**
- * optional Status status = 3;
- * @return {!proto.Game.Status}
+ * optional GameStatus status = 3;
+ * @return {!proto.GameStatus}
  */
 proto.Game.prototype.getStatus = function() {
-  return /** @type {!proto.Game.Status} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+  return /** @type {!proto.GameStatus} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
 };
 
 
-/** @param {!proto.Game.Status} value */
+/** @param {!proto.GameStatus} value */
 proto.Game.prototype.setStatus = function(value) {
   jspb.Message.setProto3EnumField(this, 3, value);
 };
@@ -1936,7 +1926,8 @@ proto.CurrentStatus.toObject = function(includeInstance, msg) {
     proto.Player.toObject, includeInstance),
     remainingTiles: jspb.Message.getFieldWithDefault(msg, 3, 0),
     board: (f = msg.getBoard()) && proto.Board.toObject(includeInstance, f),
-    allTiles: (f = msg.getAllTiles()) && proto.Tiles.toObject(includeInstance, f)
+    allTiles: (f = msg.getAllTiles()) && proto.Tiles.toObject(includeInstance, f),
+    status: jspb.Message.getFieldWithDefault(msg, 6, 0)
   };
 
   if (includeInstance) {
@@ -1995,6 +1986,10 @@ proto.CurrentStatus.deserializeBinaryFromReader = function(msg, reader) {
       var value = new proto.Tiles;
       reader.readMessage(value,proto.Tiles.deserializeBinaryFromReader);
       msg.setAllTiles(value);
+      break;
+    case 6:
+      var value = /** @type {!proto.GameStatus} */ (reader.readEnum());
+      msg.setStatus(value);
       break;
     default:
       reader.skipField();
@@ -2061,6 +2056,13 @@ proto.CurrentStatus.serializeBinaryToWriter = function(message, writer) {
       5,
       f,
       proto.Tiles.serializeBinaryToWriter
+    );
+  }
+  f = message.getStatus();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      6,
+      f
     );
   }
 };
@@ -2184,6 +2186,21 @@ proto.CurrentStatus.prototype.clearAllTiles = function() {
  */
 proto.CurrentStatus.prototype.hasAllTiles = function() {
   return jspb.Message.getField(this, 5) != null;
+};
+
+
+/**
+ * optional GameStatus status = 6;
+ * @return {!proto.GameStatus}
+ */
+proto.CurrentStatus.prototype.getStatus = function() {
+  return /** @type {!proto.GameStatus} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
+};
+
+
+/** @param {!proto.GameStatus} value */
+proto.CurrentStatus.prototype.setStatus = function(value) {
+  jspb.Message.setProto3EnumField(this, 6, value);
 };
 
 
@@ -2398,8 +2415,7 @@ proto.PlayerUpdate.prototype.toObject = function(opt_includeInstance) {
 proto.PlayerUpdate.toObject = function(includeInstance, msg) {
   var f, obj = {
     player: (f = msg.getPlayer()) && proto.Player.toObject(includeInstance, f),
-    remainingTiles: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    peeled: jspb.Message.getFieldWithDefault(msg, 3, false)
+    remainingTiles: jspb.Message.getFieldWithDefault(msg, 2, 0)
   };
 
   if (includeInstance) {
@@ -2445,10 +2461,6 @@ proto.PlayerUpdate.deserializeBinaryFromReader = function(msg, reader) {
       var value = /** @type {number} */ (reader.readInt32());
       msg.setRemainingTiles(value);
       break;
-    case 3:
-      var value = /** @type {boolean} */ (reader.readBool());
-      msg.setPeeled(value);
-      break;
     default:
       reader.skipField();
       break;
@@ -2490,13 +2502,6 @@ proto.PlayerUpdate.serializeBinaryToWriter = function(message, writer) {
   if (f !== 0) {
     writer.writeInt32(
       2,
-      f
-    );
-  }
-  f = message.getPeeled();
-  if (f) {
-    writer.writeBool(
-      3,
       f
     );
   }
@@ -2545,23 +2550,6 @@ proto.PlayerUpdate.prototype.getRemainingTiles = function() {
 /** @param {number} value */
 proto.PlayerUpdate.prototype.setRemainingTiles = function(value) {
   jspb.Message.setProto3IntField(this, 2, value);
-};
-
-
-/**
- * optional bool peeled = 3;
- * Note that Boolean fields may be set to 0/1 when serialized from a Java server.
- * You should avoid comparisons like {@code val === true/false} in those cases.
- * @return {boolean}
- */
-proto.PlayerUpdate.prototype.getPeeled = function() {
-  return /** @type {boolean} */ (jspb.Message.getFieldWithDefault(this, 3, false));
-};
-
-
-/** @param {boolean} value */
-proto.PlayerUpdate.prototype.setPeeled = function(value) {
-  jspb.Message.setProto3BooleanField(this, 3, value);
 };
 
 
@@ -3145,7 +3133,8 @@ proto.TileUpdate.prototype.toObject = function(opt_includeInstance) {
  */
 proto.TileUpdate.toObject = function(includeInstance, msg) {
   var f, obj = {
-    allTiles: (f = msg.getAllTiles()) && proto.Tiles.toObject(includeInstance, f)
+    allTiles: (f = msg.getAllTiles()) && proto.Tiles.toObject(includeInstance, f),
+    fromOtherPeel: jspb.Message.getFieldWithDefault(msg, 2, false)
   };
 
   if (includeInstance) {
@@ -3187,6 +3176,10 @@ proto.TileUpdate.deserializeBinaryFromReader = function(msg, reader) {
       reader.readMessage(value,proto.Tiles.deserializeBinaryFromReader);
       msg.setAllTiles(value);
       break;
+    case 2:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setFromOtherPeel(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -3224,6 +3217,13 @@ proto.TileUpdate.serializeBinaryToWriter = function(message, writer) {
       proto.Tiles.serializeBinaryToWriter
     );
   }
+  f = message.getFromOtherPeel();
+  if (f) {
+    writer.writeBool(
+      2,
+      f
+    );
+  }
 };
 
 
@@ -3254,6 +3254,23 @@ proto.TileUpdate.prototype.clearAllTiles = function() {
  */
 proto.TileUpdate.prototype.hasAllTiles = function() {
   return jspb.Message.getField(this, 1) != null;
+};
+
+
+/**
+ * optional bool from_other_peel = 2;
+ * Note that Boolean fields may be set to 0/1 when serialized from a Java server.
+ * You should avoid comparisons like {@code val === true/false} in those cases.
+ * @return {boolean}
+ */
+proto.TileUpdate.prototype.getFromOtherPeel = function() {
+  return /** @type {boolean} */ (jspb.Message.getFieldWithDefault(this, 2, false));
+};
+
+
+/** @param {boolean} value */
+proto.TileUpdate.prototype.setFromOtherPeel = function(value) {
+  jspb.Message.setProto3BooleanField(this, 2, value);
 };
 
 
@@ -6117,5 +6134,15 @@ proto.UpdateBoardResponse.prototype.setDetachedBoard = function(value) {
   jspb.Message.setProto3BooleanField(this, 3, value);
 };
 
+
+/**
+ * @enum {number}
+ */
+proto.GameStatus = {
+  UNKNOWN: 0,
+  WAITING_FOR_PLAYERS: 1,
+  IN_PROGRESS: 2,
+  FINISHED: 3
+};
 
 goog.object.extend(exports, proto);

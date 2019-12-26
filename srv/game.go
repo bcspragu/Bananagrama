@@ -17,10 +17,10 @@ var (
 		banana.Vertical:      pb.Word_VERTICAL,
 	}
 
-	gameStatusMap = map[banana.GameStatus]pb.Game_Status{
-		banana.WaitingForPlayers: pb.Game_WAITING_FOR_PLAYERS,
-		banana.InProgress:        pb.Game_IN_PROGRESS,
-		banana.Finished:          pb.Game_FINISHED,
+	gameStatusMap = map[banana.GameStatus]pb.GameStatus{
+		banana.WaitingForPlayers: pb.GameStatus_WAITING_FOR_PLAYERS,
+		banana.InProgress:        pb.GameStatus_IN_PROGRESS,
+		banana.Finished:          pb.GameStatus_FINISHED,
 	}
 )
 

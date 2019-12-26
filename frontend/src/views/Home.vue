@@ -22,13 +22,20 @@
         </div>
         <div>
           <h2 class="has-text-centered is-size-3">Game List</h2>
-          <ol>
-            <li v-for="game in games">
-              <a @click="joinGame(game.id)">{{game.name}}</a>
-              <span> ({{gameStatus(game.stat)}}, {{game.playerCount}} joined) </span>
-              <a @click="spectate(game.id)">Spectate</a>
-            </li>
-          </ol>
+          <table class="games">
+            <tr>
+              <td>Game Name</td>
+              <td>Status</td>
+              <td>Number of Players</td>
+              <td></td>
+            </tr>
+            <tr class="game-row" v-for="game in games">
+              <td><a @click="joinGame(game.id)">{{game.name}}</a></td>
+              <td>{{gameStatus(game.stat)}}</td>
+              <td>{{game.playerCount}} players</td>
+              <td><a @click="spectate(game.id)">Spectate</a></td>
+            </tr>
+          </table>
         </div>
       </div>
       <div class="column is-one-fifth"></div>
@@ -61,13 +68,13 @@
 import { Component, Vue } from 'vue-property-decorator';
 
 // Import code-generated data structures.
-import {NewGameRequest, ListGamesRequest, Game as PBGame} from '@/proto/banana_pb';
+import {NewGameRequest, ListGamesRequest, Game as PBGame, GameStatus} from '@/proto/banana_pb';
 
 interface Game {
   id: string;
   name: string;
   playerCount: number;
-  stat: PBGame.Status;
+  stat: GameStatus;
 }
 
 @Component
@@ -162,16 +169,16 @@ export default class Home extends Vue {
     });
   }
 
-  private gameStatus(stat: PBGame.Status): string {
+  private gameStatus(stat: GameStatus): string {
     switch (stat) {
-      case PBGame.Status.WAITING_FOR_PLAYERS:
-        return 'waiting for players';
-      case PBGame.Status.IN_PROGRESS:
-        return 'in progress';
-      case PBGame.Status.FINISHED:
-        return 'finished';
+      case GameStatus.WAITING_FOR_PLAYERS:
+        return 'Waiting for players';
+      case GameStatus.IN_PROGRESS:
+        return 'In progress';
+      case GameStatus.FINISHED:
+        return 'Finished';
       default:
-        return 'unknown';
+        return 'Unknown';
     }
   }
 
@@ -190,5 +197,20 @@ export default class Home extends Vue {
 .new-game-input {
   justify-content: center;
   margin-bottom: 1rem;
+}
+.games {
+  border-collapse: collapse;
+  width: 100%;
+}
+.games tr { 
+  border: solid;
+  border-width: 1px 0;
+  padding-bottom: 2rem;
+}
+.games tr:first-child {
+  border-top: none;
+}
+.games tr:last-child {
+  border-bottom: none;
 }
 </style>

@@ -53,11 +53,6 @@ export class BananaServiceClient {
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<GameUpdate>;
 
-  spectate(
-    request: SpectateRequest,
-    metadata?: grpcWeb.Metadata
-  ): grpcWeb.ClientReadableStream<SpectateUpdate>;
-
   updateBoard(
     request: UpdateBoardRequest,
     metadata: grpcWeb.Metadata | undefined,
@@ -71,6 +66,11 @@ export class BananaServiceClient {
     callback: (err: grpcWeb.Error,
                response: DumpResponse) => void
   ): grpcWeb.ClientReadableStream<DumpResponse>;
+
+  spectate(
+    request: SpectateRequest,
+    metadata?: grpcWeb.Metadata
+  ): grpcWeb.ClientReadableStream<SpectateUpdate>;
 
 }
 
@@ -104,11 +104,6 @@ export class BananaServicePromiseClient {
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<GameUpdate>;
 
-  spectate(
-    request: SpectateRequest,
-    metadata?: grpcWeb.Metadata
-  ): grpcWeb.ClientReadableStream<SpectateUpdate>;
-
   updateBoard(
     request: UpdateBoardRequest,
     metadata?: grpcWeb.Metadata
@@ -118,6 +113,11 @@ export class BananaServicePromiseClient {
     request: DumpRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<DumpResponse>;
+
+  spectate(
+    request: SpectateRequest,
+    metadata?: grpcWeb.Metadata
+  ): grpcWeb.ClientReadableStream<SpectateUpdate>;
 
 }
 

@@ -97,8 +97,8 @@ export class Game extends jspb.Message {
   getName(): string;
   setName(value: string): void;
 
-  getStatus(): Game.Status;
-  setStatus(value: Game.Status): void;
+  getStatus(): GameStatus;
+  setStatus(value: GameStatus): void;
 
   getPlayerCount(): number;
   setPlayerCount(value: number): void;
@@ -115,15 +115,8 @@ export namespace Game {
   export type AsObject = {
     id: string,
     name: string,
-    status: Game.Status,
+    status: GameStatus,
     playerCount: number,
-  }
-
-  export enum Status { 
-    UNKNOWN = 0,
-    WAITING_FOR_PLAYERS = 1,
-    IN_PROGRESS = 2,
-    FINISHED = 3,
   }
 }
 
@@ -269,6 +262,9 @@ export class CurrentStatus extends jspb.Message {
   hasAllTiles(): boolean;
   clearAllTiles(): void;
 
+  getStatus(): GameStatus;
+  setStatus(value: GameStatus): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): CurrentStatus.AsObject;
   static toObject(includeInstance: boolean, msg: CurrentStatus): CurrentStatus.AsObject;
@@ -284,6 +280,7 @@ export namespace CurrentStatus {
     remainingTiles: number,
     board?: Board.AsObject,
     allTiles?: Tiles.AsObject,
+    status: GameStatus,
   }
 }
 
@@ -316,9 +313,6 @@ export class PlayerUpdate extends jspb.Message {
   getRemainingTiles(): number;
   setRemainingTiles(value: number): void;
 
-  getPeeled(): boolean;
-  setPeeled(value: boolean): void;
-
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PlayerUpdate.AsObject;
   static toObject(includeInstance: boolean, msg: PlayerUpdate): PlayerUpdate.AsObject;
@@ -331,7 +325,6 @@ export namespace PlayerUpdate {
   export type AsObject = {
     player?: Player.AsObject,
     remainingTiles: number,
-    peeled: boolean,
   }
 }
 
@@ -409,6 +402,9 @@ export class TileUpdate extends jspb.Message {
   hasAllTiles(): boolean;
   clearAllTiles(): void;
 
+  getFromOtherPeel(): boolean;
+  setFromOtherPeel(value: boolean): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): TileUpdate.AsObject;
   static toObject(includeInstance: boolean, msg: TileUpdate): TileUpdate.AsObject;
@@ -420,6 +416,7 @@ export class TileUpdate extends jspb.Message {
 export namespace TileUpdate {
   export type AsObject = {
     allTiles?: Tiles.AsObject,
+    fromOtherPeel: boolean,
   }
 }
 
@@ -799,3 +796,9 @@ export namespace UpdateBoardResponse {
   }
 }
 
+export enum GameStatus { 
+  UNKNOWN = 0,
+  WAITING_FOR_PLAYERS = 1,
+  IN_PROGRESS = 2,
+  FINISHED = 3,
+}

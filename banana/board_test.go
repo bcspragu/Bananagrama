@@ -164,6 +164,15 @@ func TestFindWords(t *testing.T) {
 				CharLocs{Word: "scent", Locs: []CharLoc{{Letter: 's', Loc: Loc{Y: 6}}, {Letter: 'c', Loc: Loc{X: 1, Y: 6}}, {Letter: 'e', Loc: Loc{X: 2, Y: 6}}, {Letter: 'n', Loc: Loc{X: 3, Y: 6}}, {Letter: 't', Loc: Loc{X: 4, Y: 6}}}},
 			},
 		},
+		{
+			words: []Word{
+				{Horizontal, "g  l", Loc{0, 0}},
+				{Horizontal, "oa", Loc{1, 0}},
+			},
+			want: []CharLocs{
+				CharLocs{Word: "goal", Locs: []CharLoc{{Letter: 'g'}, {Letter: 'o', Loc: Loc{X: 1}}, {Letter: 'a', Loc: Loc{X: 2}}, {Letter: 'l', Loc: Loc{X: 3}}}},
+			},
+		},
 	}
 
 	for _, tc := range testcases {
@@ -295,6 +304,7 @@ func TestValidate(t *testing.T) {
 			"catsit":  struct{}{},
 			"attack":  struct{}{},
 			"attacks": struct{}{},
+			"goal":    struct{}{},
 		},
 	}
 	tests := []struct {
@@ -435,6 +445,25 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			want: &BoardValidation{DetachedBoard: true},
+		},
+		{
+			desc: "test sub-word bug",
+			tiles: &Tiles{
+				freq: map[Letter]int{
+					'g': 1,
+					'o': 1,
+					'a': 1,
+					'l': 1,
+				},
+				count: 6,
+			},
+			board: &Board{
+				Words: []Word{
+					{Horizontal, "g  l", Loc{0, 0}},
+					{Horizontal, "oa", Loc{1, 0}},
+				},
+			},
+			want: &BoardValidation{},
 		},
 	}
 

@@ -4,6 +4,7 @@
       <div class="column is-four-fifths">
         <div class="board">
           <Board ref="board"
+            :gameOver="gameOver"
             v-on:removeTile="addTileToHand"
             v-on:blankClicked="addSelected"
             v-on:boardUpdated="sendBoard"/>
@@ -17,18 +18,34 @@
           </div>
         </div>
         <div class="letters">
-          <UnusedLetters v-if="letters" ref="hand" :letters="letters" v-on:dumpTile="dumpTile"/>
+          <UnusedLetters v-if="letters" ref="hand"
+            :letters="letters"
+            :gameOver="gameOver"
+            v-on:dumpTile="dumpTile"/>
         </div>
       </div>
       <div class="column is-one-fifth right-side">
         <div class="players">
-          <div v-if="tilesInBunch !== null">{{tilesInBunch}} tiles left in bunch</div>
-          <ol>
-            <li v-for="player in players">{{player.getName()}}: {{player.getTilesInBoard()}} - {{player.getTilesInHand()}}</li>
-          </ol>
-          <a class="button is-info" @click="startGame">
-            Start Game
-          </a>
+          <div v-if="tilesInBunch !== null"><strong>Tiles left in bunch: {{tilesInBunch}}</strong></div>
+          <hr/>
+          <table class="standings">
+            <tr class="standing-header">
+              <td>Player</td>
+              <td class="player-scores">Board</td>
+              <td class="player-scores">Hand</td>
+            </tr>
+            <tr v-for="player in players">
+              <td>{{player.getName()}}</td>
+              <td class="player-scores">{{player.getTilesInBoard()}}</td>
+              <td class="player-scores">{{player.getTilesInHand()}}</td>
+            </tr>
+          </table>
+          <hr/>
+          <div class="start-game-button" v-if="waitingForPlayers">
+            <a class="button is-info" @click="startGame">
+              Start Game
+            </a>
+          </div>
         </div>
         <div class="logs">
           <ul>
@@ -51,7 +68,7 @@ import Notice from '@/components/Notice.vue'; // @ is an alias to /src
 import {Cell, Letter, PlacedWord, Orientation} from '@/data';
 import {Game as PBGame, Board as PBBoard, ListGamesRequest, JoinGameRequest,
         GameUpdate, CurrentStatus, PlayerUpdate, GameStarted, GameEnded, StartGameRequest,
-        Player, DumpRequest, UpdateBoardRequest, Word, Tiles} from '@/proto/banana_pb';
+        Player, DumpRequest, UpdateBoardRequest, Word, Tiles, GameStatus} from '@/proto/banana_pb';
 
 @Component({
   components: {
@@ -67,7 +84,7 @@ export default class Game extends Vue {
   private players: Player[] = [];
   private tilesInBunch: number | null = null;
   private logs: string[] = [];
-  private gameOver: boolean = false;
+  private gameStatus: GameStatus = GameStatus.UNKNOWN;
 
   private word: string = '';
   private notice: string[] = [];
@@ -156,7 +173,11 @@ export default class Game extends Vue {
           this.handleGameOver(resp.getGameEnded()!);
           break;
         case GameUpdate.UpdateCase.TILE_UPDATE:
-          this.updateTiles(resp.getTileUpdate()!.getAllTiles());
+          const tileUpdate = resp.getTileUpdate()!;
+          if (tileUpdate.getFromOtherPeel()) {
+            this.hand.flash();
+          }
+          this.updateTiles(tileUpdate.getAllTiles());
           break;
       }
     });
@@ -185,10 +206,17 @@ export default class Game extends Vue {
     this.tilesInBunch = up.getRemainingTiles();
     this.updateBoard(up.getBoard()!);
     this.updateTiles(up.getAllTiles()!);
+    this.gameStatus = up.getStatus();
+    if (up.getStatus() === GameStatus.FINISHED) {
+      this.hand.clearSelected();
+      const ge = new GameEnded();
+      this.handleGameOver(ge);
+    }
   }
 
   private handleGameStarted(gameStarted: GameStarted): void {
     const numTilesInHand = gameStarted.getNumStartingTiles();
+    this.gameStatus = GameStatus.IN_PROGRESS;
     for (const p of this.players) {
       p.setTilesInHand(numTilesInHand);
     }
@@ -196,7 +224,7 @@ export default class Game extends Vue {
 
   private handleGameOver(gameEnded: GameEnded): void {
     this.notice = ['Game Over'];
-    this.gameOver = true;
+    this.gameStatus = GameStatus.FINISHED;
   }
 
   private updateBoard(board: PBBoard): void {
@@ -232,10 +260,6 @@ export default class Game extends Vue {
   }
 
   private handlePlayerUpdate(pu: PlayerUpdate): void {
-    if (pu.getPeeled() && pu.getPlayer().getId() !== this.playerID) {
-      this.hand.flash();
-    }
-
     const remainingTiles = pu.getRemainingTiles();
     if (remainingTiles >= 0) {
       this.tilesInBunch = remainingTiles;
@@ -386,6 +410,10 @@ export default class Game extends Vue {
   }
 
   private setNotice(fit: boolean): void {
+    if (this.gameOver) {
+      return;
+    }
+
     if (this.detachedBoard) {
       this.notice = ['Board is not all connected'];
       return;
@@ -522,6 +550,14 @@ export default class Game extends Vue {
       this.setNotice(true);
     });
   }
+
+  get gameOver(): boolean {
+    return this.gameStatus === GameStatus.FINISHED;
+  }
+
+  get waitingForPlayers(): boolean {
+    return this.gameStatus === GameStatus.WAITING_FOR_PLAYERS;
+  }
 }
 </script>
 
@@ -568,5 +604,17 @@ export default class Game extends Vue {
   height: 20%;
   border-right: solid 1px black;
   border-top: solid 1px black;
+}
+.standings {
+  width: 100%;
+}
+.player-scores {
+  text-align: center;
+}
+.standing-header {
+  font-weight: bold;
+}
+.start-game-button {
+  text-align: center;
 }
 </style>
