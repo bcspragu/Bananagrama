@@ -627,7 +627,7 @@ export default class Board extends Vue {
       }
     }
 
-    if (maxX === 0 && maxY === 0) {
+    if (maxX === 0 && maxY === 0 && this.placedWords.length === 0) {
       return {board: [[{letter: '', wordIndex: [], letterIndex: []}]], requiredLetters: []};
     }
 

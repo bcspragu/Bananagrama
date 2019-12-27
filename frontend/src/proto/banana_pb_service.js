@@ -458,6 +458,81 @@ proto.BananaServicePromiseClient.prototype.joinGame =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.StreamLogsRequest,
+ *   !proto.LogEntry>}
+ */
+const methodDescriptor_BananaService_StreamLogs = new grpc.web.MethodDescriptor(
+  '/BananaService/StreamLogs',
+  grpc.web.MethodType.SERVER_STREAMING,
+  proto.StreamLogsRequest,
+  proto.LogEntry,
+  /**
+   * @param {!proto.StreamLogsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.LogEntry.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.StreamLogsRequest,
+ *   !proto.LogEntry>}
+ */
+const methodInfo_BananaService_StreamLogs = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.LogEntry,
+  /**
+   * @param {!proto.StreamLogsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.LogEntry.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.StreamLogsRequest} request The request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.LogEntry>}
+ *     The XHR Node Readable Stream
+ */
+proto.BananaServiceClient.prototype.streamLogs =
+    function(request, metadata) {
+  return this.client_.serverStreaming(this.hostname_ +
+      '/BananaService/StreamLogs',
+      request,
+      metadata || {},
+      methodDescriptor_BananaService_StreamLogs);
+};
+
+
+/**
+ * @param {!proto.StreamLogsRequest} request The request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.LogEntry>}
+ *     The XHR Node Readable Stream
+ */
+proto.BananaServicePromiseClient.prototype.streamLogs =
+    function(request, metadata) {
+  return this.client_.serverStreaming(this.hostname_ +
+      '/BananaService/StreamLogs',
+      request,
+      metadata || {},
+      methodDescriptor_BananaService_StreamLogs);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.UpdateBoardRequest,
  *   !proto.UpdateBoardResponse>}
  */

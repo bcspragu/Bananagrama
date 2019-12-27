@@ -8,12 +8,14 @@ import {
   JoinGameRequest,
   ListGamesRequest,
   ListGamesResponse,
+  LogEntry,
   NewGameRequest,
   NewGameResponse,
   SpectateRequest,
   SpectateUpdate,
   StartGameRequest,
   StartGameResponse,
+  StreamLogsRequest,
   UpdateBoardRequest,
   UpdateBoardResponse} from './banana_pb';
 
@@ -52,6 +54,11 @@ export class BananaServiceClient {
     request: JoinGameRequest,
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<GameUpdate>;
+
+  streamLogs(
+    request: StreamLogsRequest,
+    metadata?: grpcWeb.Metadata
+  ): grpcWeb.ClientReadableStream<LogEntry>;
 
   updateBoard(
     request: UpdateBoardRequest,
@@ -103,6 +110,11 @@ export class BananaServicePromiseClient {
     request: JoinGameRequest,
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<GameUpdate>;
+
+  streamLogs(
+    request: StreamLogsRequest,
+    metadata?: grpcWeb.Metadata
+  ): grpcWeb.ClientReadableStream<LogEntry>;
 
   updateBoard(
     request: UpdateBoardRequest,

@@ -204,11 +204,6 @@ export class GameUpdate extends jspb.Message {
   hasTileUpdate(): boolean;
   clearTileUpdate(): void;
 
-  getLogEvent(): LogEvent | undefined;
-  setLogEvent(value?: LogEvent): void;
-  hasLogEvent(): boolean;
-  clearLogEvent(): void;
-
   getUpdateCase(): GameUpdate.UpdateCase;
 
   serializeBinary(): Uint8Array;
@@ -226,7 +221,6 @@ export namespace GameUpdate {
     gameStarted?: GameStarted.AsObject,
     gameEnded?: GameEnded.AsObject,
     tileUpdate?: TileUpdate.AsObject,
-    logEvent?: LogEvent.AsObject,
   }
 
   export enum UpdateCase { 
@@ -236,7 +230,6 @@ export namespace GameUpdate {
     GAME_STARTED = 3,
     GAME_ENDED = 4,
     TILE_UPDATE = 5,
-    LOG_EVENT = 6,
   }
 }
 
@@ -420,7 +413,29 @@ export namespace TileUpdate {
   }
 }
 
-export class LogEvent extends jspb.Message {
+export class StreamLogsRequest extends jspb.Message {
+  getGameId(): string;
+  setGameId(value: string): void;
+
+  getPlayerId(): string;
+  setPlayerId(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): StreamLogsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: StreamLogsRequest): StreamLogsRequest.AsObject;
+  static serializeBinaryToWriter(message: StreamLogsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): StreamLogsRequest;
+  static deserializeBinaryFromReader(message: StreamLogsRequest, reader: jspb.BinaryReader): StreamLogsRequest;
+}
+
+export namespace StreamLogsRequest {
+  export type AsObject = {
+    gameId: string,
+    playerId: string,
+  }
+}
+
+export class LogEntry extends jspb.Message {
   getPlayerMove(): PlayerMove | undefined;
   setPlayerMove(value?: PlayerMove): void;
   hasPlayerMove(): boolean;
@@ -436,27 +451,21 @@ export class LogEvent extends jspb.Message {
   hasWordFail(): boolean;
   clearWordFail(): void;
 
-  getBoardFail(): BoardFail | undefined;
-  setBoardFail(value?: BoardFail): void;
-  hasBoardFail(): boolean;
-  clearBoardFail(): void;
-
-  getLogEventCase(): LogEvent.LogEventCase;
+  getLogEventCase(): LogEntry.LogEventCase;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): LogEvent.AsObject;
-  static toObject(includeInstance: boolean, msg: LogEvent): LogEvent.AsObject;
-  static serializeBinaryToWriter(message: LogEvent, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): LogEvent;
-  static deserializeBinaryFromReader(message: LogEvent, reader: jspb.BinaryReader): LogEvent;
+  toObject(includeInstance?: boolean): LogEntry.AsObject;
+  static toObject(includeInstance: boolean, msg: LogEntry): LogEntry.AsObject;
+  static serializeBinaryToWriter(message: LogEntry, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): LogEntry;
+  static deserializeBinaryFromReader(message: LogEntry, reader: jspb.BinaryReader): LogEntry;
 }
 
-export namespace LogEvent {
+export namespace LogEntry {
   export type AsObject = {
     playerMove?: PlayerMove.AsObject,
     playerDump?: PlayerDump.AsObject,
     wordFail?: WordFail.AsObject,
-    boardFail?: BoardFail.AsObject,
   }
 
   export enum LogEventCase { 
@@ -464,11 +473,19 @@ export namespace LogEvent {
     PLAYER_MOVE = 1,
     PLAYER_DUMP = 2,
     WORD_FAIL = 3,
-    BOARD_FAIL = 4,
   }
 }
 
 export class PlayerMove extends jspb.Message {
+  getPlayerId(): string;
+  setPlayerId(value: string): void;
+
+  getPlayerName(): string;
+  setPlayerName(value: string): void;
+
+  getWord(): string;
+  setWord(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PlayerMove.AsObject;
   static toObject(includeInstance: boolean, msg: PlayerMove): PlayerMove.AsObject;
@@ -479,10 +496,19 @@ export class PlayerMove extends jspb.Message {
 
 export namespace PlayerMove {
   export type AsObject = {
+    playerId: string,
+    playerName: string,
+    word: string,
   }
 }
 
 export class PlayerDump extends jspb.Message {
+  getPlayerId(): string;
+  setPlayerId(value: string): void;
+
+  getPlayerName(): string;
+  setPlayerName(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PlayerDump.AsObject;
   static toObject(includeInstance: boolean, msg: PlayerDump): PlayerDump.AsObject;
@@ -493,10 +519,21 @@ export class PlayerDump extends jspb.Message {
 
 export namespace PlayerDump {
   export type AsObject = {
+    playerId: string,
+    playerName: string,
   }
 }
 
 export class WordFail extends jspb.Message {
+  getPlayerId(): string;
+  setPlayerId(value: string): void;
+
+  getPlayerName(): string;
+  setPlayerName(value: string): void;
+
+  getBadWord(): string;
+  setBadWord(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): WordFail.AsObject;
   static toObject(includeInstance: boolean, msg: WordFail): WordFail.AsObject;
@@ -507,20 +544,9 @@ export class WordFail extends jspb.Message {
 
 export namespace WordFail {
   export type AsObject = {
-  }
-}
-
-export class BoardFail extends jspb.Message {
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): BoardFail.AsObject;
-  static toObject(includeInstance: boolean, msg: BoardFail): BoardFail.AsObject;
-  static serializeBinaryToWriter(message: BoardFail, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): BoardFail;
-  static deserializeBinaryFromReader(message: BoardFail, reader: jspb.BinaryReader): BoardFail;
-}
-
-export namespace BoardFail {
-  export type AsObject = {
+    playerId: string,
+    playerName: string,
+    badWord: string,
   }
 }
 

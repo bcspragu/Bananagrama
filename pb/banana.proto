@@ -9,6 +9,9 @@ service BananaService {
   rpc StartGame(StartGameRequest) returns (StartGameResponse);
 
   rpc JoinGame(JoinGameRequest) returns (stream GameUpdate);
+  rpc StreamLogs(StreamLogsRequest) returns (stream LogEntry);
+
+
   rpc UpdateBoard(UpdateBoardRequest) returns (UpdateBoardResponse);
   rpc Dump(DumpRequest) returns (DumpResponse);
 
@@ -82,9 +85,6 @@ message GameUpdate {
     // Tile updates happen whenever the player's set of tiles changes, like at
     // the start of a game, when someone peels, or when the player dumps.
     TileUpdate tile_update = 5;
-
-    // Log events are anything that should be logged.
-    LogEvent log_event = 6;
   }
 }
 
@@ -127,19 +127,35 @@ message TileUpdate {
   bool from_other_peel = 2;
 }
 
-message LogEvent {
+message StreamLogsRequest {
+  string game_id = 1;
+  string player_id = 2;
+}
+
+message LogEntry {
   oneof log_event {
     PlayerMove player_move = 1;
     PlayerDump player_dump = 2;
     WordFail word_fail = 3;
-    BoardFail board_fail = 4;
   }
 }
 
-message PlayerMove { }
-message PlayerDump { }
-message WordFail { }
-message BoardFail { }
+message PlayerMove {
+  string player_id = 1;
+  string player_name = 2;
+  string word = 3;
+}
+
+message PlayerDump {
+  string player_id = 1;
+  string player_name = 2;
+}
+
+message WordFail {
+  string player_id = 1;
+  string player_name = 2;
+  string bad_word = 3;
+}
 
 message SpectateRequest {
   // The unique identifier for the game to spectate.

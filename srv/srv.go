@@ -177,6 +177,33 @@ func (s *Server) StreamGames(req *pb.ListGamesRequest, stream pb.BananaService_S
 	return nil
 }
 
+func (s *Server) StreamLogs(req *pb.StreamLogsRequest, stream pb.BananaService_StreamLogsServer) error {
+	gID := banana.GameID(req.GameId)
+	pID := banana.PlayerID(req.PlayerId)
+
+	s.RLock()
+	gch := s.gameChannels[gID]
+	pch := s.playerChannels[pID]
+	s.RUnlock()
+
+	sub, err := s.ps.Subscribe(gch, pch)
+	if err != nil {
+		log.Printf("failed to subscribe to log updates: %v", err)
+		return nil
+	}
+	defer sub.Close()
+
+	for {
+		msg, done := sub.Next()
+		if done {
+			return nil
+		}
+		fmt.Println(msg)
+	}
+
+	return nil
+}
+
 func (s *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (*pb.StartGameResponse, error) {
 	gID := banana.GameID(req.Id)
 	g, err := s.db.Game(gID)

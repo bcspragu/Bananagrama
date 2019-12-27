@@ -12,7 +12,6 @@ var goog = jspb;
 var global = Function('return this')();
 
 goog.exportSymbol('proto.Board', null, global);
-goog.exportSymbol('proto.BoardFail', null, global);
 goog.exportSymbol('proto.CharLoc', null, global);
 goog.exportSymbol('proto.CharLocs', null, global);
 goog.exportSymbol('proto.CurrentStatus', null, global);
@@ -27,7 +26,7 @@ goog.exportSymbol('proto.GamesList', null, global);
 goog.exportSymbol('proto.JoinGameRequest', null, global);
 goog.exportSymbol('proto.ListGamesRequest', null, global);
 goog.exportSymbol('proto.ListGamesResponse', null, global);
-goog.exportSymbol('proto.LogEvent', null, global);
+goog.exportSymbol('proto.LogEntry', null, global);
 goog.exportSymbol('proto.NewGameRequest', null, global);
 goog.exportSymbol('proto.NewGameResponse', null, global);
 goog.exportSymbol('proto.Player', null, global);
@@ -38,6 +37,7 @@ goog.exportSymbol('proto.SpectateRequest', null, global);
 goog.exportSymbol('proto.SpectateUpdate', null, global);
 goog.exportSymbol('proto.StartGameRequest', null, global);
 goog.exportSymbol('proto.StartGameResponse', null, global);
+goog.exportSymbol('proto.StreamLogsRequest', null, global);
 goog.exportSymbol('proto.TileUpdate', null, global);
 goog.exportSymbol('proto.Tiles', null, global);
 goog.exportSymbol('proto.UpdateBoardRequest', null, global);
@@ -1484,7 +1484,7 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<!Array<number>>}
  * @const
  */
-proto.GameUpdate.oneofGroups_ = [[1,2,3,4,5,6]];
+proto.GameUpdate.oneofGroups_ = [[1,2,3,4,5]];
 
 /**
  * @enum {number}
@@ -1495,8 +1495,7 @@ proto.GameUpdate.UpdateCase = {
   PLAYER_UPDATE: 2,
   GAME_STARTED: 3,
   GAME_ENDED: 4,
-  TILE_UPDATE: 5,
-  LOG_EVENT: 6
+  TILE_UPDATE: 5
 };
 
 /**
@@ -1539,8 +1538,7 @@ proto.GameUpdate.toObject = function(includeInstance, msg) {
     playerUpdate: (f = msg.getPlayerUpdate()) && proto.PlayerUpdate.toObject(includeInstance, f),
     gameStarted: (f = msg.getGameStarted()) && proto.GameStarted.toObject(includeInstance, f),
     gameEnded: (f = msg.getGameEnded()) && proto.GameEnded.toObject(includeInstance, f),
-    tileUpdate: (f = msg.getTileUpdate()) && proto.TileUpdate.toObject(includeInstance, f),
-    logEvent: (f = msg.getLogEvent()) && proto.LogEvent.toObject(includeInstance, f)
+    tileUpdate: (f = msg.getTileUpdate()) && proto.TileUpdate.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -1601,11 +1599,6 @@ proto.GameUpdate.deserializeBinaryFromReader = function(msg, reader) {
       var value = new proto.TileUpdate;
       reader.readMessage(value,proto.TileUpdate.deserializeBinaryFromReader);
       msg.setTileUpdate(value);
-      break;
-    case 6:
-      var value = new proto.LogEvent;
-      reader.readMessage(value,proto.LogEvent.deserializeBinaryFromReader);
-      msg.setLogEvent(value);
       break;
     default:
       reader.skipField();
@@ -1674,14 +1667,6 @@ proto.GameUpdate.serializeBinaryToWriter = function(message, writer) {
       5,
       f,
       proto.TileUpdate.serializeBinaryToWriter
-    );
-  }
-  f = message.getLogEvent();
-  if (f != null) {
-    writer.writeMessage(
-      6,
-      f,
-      proto.LogEvent.serializeBinaryToWriter
     );
   }
 };
@@ -1834,36 +1819,6 @@ proto.GameUpdate.prototype.clearTileUpdate = function() {
  */
 proto.GameUpdate.prototype.hasTileUpdate = function() {
   return jspb.Message.getField(this, 5) != null;
-};
-
-
-/**
- * optional LogEvent log_event = 6;
- * @return {?proto.LogEvent}
- */
-proto.GameUpdate.prototype.getLogEvent = function() {
-  return /** @type{?proto.LogEvent} */ (
-    jspb.Message.getWrapperField(this, proto.LogEvent, 6));
-};
-
-
-/** @param {?proto.LogEvent|undefined} value */
-proto.GameUpdate.prototype.setLogEvent = function(value) {
-  jspb.Message.setOneofWrapperField(this, 6, proto.GameUpdate.oneofGroups_[0], value);
-};
-
-
-proto.GameUpdate.prototype.clearLogEvent = function() {
-  this.setLogEvent(undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {!boolean}
- */
-proto.GameUpdate.prototype.hasLogEvent = function() {
-  return jspb.Message.getField(this, 6) != null;
 };
 
 
@@ -3285,12 +3240,181 @@ proto.TileUpdate.prototype.setFromOtherPeel = function(value) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.LogEvent = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, proto.LogEvent.oneofGroups_);
+proto.StreamLogsRequest = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.LogEvent, jspb.Message);
+goog.inherits(proto.StreamLogsRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
-  proto.LogEvent.displayName = 'proto.LogEvent';
+  proto.StreamLogsRequest.displayName = 'proto.StreamLogsRequest';
+}
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto suitable for use in Soy templates.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     com.google.apps.jspb.JsClassTemplate.JS_RESERVED_WORDS.
+ * @param {boolean=} opt_includeInstance Whether to include the JSPB instance
+ *     for transitional soy proto support: http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.StreamLogsRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.StreamLogsRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Whether to include the JSPB
+ *     instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.StreamLogsRequest} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.StreamLogsRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    gameId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    playerId: jspb.Message.getFieldWithDefault(msg, 2, "")
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.StreamLogsRequest}
+ */
+proto.StreamLogsRequest.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.StreamLogsRequest;
+  return proto.StreamLogsRequest.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.StreamLogsRequest} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.StreamLogsRequest}
+ */
+proto.StreamLogsRequest.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setGameId(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPlayerId(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.StreamLogsRequest.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.StreamLogsRequest.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.StreamLogsRequest} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.StreamLogsRequest.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getGameId();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+  f = message.getPlayerId();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional string game_id = 1;
+ * @return {string}
+ */
+proto.StreamLogsRequest.prototype.getGameId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/** @param {string} value */
+proto.StreamLogsRequest.prototype.setGameId = function(value) {
+  jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string player_id = 2;
+ * @return {string}
+ */
+proto.StreamLogsRequest.prototype.getPlayerId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/** @param {string} value */
+proto.StreamLogsRequest.prototype.setPlayerId = function(value) {
+  jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.LogEntry = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, proto.LogEntry.oneofGroups_);
+};
+goog.inherits(proto.LogEntry, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  proto.LogEntry.displayName = 'proto.LogEntry';
 }
 /**
  * Oneof group definitions for this message. Each group defines the field
@@ -3300,24 +3424,23 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<!Array<number>>}
  * @const
  */
-proto.LogEvent.oneofGroups_ = [[1,2,3,4]];
+proto.LogEntry.oneofGroups_ = [[1,2,3]];
 
 /**
  * @enum {number}
  */
-proto.LogEvent.LogEventCase = {
+proto.LogEntry.LogEventCase = {
   LOG_EVENT_NOT_SET: 0,
   PLAYER_MOVE: 1,
   PLAYER_DUMP: 2,
-  WORD_FAIL: 3,
-  BOARD_FAIL: 4
+  WORD_FAIL: 3
 };
 
 /**
- * @return {proto.LogEvent.LogEventCase}
+ * @return {proto.LogEntry.LogEventCase}
  */
-proto.LogEvent.prototype.getLogEventCase = function() {
-  return /** @type {proto.LogEvent.LogEventCase} */(jspb.Message.computeOneofCase(this, proto.LogEvent.oneofGroups_[0]));
+proto.LogEntry.prototype.getLogEventCase = function() {
+  return /** @type {proto.LogEntry.LogEventCase} */(jspb.Message.computeOneofCase(this, proto.LogEntry.oneofGroups_[0]));
 };
 
 
@@ -3333,8 +3456,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     for transitional soy proto support: http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.LogEvent.prototype.toObject = function(opt_includeInstance) {
-  return proto.LogEvent.toObject(opt_includeInstance, this);
+proto.LogEntry.prototype.toObject = function(opt_includeInstance) {
+  return proto.LogEntry.toObject(opt_includeInstance, this);
 };
 
 
@@ -3343,16 +3466,15 @@ proto.LogEvent.prototype.toObject = function(opt_includeInstance) {
  * @param {boolean|undefined} includeInstance Whether to include the JSPB
  *     instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.LogEvent} msg The msg instance to transform.
+ * @param {!proto.LogEntry} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.LogEvent.toObject = function(includeInstance, msg) {
+proto.LogEntry.toObject = function(includeInstance, msg) {
   var f, obj = {
     playerMove: (f = msg.getPlayerMove()) && proto.PlayerMove.toObject(includeInstance, f),
     playerDump: (f = msg.getPlayerDump()) && proto.PlayerDump.toObject(includeInstance, f),
-    wordFail: (f = msg.getWordFail()) && proto.WordFail.toObject(includeInstance, f),
-    boardFail: (f = msg.getBoardFail()) && proto.BoardFail.toObject(includeInstance, f)
+    wordFail: (f = msg.getWordFail()) && proto.WordFail.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3366,23 +3488,23 @@ proto.LogEvent.toObject = function(includeInstance, msg) {
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.LogEvent}
+ * @return {!proto.LogEntry}
  */
-proto.LogEvent.deserializeBinary = function(bytes) {
+proto.LogEntry.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.LogEvent;
-  return proto.LogEvent.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.LogEntry;
+  return proto.LogEntry.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.LogEvent} msg The message object to deserialize into.
+ * @param {!proto.LogEntry} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.LogEvent}
+ * @return {!proto.LogEntry}
  */
-proto.LogEvent.deserializeBinaryFromReader = function(msg, reader) {
+proto.LogEntry.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -3404,11 +3526,6 @@ proto.LogEvent.deserializeBinaryFromReader = function(msg, reader) {
       reader.readMessage(value,proto.WordFail.deserializeBinaryFromReader);
       msg.setWordFail(value);
       break;
-    case 4:
-      var value = new proto.BoardFail;
-      reader.readMessage(value,proto.BoardFail.deserializeBinaryFromReader);
-      msg.setBoardFail(value);
-      break;
     default:
       reader.skipField();
       break;
@@ -3422,9 +3539,9 @@ proto.LogEvent.deserializeBinaryFromReader = function(msg, reader) {
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.LogEvent.prototype.serializeBinary = function() {
+proto.LogEntry.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.LogEvent.serializeBinaryToWriter(this, writer);
+  proto.LogEntry.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -3432,11 +3549,11 @@ proto.LogEvent.prototype.serializeBinary = function() {
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.LogEvent} message
+ * @param {!proto.LogEntry} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.LogEvent.serializeBinaryToWriter = function(message, writer) {
+proto.LogEntry.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getPlayerMove();
   if (f != null) {
@@ -3462,14 +3579,6 @@ proto.LogEvent.serializeBinaryToWriter = function(message, writer) {
       proto.WordFail.serializeBinaryToWriter
     );
   }
-  f = message.getBoardFail();
-  if (f != null) {
-    writer.writeMessage(
-      4,
-      f,
-      proto.BoardFail.serializeBinaryToWriter
-    );
-  }
 };
 
 
@@ -3477,19 +3586,19 @@ proto.LogEvent.serializeBinaryToWriter = function(message, writer) {
  * optional PlayerMove player_move = 1;
  * @return {?proto.PlayerMove}
  */
-proto.LogEvent.prototype.getPlayerMove = function() {
+proto.LogEntry.prototype.getPlayerMove = function() {
   return /** @type{?proto.PlayerMove} */ (
     jspb.Message.getWrapperField(this, proto.PlayerMove, 1));
 };
 
 
 /** @param {?proto.PlayerMove|undefined} value */
-proto.LogEvent.prototype.setPlayerMove = function(value) {
-  jspb.Message.setOneofWrapperField(this, 1, proto.LogEvent.oneofGroups_[0], value);
+proto.LogEntry.prototype.setPlayerMove = function(value) {
+  jspb.Message.setOneofWrapperField(this, 1, proto.LogEntry.oneofGroups_[0], value);
 };
 
 
-proto.LogEvent.prototype.clearPlayerMove = function() {
+proto.LogEntry.prototype.clearPlayerMove = function() {
   this.setPlayerMove(undefined);
 };
 
@@ -3498,7 +3607,7 @@ proto.LogEvent.prototype.clearPlayerMove = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.LogEvent.prototype.hasPlayerMove = function() {
+proto.LogEntry.prototype.hasPlayerMove = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
@@ -3507,19 +3616,19 @@ proto.LogEvent.prototype.hasPlayerMove = function() {
  * optional PlayerDump player_dump = 2;
  * @return {?proto.PlayerDump}
  */
-proto.LogEvent.prototype.getPlayerDump = function() {
+proto.LogEntry.prototype.getPlayerDump = function() {
   return /** @type{?proto.PlayerDump} */ (
     jspb.Message.getWrapperField(this, proto.PlayerDump, 2));
 };
 
 
 /** @param {?proto.PlayerDump|undefined} value */
-proto.LogEvent.prototype.setPlayerDump = function(value) {
-  jspb.Message.setOneofWrapperField(this, 2, proto.LogEvent.oneofGroups_[0], value);
+proto.LogEntry.prototype.setPlayerDump = function(value) {
+  jspb.Message.setOneofWrapperField(this, 2, proto.LogEntry.oneofGroups_[0], value);
 };
 
 
-proto.LogEvent.prototype.clearPlayerDump = function() {
+proto.LogEntry.prototype.clearPlayerDump = function() {
   this.setPlayerDump(undefined);
 };
 
@@ -3528,7 +3637,7 @@ proto.LogEvent.prototype.clearPlayerDump = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.LogEvent.prototype.hasPlayerDump = function() {
+proto.LogEntry.prototype.hasPlayerDump = function() {
   return jspb.Message.getField(this, 2) != null;
 };
 
@@ -3537,19 +3646,19 @@ proto.LogEvent.prototype.hasPlayerDump = function() {
  * optional WordFail word_fail = 3;
  * @return {?proto.WordFail}
  */
-proto.LogEvent.prototype.getWordFail = function() {
+proto.LogEntry.prototype.getWordFail = function() {
   return /** @type{?proto.WordFail} */ (
     jspb.Message.getWrapperField(this, proto.WordFail, 3));
 };
 
 
 /** @param {?proto.WordFail|undefined} value */
-proto.LogEvent.prototype.setWordFail = function(value) {
-  jspb.Message.setOneofWrapperField(this, 3, proto.LogEvent.oneofGroups_[0], value);
+proto.LogEntry.prototype.setWordFail = function(value) {
+  jspb.Message.setOneofWrapperField(this, 3, proto.LogEntry.oneofGroups_[0], value);
 };
 
 
-proto.LogEvent.prototype.clearWordFail = function() {
+proto.LogEntry.prototype.clearWordFail = function() {
   this.setWordFail(undefined);
 };
 
@@ -3558,38 +3667,8 @@ proto.LogEvent.prototype.clearWordFail = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.LogEvent.prototype.hasWordFail = function() {
+proto.LogEntry.prototype.hasWordFail = function() {
   return jspb.Message.getField(this, 3) != null;
-};
-
-
-/**
- * optional BoardFail board_fail = 4;
- * @return {?proto.BoardFail}
- */
-proto.LogEvent.prototype.getBoardFail = function() {
-  return /** @type{?proto.BoardFail} */ (
-    jspb.Message.getWrapperField(this, proto.BoardFail, 4));
-};
-
-
-/** @param {?proto.BoardFail|undefined} value */
-proto.LogEvent.prototype.setBoardFail = function(value) {
-  jspb.Message.setOneofWrapperField(this, 4, proto.LogEvent.oneofGroups_[0], value);
-};
-
-
-proto.LogEvent.prototype.clearBoardFail = function() {
-  this.setBoardFail(undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {!boolean}
- */
-proto.LogEvent.prototype.hasBoardFail = function() {
-  return jspb.Message.getField(this, 4) != null;
 };
 
 
@@ -3640,7 +3719,9 @@ proto.PlayerMove.prototype.toObject = function(opt_includeInstance) {
  */
 proto.PlayerMove.toObject = function(includeInstance, msg) {
   var f, obj = {
-
+    playerId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    playerName: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    word: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -3677,6 +3758,18 @@ proto.PlayerMove.deserializeBinaryFromReader = function(msg, reader) {
     }
     var field = reader.getFieldNumber();
     switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPlayerId(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPlayerName(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setWord(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -3706,6 +3799,72 @@ proto.PlayerMove.prototype.serializeBinary = function() {
  */
 proto.PlayerMove.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getPlayerId();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+  f = message.getPlayerName();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
+  f = message.getWord();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional string player_id = 1;
+ * @return {string}
+ */
+proto.PlayerMove.prototype.getPlayerId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/** @param {string} value */
+proto.PlayerMove.prototype.setPlayerId = function(value) {
+  jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string player_name = 2;
+ * @return {string}
+ */
+proto.PlayerMove.prototype.getPlayerName = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/** @param {string} value */
+proto.PlayerMove.prototype.setPlayerName = function(value) {
+  jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional string word = 3;
+ * @return {string}
+ */
+proto.PlayerMove.prototype.getWord = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/** @param {string} value */
+proto.PlayerMove.prototype.setWord = function(value) {
+  jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
@@ -3756,7 +3915,8 @@ proto.PlayerDump.prototype.toObject = function(opt_includeInstance) {
  */
 proto.PlayerDump.toObject = function(includeInstance, msg) {
   var f, obj = {
-
+    playerId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    playerName: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -3793,6 +3953,14 @@ proto.PlayerDump.deserializeBinaryFromReader = function(msg, reader) {
     }
     var field = reader.getFieldNumber();
     switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPlayerId(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPlayerName(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -3822,6 +3990,50 @@ proto.PlayerDump.prototype.serializeBinary = function() {
  */
 proto.PlayerDump.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getPlayerId();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+  f = message.getPlayerName();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional string player_id = 1;
+ * @return {string}
+ */
+proto.PlayerDump.prototype.getPlayerId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/** @param {string} value */
+proto.PlayerDump.prototype.setPlayerId = function(value) {
+  jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string player_name = 2;
+ * @return {string}
+ */
+proto.PlayerDump.prototype.getPlayerName = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/** @param {string} value */
+proto.PlayerDump.prototype.setPlayerName = function(value) {
+  jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -3872,7 +4084,9 @@ proto.WordFail.prototype.toObject = function(opt_includeInstance) {
  */
 proto.WordFail.toObject = function(includeInstance, msg) {
   var f, obj = {
-
+    playerId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    playerName: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    badWord: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -3909,6 +4123,18 @@ proto.WordFail.deserializeBinaryFromReader = function(msg, reader) {
     }
     var field = reader.getFieldNumber();
     switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPlayerId(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPlayerName(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setBadWord(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -3938,122 +4164,72 @@ proto.WordFail.prototype.serializeBinary = function() {
  */
 proto.WordFail.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-};
-
-
-
-/**
- * Generated by JsPbCodeGenerator.
- * @param {Array=} opt_data Optional initial data array, typically from a
- * server response, or constructed directly in Javascript. The array is used
- * in place and becomes part of the constructed object. It is not cloned.
- * If no data is provided, the constructed object will be empty, but still
- * valid.
- * @extends {jspb.Message}
- * @constructor
- */
-proto.BoardFail = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
-};
-goog.inherits(proto.BoardFail, jspb.Message);
-if (goog.DEBUG && !COMPILED) {
-  proto.BoardFail.displayName = 'proto.BoardFail';
-}
-
-
-if (jspb.Message.GENERATE_TO_OBJECT) {
-/**
- * Creates an object representation of this proto suitable for use in Soy templates.
- * Field names that are reserved in JavaScript and will be renamed to pb_name.
- * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
- * For the list of reserved names please see:
- *     com.google.apps.jspb.JsClassTemplate.JS_RESERVED_WORDS.
- * @param {boolean=} opt_includeInstance Whether to include the JSPB instance
- *     for transitional soy proto support: http://goto/soy-param-migration
- * @return {!Object}
- */
-proto.BoardFail.prototype.toObject = function(opt_includeInstance) {
-  return proto.BoardFail.toObject(opt_includeInstance, this);
-};
-
-
-/**
- * Static version of the {@see toObject} method.
- * @param {boolean|undefined} includeInstance Whether to include the JSPB
- *     instance for transitional soy proto support:
- *     http://goto/soy-param-migration
- * @param {!proto.BoardFail} msg The msg instance to transform.
- * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
- */
-proto.BoardFail.toObject = function(includeInstance, msg) {
-  var f, obj = {
-
-  };
-
-  if (includeInstance) {
-    obj.$jspbMessageInstance = msg;
+  f = message.getPlayerId();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
   }
-  return obj;
-};
-}
-
-
-/**
- * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.BoardFail}
- */
-proto.BoardFail.deserializeBinary = function(bytes) {
-  var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.BoardFail;
-  return proto.BoardFail.deserializeBinaryFromReader(msg, reader);
-};
-
-
-/**
- * Deserializes binary data (in protobuf wire format) from the
- * given reader into the given message object.
- * @param {!proto.BoardFail} msg The message object to deserialize into.
- * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.BoardFail}
- */
-proto.BoardFail.deserializeBinaryFromReader = function(msg, reader) {
-  while (reader.nextField()) {
-    if (reader.isEndGroup()) {
-      break;
-    }
-    var field = reader.getFieldNumber();
-    switch (field) {
-    default:
-      reader.skipField();
-      break;
-    }
+  f = message.getPlayerName();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
   }
-  return msg;
+  f = message.getBadWord();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
+      f
+    );
+  }
 };
 
 
 /**
- * Serializes the message to binary data (in protobuf wire format).
- * @return {!Uint8Array}
+ * optional string player_id = 1;
+ * @return {string}
  */
-proto.BoardFail.prototype.serializeBinary = function() {
-  var writer = new jspb.BinaryWriter();
-  proto.BoardFail.serializeBinaryToWriter(this, writer);
-  return writer.getResultBuffer();
+proto.WordFail.prototype.getPlayerId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/** @param {string} value */
+proto.WordFail.prototype.setPlayerId = function(value) {
+  jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.BoardFail} message
- * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
+ * optional string player_name = 2;
+ * @return {string}
  */
-proto.BoardFail.serializeBinaryToWriter = function(message, writer) {
-  var f = undefined;
+proto.WordFail.prototype.getPlayerName = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/** @param {string} value */
+proto.WordFail.prototype.setPlayerName = function(value) {
+  jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional string bad_word = 3;
+ * @return {string}
+ */
+proto.WordFail.prototype.getBadWord = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/** @param {string} value */
+proto.WordFail.prototype.setBadWord = function(value) {
+  jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
