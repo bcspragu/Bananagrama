@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"unicode/utf8"
 
 	"github.com/bcspragu/Bananagrama/banana"
 	"github.com/bcspragu/Bananagrama/pb"
@@ -188,6 +189,7 @@ func (s *Server) StreamLogs(req *pb.StreamLogsRequest, stream pb.BananaService_S
 
 	sub, err := s.ps.Subscribe(gch, pch)
 	if err != nil {
+		log.Printf("game ID: %q, player ID: %q", gID, pID)
 		log.Printf("failed to subscribe to log updates: %v", err)
 		return nil
 	}
@@ -198,10 +200,73 @@ func (s *Server) StreamLogs(req *pb.StreamLogsRequest, stream pb.BananaService_S
 		if done {
 			return nil
 		}
-		fmt.Println(msg)
+
+		var le *pb.LogEntry
+
+		switch msg.Payload.Type {
+		case pubsub.PayloadTypePlayerMove:
+			le = s.playerMoveLogEntry(msg.Payload.PlayerMove)
+		case pubsub.PayloadTypePlayerDump:
+			le = s.playerDumpLogEntry(msg.Payload.PlayerDump)
+		case pubsub.PayloadTypeSelfTileUpdate:
+			le = s.playerPeelLogEntry(msg.Payload.SelfTileUpdate)
+		}
+
+		if le == nil {
+			continue
+		}
+
+		if err := stream.Send(le); err != nil {
+			log.Printf("log stream closed for player %q: %v", pID, err)
+		}
 	}
 
 	return nil
+}
+
+func (s *Server) playerMoveLogEntry(pm *pubsub.PlayerMove) *pb.LogEntry {
+	return &pb.LogEntry{
+		Event: &pb.LogEntry_PlayerMove{
+			PlayerMove: &pb.PlayerMove{
+				PlayerId:       string(pm.ID),
+				PlayerName:     pm.Name,
+				Word:           pm.Word,
+				WordValid:      pm.WordValid,
+				BoardConnected: pm.BoardValid,
+			},
+		},
+	}
+}
+
+func (s *Server) playerDumpLogEntry(pd *pubsub.PlayerDump) *pb.LogEntry {
+	return &pb.LogEntry{
+		Event: &pb.LogEntry_PlayerDump{
+			PlayerDump: &pb.PlayerDump{
+				PlayerId:   string(pd.ID),
+				PlayerName: pd.Name,
+			},
+		},
+	}
+}
+
+func (s *Server) playerPeelLogEntry(stu *pubsub.SelfTileUpdate) *pb.LogEntry {
+	if stu.PeelFrom == "" {
+		return nil
+	}
+
+	p, err := s.db.Player(stu.PeelFrom)
+	if err != nil {
+		return nil
+	}
+
+	return &pb.LogEntry{
+		Event: &pb.LogEntry_PlayerPeel{
+			PlayerPeel: &pb.PlayerPeel{
+				PlayerId:   string(p.ID),
+				PlayerName: p.Name,
+			},
+		},
+	}
 }
 
 func (s *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (*pb.StartGameResponse, error) {
@@ -232,7 +297,11 @@ func (s *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (*pb.S
 
 	numTiles := banana.StartingTileCount(len(ps), scaleFactor)
 
-	players := make(map[banana.PlayerID]*banana.Tiles)
+	var (
+		otus    []*pubsub.OtherTileUpdate
+		players = make(map[banana.PlayerID]*banana.Tiles)
+	)
+
 	for _, p := range ps {
 		tls, err := bunch.RemoveN(numTiles, s.r)
 		if err != nil {
@@ -241,8 +310,13 @@ func (s *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (*pb.S
 		players[p.ID] = tls
 
 		s.sendPlayerUpdate(p.ID, &pubsub.Payload{
-			Type:       pubsub.PayloadTypeTileUpdate,
-			TileUpdate: &pubsub.TileUpdate{Tiles: tls},
+			Type:           pubsub.PayloadTypeSelfTileUpdate,
+			SelfTileUpdate: &pubsub.SelfTileUpdate{Tiles: tls},
+		})
+		otus = append(otus, &pubsub.OtherTileUpdate{
+			ID:           p.ID,
+			TilesInHand:  numTiles,
+			TilesInBoard: 0, // Because the game is just starting
 		})
 	}
 
@@ -251,9 +325,15 @@ func (s *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (*pb.S
 	}
 
 	s.sendGameUpdate(gID, &pubsub.Payload{
-		Type: pubsub.PayloadTypeGameStarted,
-		GameStarted: &pubsub.GameStarted{
-			NumStartingTiles: numTiles,
+		Type:        pubsub.PayloadTypeGameStarted,
+		GameStarted: &pubsub.GameStarted{},
+	})
+
+	s.sendGameUpdate(gID, &pubsub.Payload{
+		Type: pubsub.PayloadTypeOtherTileUpdates,
+		OtherTileUpdates: &pubsub.OtherTileUpdates{
+			Updates:        otus,
+			RemainingTiles: bunch.Count(),
 		},
 	})
 
@@ -365,10 +445,8 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 				Players:        wps,
 				RemainingTiles: int32(bunch.Count()),
 				Board:          boardToWire(board),
-				AllTiles: &pb.Tiles{
-					Letters: tiles.AsList(),
-				},
-				Status: gameStatusMap[g.Status],
+				AllTiles:       &pb.Tiles{Letters: tiles.AsList()},
+				Status:         gameStatusMap[g.Status],
 			},
 		},
 	})
@@ -397,9 +475,7 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 		case pubsub.PayloadTypeGameStarted:
 			update = &pb.GameUpdate{
 				Update: &pb.GameUpdate_GameStarted{
-					GameStarted: &pb.GameStarted{
-						NumStartingTiles: int32(msg.Payload.GameStarted.NumStartingTiles),
-					},
+					GameStarted: &pb.GameStarted{},
 				},
 			}
 		case pubsub.PayloadTypeGameEnded:
@@ -419,38 +495,26 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 							Id:   string(msg.Payload.PlayerJoined.ID),
 							Name: msg.Payload.PlayerJoined.Name,
 						},
-						RemainingTiles: int32(-1),
 					},
 				},
 			}
-		case pubsub.PayloadTypePlayerMove:
+		case pubsub.PayloadTypeSelfTileUpdate:
+			tu := msg.Payload.SelfTileUpdate
 			update = &pb.GameUpdate{
-				Update: &pb.GameUpdate_PlayerUpdate{
-					PlayerUpdate: &pb.PlayerUpdate{
-						Player: &pb.Player{
-							Id:           string(msg.Payload.PlayerMove.ID),
-							Name:         msg.Payload.PlayerMove.Name,
-							TilesInHand:  int32(msg.Payload.PlayerMove.TilesInHand),
-							TilesInBoard: int32(msg.Payload.PlayerMove.TilesInBoard),
-						},
-						RemainingTiles: int32(msg.Payload.PlayerMove.TilesInBunch),
-					},
-				},
-			}
-		case pubsub.PayloadTypeTileUpdate:
-			tu := msg.Payload.TileUpdate
-			update = &pb.GameUpdate{
-				Update: &pb.GameUpdate_TileUpdate{
-					TileUpdate: &pb.TileUpdate{
-						AllTiles: &pb.Tiles{
-							Letters: tu.Tiles.AsList(),
-						},
+				Update: &pb.GameUpdate_SelfTileUpdate{
+					SelfTileUpdate: &pb.SelfTileUpdate{
+						AllTiles:      &pb.Tiles{Letters: tu.Tiles.AsList()},
 						FromOtherPeel: tu.PeelFrom != pID && tu.PeelFrom != "",
 					},
 				},
 			}
-		case pubsub.PayloadTypeWordFail:
-		case pubsub.PayloadTypeBoardFail:
+		case pubsub.PayloadTypeOtherTileUpdates:
+			tu := msg.Payload.OtherTileUpdates
+			update = &pb.GameUpdate{
+				Update: &pb.GameUpdate_OtherTileUpdate{
+					OtherTileUpdate: s.toOtherTileUpdates(tu.Updates, tu.RemainingTiles),
+				},
+			}
 		}
 
 		if update != nil {
@@ -466,6 +530,22 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 	}
 
 	return nil
+}
+
+func (s *Server) toOtherTileUpdates(otus []*pubsub.OtherTileUpdate, remainingTiles int) *pb.OtherTileUpdates {
+	var out []*pb.OtherTileUpdate
+	for _, otu := range otus {
+		out = append(out, &pb.OtherTileUpdate{
+			PlayerId:     string(otu.ID),
+			TilesInHand:  int32(otu.TilesInHand),
+			TilesInBoard: int32(otu.TilesInBoard),
+		})
+	}
+
+	return &pb.OtherTileUpdates{
+		Updates:        out,
+		RemainingTiles: int32(remainingTiles),
+	}
 }
 
 func (s *Server) Spectate(req *pb.SpectateRequest, stream pb.BananaService_SpectateServer) error {
@@ -633,9 +713,17 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 		return nil, fmt.Errorf("failed to retreive players for game %q: %v", gID, err)
 	}
 
-	// If the board was valid, clear out their tiles and let everyone know what's
-	// up.
-	tileCounts := make(map[banana.PlayerID]int)
+	pTiles := make(map[banana.PlayerID]*banana.Tiles)
+	for _, p := range ps {
+		tiles, err := s.db.Tiles(p.ID)
+		if err != nil {
+			return nil, err
+		}
+		pTiles[p.ID] = tiles
+	}
+
+	// If the board was valid, clear out their tiles and let everyone know
+	// what's up.
 	if peelable {
 		var gameOver bool
 		// If there are less tiles than players, end the game.
@@ -649,22 +737,17 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 				if err != nil {
 					return nil, err
 				}
+				pTiles[p.ID].Add(newTile)
 
-				tiles, err := s.db.Tiles(p.ID)
-				if err != nil {
-					return nil, err
-				}
-				tiles.Add(newTile)
-
-				if err := s.db.UpdateTiles(p.ID, tiles); err != nil {
+				if err := s.db.UpdateTiles(p.ID, pTiles[p.ID]); err != nil {
 					return nil, fmt.Errorf("failed to update player %q tiles: %v", p.ID, err)
 				}
-				tileCounts[p.ID] = tiles.Count()
 
+				// Send everyone their new tile set.
 				s.sendPlayerUpdate(p.ID, &pubsub.Payload{
-					Type: pubsub.PayloadTypeTileUpdate,
-					TileUpdate: &pubsub.TileUpdate{
-						Tiles:    tiles,
+					Type: pubsub.PayloadTypeSelfTileUpdate,
+					SelfTileUpdate: &pubsub.SelfTileUpdate{
+						Tiles:    pTiles[p.ID],
 						PeelFrom: pID,
 					},
 				})
@@ -682,6 +765,34 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 		}
 	}
 
+	var (
+		latestWord string
+		validWord  = true
+	)
+	if req.LatestWord != nil && utf8.RuneCountInString(req.LatestWord.Text) > 1 {
+		latestWord = req.LatestWord.Text
+		for _, iw := range bv.InvalidWords {
+			if iw.Word == latestWord {
+				validWord = false
+				break
+			}
+		}
+	}
+
+	// Send everyone what this player played.
+	s.sendGameUpdate(gID, &pubsub.Payload{
+		Type: pubsub.PayloadTypePlayerMove,
+		PlayerMove: &pubsub.PlayerMove{
+			ID:           p.ID,
+			Name:         p.Name,
+			Word:         latestWord,
+			WordValid:    validWord,
+			BoardValid:   !bv.DetachedBoard,
+			TilesInBunch: bunch.Count(),
+		},
+	})
+
+	var otus []*pubsub.OtherTileUpdate
 	for _, p := range ps {
 		board, err := s.db.Board(p.ID)
 		if err != nil {
@@ -693,23 +804,21 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 			return nil, err
 		}
 
-		s.sendGameUpdate(gID, &pubsub.Payload{
-			Type: pubsub.PayloadTypePlayerMove,
-			PlayerMove: &pubsub.PlayerMove{
-				ID:           p.ID,
-				Name:         p.Name,
-				TilesInHand:  tileCounts[p.ID],
-				TilesInBoard: bc,
-				TilesInBunch: bunch.Count(),
-			},
+		otus = append(otus, &pubsub.OtherTileUpdate{
+			ID:           p.ID,
+			TilesInHand:  pTiles[p.ID].Count(),
+			TilesInBoard: bc,
 		})
 	}
 
-	// TODO: Add latest word logging back.
-	//var latestWord string
-	//if req.LatestWord != nil {
-	//latestWord = req.LatestWord.Text
-	//}
+	// Send everyone's tile counts down.
+	s.sendGameUpdate(gID, &pubsub.Payload{
+		Type: pubsub.PayloadTypeOtherTileUpdates,
+		OtherTileUpdates: &pubsub.OtherTileUpdates{
+			Updates:        otus,
+			RemainingTiles: bunch.Count(),
+		},
+	})
 
 	// Convert the status to the wire format.
 	return &pb.UpdateBoardResponse{
@@ -732,6 +841,12 @@ func (s *Server) endGame(gID banana.GameID, name string) error {
 func (s *Server) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.DumpResponse, error) {
 	gID := banana.GameID(req.Id)
 	pID := banana.PlayerID(req.PlayerId)
+
+	p, err := s.db.Player(pID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retreive player id %q: %v", req.PlayerId, err)
+	}
+
 	g, err := s.db.Game(gID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retreive game id %q: %v", req.Id, err)
@@ -756,6 +871,11 @@ func (s *Server) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.DumpRespons
 	if bunch.Count() < DumpSize {
 		// We don't have enough tiles to give them
 		return nil, errors.New("not enough tiles to dump")
+	}
+
+	board, err := s.db.Board(pID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retreive board: %v", err)
 	}
 
 	tiles, err := s.db.Tiles(pID)
@@ -792,9 +912,33 @@ func (s *Server) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.DumpRespons
 	}
 
 	s.sendPlayerUpdate(pID, &pubsub.Payload{
-		Type: pubsub.PayloadTypeTileUpdate,
-		TileUpdate: &pubsub.TileUpdate{
-			Tiles: tiles,
+		Type:           pubsub.PayloadTypeSelfTileUpdate,
+		SelfTileUpdate: &pubsub.SelfTileUpdate{Tiles: tiles},
+	})
+
+	bc, err := board.Count()
+	if err != nil {
+		return nil, err
+	}
+
+	s.sendGameUpdate(gID, &pubsub.Payload{
+		Type: pubsub.PayloadTypeOtherTileUpdates,
+		OtherTileUpdates: &pubsub.OtherTileUpdates{
+			Updates: []*pubsub.OtherTileUpdate{
+				&pubsub.OtherTileUpdate{
+					ID:           pID,
+					TilesInBoard: bc,
+					TilesInHand:  tiles.Count(),
+				},
+			},
+		},
+	})
+
+	s.sendGameUpdate(gID, &pubsub.Payload{
+		Type: pubsub.PayloadTypePlayerDump,
+		PlayerDump: &pubsub.PlayerDump{
+			ID:   pID,
+			Name: p.Name,
 		},
 	})
 

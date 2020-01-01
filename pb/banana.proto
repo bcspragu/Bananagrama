@@ -83,8 +83,10 @@ message GameUpdate {
     GameEnded game_ended = 4;
 
     // Tile updates happen whenever the player's set of tiles changes, like at
-    // the start of a game, when someone peels, or when the player dumps.
-    TileUpdate tile_update = 5;
+    // the start of a game or when someone peels, but not when the player
+    // dumps.
+    SelfTileUpdate self_tile_update = 5;
+    OtherTileUpdates other_tile_update = 6;
   }
 }
 
@@ -104,7 +106,6 @@ message Tiles {
 
 message PlayerUpdate {
   Player player = 1;
-  int32 remaining_tiles = 2;
 }
 
 message Player {
@@ -114,17 +115,26 @@ message Player {
   int32 tiles_in_board = 4;
 }
 
-message GameStarted {
-  int32 num_starting_tiles = 1;
-}
+message GameStarted { }
 
 message GameEnded {
   repeated Player standings = 1;
 }
 
-message TileUpdate {
+message SelfTileUpdate {
   Tiles all_tiles = 1;
   bool from_other_peel = 2;
+}
+
+message OtherTileUpdates {
+  repeated OtherTileUpdate updates = 1;
+  int32 remaining_tiles = 2;
+}
+
+message OtherTileUpdate {
+  string player_id = 1;
+  int32 tiles_in_hand = 2;
+  int32 tiles_in_board = 3;
 }
 
 message StreamLogsRequest {
@@ -133,10 +143,10 @@ message StreamLogsRequest {
 }
 
 message LogEntry {
-  oneof log_event {
+  oneof event {
     PlayerMove player_move = 1;
     PlayerDump player_dump = 2;
-    WordFail word_fail = 3;
+    PlayerPeel player_peel = 3;
   }
 }
 
@@ -144,6 +154,8 @@ message PlayerMove {
   string player_id = 1;
   string player_name = 2;
   string word = 3;
+  bool word_valid = 4;
+  bool board_connected = 5;
 }
 
 message PlayerDump {
@@ -151,10 +163,9 @@ message PlayerDump {
   string player_name = 2;
 }
 
-message WordFail {
+message PlayerPeel {
   string player_id = 1;
   string player_name = 2;
-  string bad_word = 3;
 }
 
 message SpectateRequest {

@@ -22,23 +22,24 @@ const (
 	PayloadTypeWordFail
 	// A player's board is in a rough state.
 	PayloadTypeBoardFail
-	// The set of player's tiles.
-	PayloadTypeTileUpdate
+	// The set of this player's tiles.
+	PayloadTypeSelfTileUpdate
+	// The state of another player's tiles.
+	PayloadTypeOtherTileUpdates
 )
 
 type Payload struct {
 	Type PayloadType
 	// The below messages are only populated for their given
 	// type.
-	GameUpdated  *GameUpdated
-	GameStarted  *GameStarted
-	GameEnded    *GameEnded
-	PlayerJoined *PlayerJoined
-	PlayerMove   *PlayerMove
-	PlayerDump   *PlayerDump
-	WordFail     *WordFail
-	BoardFail    *BoardFail
-	TileUpdate   *TileUpdate
+	GameUpdated      *GameUpdated
+	GameStarted      *GameStarted
+	GameEnded        *GameEnded
+	PlayerJoined     *PlayerJoined
+	PlayerMove       *PlayerMove
+	PlayerDump       *PlayerDump
+	SelfTileUpdate   *SelfTileUpdate
+	OtherTileUpdates *OtherTileUpdates
 }
 
 type GameUpdated struct {
@@ -64,8 +65,9 @@ type PlayerJoined struct {
 type PlayerMove struct {
 	ID           banana.PlayerID
 	Name         string
-	TilesInHand  int
-	TilesInBoard int
+	Word         string
+	WordValid    bool
+	BoardValid   bool
 	TilesInBunch int
 }
 
@@ -74,16 +76,18 @@ type PlayerDump struct {
 	Name string
 }
 
-type WordFail struct {
-	Name string
-	Word string
-}
-
-type BoardFail struct {
-	Name string
-}
-
-type TileUpdate struct {
+type SelfTileUpdate struct {
 	Tiles    *banana.Tiles
 	PeelFrom banana.PlayerID
+}
+
+type OtherTileUpdates struct {
+	Updates        []*OtherTileUpdate
+	RemainingTiles int
+}
+
+type OtherTileUpdate struct {
+	ID           banana.PlayerID
+	TilesInHand  int
+	TilesInBoard int
 }

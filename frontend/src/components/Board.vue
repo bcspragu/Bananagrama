@@ -510,6 +510,11 @@ export default class Board extends Vue {
       }
     }
 
+    // Don't offer suggestions that don't use any tiles from the hand.
+    if (fromHand.length === 0) {
+      return {fits: false, missing: [], fromHand: []};
+    }
+
 
     return {fits: true, missing: this.aggregateMissing(freq), fromHand};
   }
@@ -703,7 +708,7 @@ export default class Board extends Vue {
     const cells = column.enter().append('g')
         .attr('class', 'square')
         .on('click', (d: any) => {
-          if (this.gameOver) {
+          if (this.gameOver || d.suggestion) {
             return;
           }
           if (d.letterLoc.letter === '' || d.letterLoc.letter === ' ') {

@@ -60,3 +60,10 @@ export interface Letter {
   deleting: boolean;
   selected: boolean;
 }
+
+export interface Player {
+  id: string;
+  name: string;
+  tilesInHand: number;
+  tilesInBoard: number;
+}
