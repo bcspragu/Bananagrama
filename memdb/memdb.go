@@ -13,13 +13,13 @@ import (
 
 var (
 	ErrGameNotFound   = errors.New("game not found")
+	ErrGameNotStarted = errors.New("game not started yet")
 	ErrPlayerNotFound = errors.New("player not found")
 )
 
 type DB struct {
-	dict banana.Dictionary
-	r    *rand.Rand
-	now  func() time.Time
+	r   *rand.Rand
+	now func() time.Time
 
 	sync.RWMutex
 	// Game-keyed maps
@@ -33,10 +33,8 @@ type DB struct {
 	tiles   map[banana.PlayerID]*banana.Tiles
 }
 
-func New(r *rand.Rand, dict banana.Dictionary) *DB {
+func New(r *rand.Rand) *DB {
 	return &DB{
-		dict: dict,
-
 		games:         make(map[banana.GameID]*banana.Game),
 		gameToPlayers: make(map[banana.GameID][]banana.PlayerID),
 		bunches:       make(map[banana.GameID]*banana.Bunch),
@@ -51,7 +49,7 @@ func New(r *rand.Rand, dict banana.Dictionary) *DB {
 }
 
 // Creates a new game with the given name.
-func (d *DB) NewGame(name string, b *banana.Bunch) (banana.GameID, error) {
+func (d *DB) NewGame(name string, creator banana.PlayerID) (banana.GameID, error) {
 	d.Lock()
 	defer d.Unlock()
 
@@ -64,12 +62,12 @@ func (d *DB) NewGame(name string, b *banana.Bunch) (banana.GameID, error) {
 		}
 		d.games[gID] = &banana.Game{
 			ID:        gID,
+			Creator:   creator,
 			Name:      name,
 			Status:    banana.WaitingForPlayers,
 			CreatedAt: time.Now(),
 		}
 		d.gameToPlayers[gID] = []banana.PlayerID{}
-		d.bunches[gID] = b.Clone()
 		return gID, nil
 	}
 	return banana.GameID(""), errors.New("failed to find unique game ID after 10 tries, something is terribly wrong")
@@ -108,9 +106,13 @@ func (d *DB) Bunch(id banana.GameID) (*banana.Bunch, error) {
 	d.RLock()
 	defer d.RUnlock()
 
+	if _, ok := d.games[id]; !ok {
+		return nil, ErrGameNotFound
+	}
+
 	b, ok := d.bunches[id]
 	if !ok {
-		return nil, ErrGameNotFound
+		return nil, ErrGameNotStarted
 	}
 	return b.Clone(), nil
 }

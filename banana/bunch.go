@@ -76,6 +76,10 @@ func Bananagrams() Distribution {
 	}
 }
 
+func None() Distribution {
+	return map[int][]Letter{}
+}
+
 // TestDistribution returns a small distribution for more easily testing
 // end-game scenarios.
 func TestDistribution() Distribution {
@@ -90,10 +94,20 @@ func TestDistribution() Distribution {
 	}
 }
 
-func NewBunch(dist Distribution, scale int) (*Bunch, error) {
-	t, err := tilesFromDistribution(dist, scale)
-	if err != nil {
-		return nil, err
+func Scale(dist Distribution, scale int) (Distribution, error) {
+	if scale < 1 {
+		return nil, fmt.Errorf("scale must be a positive integer, cannot be %d", scale)
 	}
-	return &Bunch{tiles: t}, nil
+
+	out := make(map[int][]Letter)
+	for v, ls := range dist {
+		out[v*scale] = ls
+	}
+	return out, nil
+}
+
+func NewBunch(dist Distribution) *Bunch {
+	return &Bunch{
+		tiles: tilesFromDistribution(dist),
+	}
 }

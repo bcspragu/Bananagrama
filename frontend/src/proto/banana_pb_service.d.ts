@@ -11,6 +11,8 @@ import {
   LogEntry,
   NewGameRequest,
   NewGameResponse,
+  RegisterRequest,
+  RegisterResponse,
   SpectateRequest,
   SpectateUpdate,
   StartGameRequest,
@@ -23,6 +25,13 @@ export class BananaServiceClient {
   constructor (hostname: string,
                credentials?: null | { [index: string]: string; },
                options?: null | { [index: string]: string; });
+
+  register(
+    request: RegisterRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.Error,
+               response: RegisterResponse) => void
+  ): grpcWeb.ClientReadableStream<RegisterResponse>;
 
   newGame(
     request: NewGameRequest,
@@ -85,6 +94,11 @@ export class BananaServicePromiseClient {
   constructor (hostname: string,
                credentials?: null | { [index: string]: string; },
                options?: null | { [index: string]: string; });
+
+  register(
+    request: RegisterRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<RegisterResponse>;
 
   newGame(
     request: NewGameRequest,

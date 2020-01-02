@@ -68,6 +68,86 @@ proto.BananaServicePromiseClient =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.RegisterRequest,
+ *   !proto.RegisterResponse>}
+ */
+const methodDescriptor_BananaService_Register = new grpc.web.MethodDescriptor(
+  '/BananaService/Register',
+  grpc.web.MethodType.UNARY,
+  proto.RegisterRequest,
+  proto.RegisterResponse,
+  /**
+   * @param {!proto.RegisterRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.RegisterResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.RegisterRequest,
+ *   !proto.RegisterResponse>}
+ */
+const methodInfo_BananaService_Register = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.RegisterResponse,
+  /**
+   * @param {!proto.RegisterRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.RegisterResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.RegisterRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.RegisterResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.RegisterResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.BananaServiceClient.prototype.register =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/BananaService/Register',
+      request,
+      metadata || {},
+      methodDescriptor_BananaService_Register,
+      callback);
+};
+
+
+/**
+ * @param {!proto.RegisterRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.RegisterResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.BananaServicePromiseClient.prototype.register =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/BananaService/Register',
+      request,
+      metadata || {},
+      methodDescriptor_BananaService_Register);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.NewGameRequest,
  *   !proto.NewGameResponse>}
  */

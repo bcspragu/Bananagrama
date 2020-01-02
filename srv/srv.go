@@ -11,19 +11,20 @@ import (
 	"sync"
 	"unicode/utf8"
 
+	"github.com/bcspragu/Bananagrama/auth"
 	"github.com/bcspragu/Bananagrama/banana"
 	"github.com/bcspragu/Bananagrama/pb"
 	"github.com/bcspragu/Bananagrama/pubsub"
 )
 
 const (
-	DumpSize    = 3
-	scaleFactor = 1
-	// TODO: Add MaxPlayers back in
+	DumpSize = 3
+	// TODO: Consider a MaxPlayers thing.
 )
 
 type Server struct {
 	r    *rand.Rand
+	auth *auth.Client
 	ps   *pubsub.PubSub
 	db   banana.DB
 	dict banana.Dictionary
@@ -36,7 +37,7 @@ type Server struct {
 	playerChannels map[banana.PlayerID]pubsub.Channel
 }
 
-func New(r *rand.Rand, db banana.DB, dict banana.Dictionary) (*Server, error) {
+func New(r *rand.Rand, auth *auth.Client, db banana.DB, dict banana.Dictionary) (*Server, error) {
 	ps := pubsub.New()
 	gameUpdateChannel, err := ps.NewChannel("GAME_UPDATES")
 	if err != nil {
@@ -45,6 +46,7 @@ func New(r *rand.Rand, db banana.DB, dict banana.Dictionary) (*Server, error) {
 
 	return &Server{
 		r:                 r,
+		auth:              auth,
 		ps:                ps,
 		db:                db,
 		dict:              dict,
@@ -54,7 +56,9 @@ func New(r *rand.Rand, db banana.DB, dict banana.Dictionary) (*Server, error) {
 	}, nil
 }
 
-type update struct{}
+func (s *Server) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
+	return &pb.RegisterResponse{}, nil
+}
 
 func (s *Server) NewGame(ctx context.Context, req *pb.NewGameRequest) (*pb.NewGameResponse, error) {
 	name := strings.TrimSpace(req.Name)
@@ -62,12 +66,8 @@ func (s *Server) NewGame(ctx context.Context, req *pb.NewGameRequest) (*pb.NewGa
 		return nil, errors.New("must specify a game name")
 	}
 
-	bunch, err := banana.NewBunch(banana.Bananagrams(), scaleFactor)
-	if err != nil {
-		return nil, fmt.Errorf("failed to make bunch: %v", err)
-	}
-
-	id, err := s.db.NewGame(name, bunch)
+	// TODO: Load the user ID from the context and use that.
+	id, err := s.db.NewGame(name, banana.PlayerID(""))
 	if err != nil {
 		return nil, err
 	}
@@ -290,10 +290,19 @@ func (s *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (*pb.S
 		return nil, errors.New("can't start game with less than two people")
 	}
 
-	bunch, err := s.db.Bunch(gID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to retreive bunch for game id %q: %v", req.Id, err)
+	// Scale up the bunch if there are more than 8 players
+	scaleFactor := 1
+	if len(ps) > 8 {
+		scaleFactor += len(ps) / 8
 	}
+
+	dist, err := banana.Scale(banana.Bananagrams(), scaleFactor)
+	if err != nil {
+		return nil, fmt.Errorf("failed to scale Bananagrams distribution: %v", err)
+	}
+
+	// Create a new bunch with our desired distribution.
+	bunch := banana.NewBunch(dist)
 
 	numTiles := banana.StartingTileCount(len(ps), scaleFactor)
 

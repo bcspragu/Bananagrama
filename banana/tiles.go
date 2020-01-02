@@ -1,7 +1,6 @@
 package banana
 
 import (
-	"fmt"
 	"sort"
 )
 
@@ -46,10 +45,7 @@ func NewTiles() *Tiles {
 
 // tilesFromDistribution initializes a tile set according to a given
 // distribution and scale factor.
-func tilesFromDistribution(d Distribution, scale int) (*Tiles, error) {
-	if scale < 1 {
-		return nil, fmt.Errorf("scale must be a positive integer, cannot be %d", scale)
-	}
+func tilesFromDistribution(d Distribution) *Tiles {
 
 	var (
 		freq  = make(map[Letter]int)
@@ -58,16 +54,14 @@ func tilesFromDistribution(d Distribution, scale int) (*Tiles, error) {
 
 	for n, letters := range d {
 		for _, letter := range letters {
-			scaledFreq := n * scale
-
 			// Map the new index back to the letter.
-			freq[letter] = scaledFreq
+			freq[letter] = n
 			// Update our total count.
-			count += scaledFreq
+			count += n
 		}
 	}
 
-	return &Tiles{freq: freq, count: count}, nil
+	return &Tiles{freq: freq, count: count}
 }
 
 // Freq returns the frequency of a given letter.

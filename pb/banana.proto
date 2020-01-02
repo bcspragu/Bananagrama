@@ -3,6 +3,8 @@ syntax = "proto3";
 option go_package = "pb";
 
 service BananaService {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+
   rpc NewGame(NewGameRequest) returns (NewGameResponse);
   rpc ListGames(ListGamesRequest) returns (ListGamesResponse);
   rpc StreamGames(ListGamesRequest) returns (stream GamesList);
@@ -16,6 +18,16 @@ service BananaService {
   rpc Dump(DumpRequest) returns (DumpResponse);
 
   rpc Spectate(SpectateRequest) returns (stream SpectateUpdate);
+}
+
+message RegisterRequest {
+  // What to name the game.
+  string name = 1;
+}
+
+message RegisterResponse {
+  string player_id = 1;
+  string token = 2;
 }
 
 message NewGameRequest {

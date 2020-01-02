@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/bcspragu/Bananagrama/auth"
 	"github.com/bcspragu/Bananagrama/banana"
 	"github.com/bcspragu/Bananagrama/memdb"
 	"github.com/bcspragu/Bananagrama/pb"
@@ -37,11 +38,17 @@ func main() {
 		log.Fatalf("failed to load dictionary %q: %v", *dictPath, err)
 	}
 
+	authClient, err := auth.New()
+	if err != nil {
+		log.Fatalf("failed to create auth client: %v", err)
+	}
+
 	grpcSrv := grpc.NewServer()
-	server, err := srv.New(r, memdb.New(r, dict), dict)
+	server, err := srv.New(r, authClient, memdb.New(r), dict)
 	if err != nil {
 		log.Fatalf("failed to init server: %v", err)
 	}
+
 	pb.RegisterBananaServiceServer(grpcSrv, server)
 	go func() {
 		if err := grpcSrv.Serve(lis); err != nil {

@@ -7,38 +7,35 @@ import (
 
 func TestTilesFromDistribution(t *testing.T) {
 	wantDistribution := map[Letter]int{
-		'A': 13000,
-		'B': 3000,
-		'C': 3000,
-		'D': 6000,
-		'E': 18000,
-		'F': 3000,
-		'G': 4000,
-		'H': 3000,
-		'I': 12000,
-		'J': 2000,
-		'K': 2000,
-		'L': 5000,
-		'M': 3000,
-		'N': 8000,
-		'O': 11000,
-		'P': 3000,
-		'Q': 2000,
-		'R': 9000,
-		'S': 6000,
-		'T': 9000,
-		'U': 6000,
-		'V': 3000,
-		'W': 3000,
-		'X': 2000,
-		'Y': 3000,
-		'Z': 2000,
+		'A': 13,
+		'B': 3,
+		'C': 3,
+		'D': 6,
+		'E': 18,
+		'F': 3,
+		'G': 4,
+		'H': 3,
+		'I': 12,
+		'J': 2,
+		'K': 2,
+		'L': 5,
+		'M': 3,
+		'N': 8,
+		'O': 11,
+		'P': 3,
+		'Q': 2,
+		'R': 9,
+		'S': 6,
+		'T': 9,
+		'U': 6,
+		'V': 3,
+		'W': 3,
+		'X': 2,
+		'Y': 3,
+		'Z': 2,
 	}
 
-	tiles, err := tilesFromDistribution(Bananagrams(), 1000)
-	if err != nil {
-		t.Fatalf("tilesFromDistribution: %v", err)
-	}
+	tiles := tilesFromDistribution(Bananagrams())
 	for letter, want := range wantDistribution {
 		if got := tiles.Freq(letter); got != want {
 			t.Errorf("tiles[%c]: got %d, want %d", letter, got, want)
@@ -75,7 +72,7 @@ func TestTileExhaustsAll(t *testing.T) {
 		'Y': 3000,
 		'Z': 2000,
 	}
-	b := newBunch(t, Bananagrams(), 1000)
+	b := newBunchWithScale(t, Bananagrams(), 1000)
 	r := rand.New(rand.NewSource(0))
 	// Exhaust all 144000 tiles, make sure we have none left at the end
 	for i := 0; i < 144000; i++ {
@@ -124,7 +121,7 @@ func TestTileNExhaustsAll(t *testing.T) {
 		'Y': 3000,
 		'Z': 2000,
 	}
-	b := newBunch(t, Bananagrams(), 1000)
+	b := newBunchWithScale(t, Bananagrams(), 1000)
 	r := rand.New(rand.NewSource(0))
 	// Exhaust all 144000 tiles, make sure we have none left at the end
 	tiles, err := b.RemoveN(144000, r)
@@ -216,7 +213,7 @@ func TestTileDistribution(t *testing.T) {
 		'Y': 0,
 		'Z': 0,
 	}
-	b := newBunch(t, Bananagrams(), 1000)
+	b := newBunchWithScale(t, Bananagrams(), 1000)
 	r := rand.New(rand.NewSource(0))
 	// Get 20,000 tiles, check the distribution is what we'd expect
 	for i := 0; i < 20000; i++ {
@@ -298,7 +295,7 @@ func TestTileNDistribution(t *testing.T) {
 		'Y': 0,
 		'Z': 0,
 	}
-	b := newBunch(t, Bananagrams(), 1000)
+	b := newBunchWithScale(t, Bananagrams(), 1000)
 	r := rand.New(rand.NewSource(0))
 	// Get 20,000 tiles, check the distribution is what we'd expect
 	tiles, err := b.RemoveN(20000, r)
@@ -323,13 +320,13 @@ func TestTileNDistribution(t *testing.T) {
 }
 
 func TestCount(t *testing.T) {
-	b := newBunch(t, Bananagrams(), 1000)
+	b := newBunchWithScale(t, Bananagrams(), 1000)
 	if got, want := b.Count(), 144000; got != want {
 		t.Errorf("Count: %d, want %d", got, want)
 	}
 }
 
-func TestNewBunchErrors(t *testing.T) {
+func TestScaleErrors(t *testing.T) {
 	tests := []struct {
 		scale   int
 		wantErr bool
@@ -342,7 +339,7 @@ func TestNewBunchErrors(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		_, err := NewBunch(Bananagrams(), test.scale)
+		_, err := Scale(Bananagrams(), test.scale)
 		if test.wantErr {
 			if err == nil {
 				t.Error("error expected, none was returned")
@@ -351,17 +348,18 @@ func TestNewBunchErrors(t *testing.T) {
 		}
 
 		if err != nil {
-			t.Errorf("NewBunch: %v", err)
+			t.Errorf("Scale: %v", err)
 		}
 	}
 }
 
-func newBunch(t *testing.T, dist Distribution, scale int) *Bunch {
-	b, err := NewBunch(dist, scale)
+func newBunchWithScale(t *testing.T, dist Distribution, scale int) *Bunch {
+	scaledDist, err := Scale(dist, scale)
 	if err != nil {
-		t.Fatalf("NewBunch: %v", err)
+		t.Fatalf("Scale: %v", err)
 	}
-	return b
+
+	return NewBunch(scaledDist)
 }
 
 func abs(x float64) float64 {

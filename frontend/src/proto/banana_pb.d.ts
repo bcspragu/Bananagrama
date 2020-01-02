@@ -1,5 +1,45 @@
 import * as jspb from "google-protobuf"
 
+export class RegisterRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): RegisterRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: RegisterRequest): RegisterRequest.AsObject;
+  static serializeBinaryToWriter(message: RegisterRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): RegisterRequest;
+  static deserializeBinaryFromReader(message: RegisterRequest, reader: jspb.BinaryReader): RegisterRequest;
+}
+
+export namespace RegisterRequest {
+  export type AsObject = {
+    name: string,
+  }
+}
+
+export class RegisterResponse extends jspb.Message {
+  getPlayerId(): string;
+  setPlayerId(value: string): void;
+
+  getToken(): string;
+  setToken(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): RegisterResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: RegisterResponse): RegisterResponse.AsObject;
+  static serializeBinaryToWriter(message: RegisterResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): RegisterResponse;
+  static deserializeBinaryFromReader(message: RegisterResponse, reader: jspb.BinaryReader): RegisterResponse;
+}
+
+export namespace RegisterResponse {
+  export type AsObject = {
+    playerId: string,
+    token: string,
+  }
+}
+
 export class NewGameRequest extends jspb.Message {
   getName(): string;
   setName(value: string): void;

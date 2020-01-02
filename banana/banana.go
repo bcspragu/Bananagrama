@@ -6,8 +6,8 @@ import "time"
 type GameID string
 
 type DB interface {
-	// Creates a new game with the given name.
-	NewGame(name string, bunch *Bunch) (GameID, error)
+	// Creates a new game with the given name and creator.
+	NewGame(name string, creator PlayerID) (GameID, error)
 	// Get all of the games.
 	Games() ([]*Game, error)
 	// Loads a game with the given ID.
@@ -60,6 +60,7 @@ func (g GameStatus) String() string {
 
 type Game struct {
 	ID        GameID
+	Creator   PlayerID
 	Name      string
 	Status    GameStatus
 	CreatedAt time.Time
@@ -68,6 +69,7 @@ type Game struct {
 func (g *Game) Clone() *Game {
 	return &Game{
 		ID:        g.ID,
+		Creator:   g.Creator,
 		Name:      g.Name,
 		Status:    g.Status,
 		CreatedAt: g.CreatedAt,
