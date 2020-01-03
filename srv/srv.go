@@ -432,9 +432,15 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 		return err
 	}
 
-	bunch, err := s.db.Bunch(gID)
-	if err != nil {
-		return err
+	var remainingTiles int
+	// If the game has already started, load up the bunch and count how many
+	// tiles are in it.
+	if g.Status != banana.WaitingForPlayers {
+		bunch, err := s.db.Bunch(gID)
+		if err != nil {
+			return err
+		}
+		remainingTiles = bunch.Count()
 	}
 
 	board, err := s.db.Board(pID)
@@ -452,7 +458,7 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 			CurrentStatus: &pb.CurrentStatus{
 				YourId:         string(pID),
 				Players:        wps,
-				RemainingTiles: int32(bunch.Count()),
+				RemainingTiles: int32(remainingTiles),
 				Board:          boardToWire(board),
 				AllTiles:       &pb.Tiles{Letters: tiles.AsList()},
 				Status:         gameStatusMap[g.Status],
