@@ -1,6 +1,9 @@
 package main
 
 import (
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	cryptorand "crypto/rand"
 	"flag"
 	"log"
 	"math/rand"
@@ -38,12 +41,17 @@ func main() {
 		log.Fatalf("failed to load dictionary %q: %v", *dictPath, err)
 	}
 
-	authClient, err := auth.New()
+	pk, err := ecdsa.GenerateKey(elliptic.P256(), cryptorand.Reader)
 	if err != nil {
-		log.Fatalf("failed to create auth client: %v", err)
+		log.Fatalf("failed to generate private key: %v", err)
 	}
 
-	grpcSrv := grpc.NewServer()
+	authClient := auth.New(pk)
+
+	grpcSrv := grpc.NewServer(
+		grpc.UnaryInterceptor(authClient.UnaryInterceptor),
+		grpc.StreamInterceptor(authClient.StreamInterceptor),
+	)
 	server, err := srv.New(r, authClient, memdb.New(r), dict)
 	if err != nil {
 		log.Fatalf("failed to init server: %v", err)

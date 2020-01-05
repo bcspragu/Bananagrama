@@ -11,6 +11,7 @@ require (
 	github.com/improbable-eng/grpc-web v0.12.0
 	github.com/rs/cors v1.7.0 // indirect
 	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
+	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	google.golang.org/api v0.15.0 // indirect
 	google.golang.org/grpc v1.26.0
 )

@@ -193,11 +193,8 @@ export namespace StartGameResponse {
 }
 
 export class JoinGameRequest extends jspb.Message {
-  getId(): string;
-  setId(value: string): void;
-
-  getName(): string;
-  setName(value: string): void;
+  getGameId(): string;
+  setGameId(value: string): void;
 
   getPlayerId(): string;
   setPlayerId(value: string): void;
@@ -212,8 +209,7 @@ export class JoinGameRequest extends jspb.Message {
 
 export namespace JoinGameRequest {
   export type AsObject = {
-    id: string,
-    name: string,
+    gameId: string,
     playerId: string,
   }
 }

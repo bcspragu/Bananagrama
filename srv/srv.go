@@ -13,6 +13,7 @@ import (
 
 	"github.com/bcspragu/Bananagrama/auth"
 	"github.com/bcspragu/Bananagrama/banana"
+	"github.com/bcspragu/Bananagrama/memdb"
 	"github.com/bcspragu/Bananagrama/pb"
 	"github.com/bcspragu/Bananagrama/pubsub"
 )
@@ -57,7 +58,34 @@ func New(r *rand.Rand, auth *auth.Client, db banana.DB, dict banana.Dictionary) 
 }
 
 func (s *Server) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
-	return &pb.RegisterResponse{}, nil
+	pID, err := s.db.RegisterPlayer(req.Name)
+	if err == memdb.ErrNameTaken {
+		return nil, errors.New("name_taken")
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	tkn, err := s.auth.Sign(pID)
+	if err != nil {
+		log.Printf("failed to sign token for (%s, %s): %v", req.Name, pID, err)
+		return nil, fmt.Errorf("failed to sign token: %v", err)
+	}
+
+	s.Lock()
+	pch, err := s.ps.NewChannel(string(pID))
+	if err != nil {
+		log.Printf("failed to create channel for player %q: %v", pID, err)
+		s.Unlock()
+		return nil, fmt.Errorf("failed to create channel for player %q: %v", pID, err)
+	}
+	s.playerChannels[pID] = pch
+	s.Unlock()
+
+	return &pb.RegisterResponse{
+		PlayerId: string(pID),
+		Token:    tkn,
+	}, nil
 }
 
 func (s *Server) NewGame(ctx context.Context, req *pb.NewGameRequest) (*pb.NewGameResponse, error) {
@@ -66,8 +94,13 @@ func (s *Server) NewGame(ctx context.Context, req *pb.NewGameRequest) (*pb.NewGa
 		return nil, errors.New("must specify a game name")
 	}
 
-	// TODO: Load the user ID from the context and use that.
-	id, err := s.db.NewGame(name, banana.PlayerID(""))
+	pID, err := s.auth.PlayerIDFromContext(ctx)
+	if err != nil {
+		log.Printf("failed to load player ID from context: %v", err)
+		return nil, fmt.Errorf("failed to load player ID from context: %v", err)
+	}
+
+	id, err := s.db.NewGame(name, pID)
 	if err != nil {
 		return nil, err
 	}
@@ -350,38 +383,59 @@ func (s *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (*pb.S
 }
 
 func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinGameServer) error {
-	gID := banana.GameID(req.Id)
+	gID := banana.GameID(req.GameId)
 	g, err := s.db.Game(gID)
 	if err != nil {
-		return fmt.Errorf("failed to retreive game id %q: %v", req.Id, err)
+		return fmt.Errorf("failed to retreive game id %q: %v", gID, err)
 	}
 
-	var (
-		pID   banana.PlayerID
-		pName string
-	)
+	if req.PlayerId == "" {
+		return errors.New("no player ID set in join game request")
+	}
 
+	pID, err := s.auth.PlayerIDFromContext(stream.Context())
+	if err != nil {
+		log.Printf("failed to load player ID from context: %v", err)
+		return fmt.Errorf("failed to load player ID from context: %v", err)
+	}
+
+	if string(pID) != req.PlayerId {
+		log.Printf("user requested to join as ID %q, but token was for ID %q", req.PlayerId, pID)
+		return fmt.Errorf("requested to join as ID %q, different from token", req.PlayerId)
+	}
+
+	// Ensure the player exists in our DB.
+	player, err := s.db.Player(pID)
+	if err != nil {
+		log.Fatalf("failed to load the requesting player: %v", err)
+		return err
+	}
+
+	// Check if this player is already in this game.
 	players, err := s.db.Players(gID)
 	if err != nil {
 		return fmt.Errorf("failed to retreive players for game id %q: %v", gID, err)
 	}
 
-	// Try to add a new player if they weren't already in the game.
-	if req.PlayerId == "" {
+	var found bool
+	for _, p := range players {
+		if p.ID == pID {
+			found = true
+			break
+		}
+	}
+
+	// Add the player if they weren't already in the game.
+	if !found {
 		if g.Status != banana.WaitingForPlayers {
 			// Can't join an in-progess or finished game.
 			return fmt.Errorf("can't join game in state %q", g.Status)
 		}
 
-		name := strings.TrimSpace(req.Name)
-		if name == "" {
-			return errors.New("must specify a player name")
-		}
-		pName = name
-
-		if pID, err = s.db.AddPlayer(gID, name); err != nil {
+		if err := s.db.AddPlayerToGame(gID, pID); err != nil {
 			return err
 		}
+
 		if err := s.ps.Publish(s.gameUpdateChannel, &pubsub.Payload{
 			Type: pubsub.PayloadTypeGameUpdated,
 			GameUpdated: &pubsub.GameUpdated{
@@ -391,40 +445,16 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 				PlayerCount: len(players) + 1,
 			},
 		}); err != nil {
-			log.Printf("failed to publish new game %q: %v", name, err)
+			log.Printf("failed to publish update for game %q: %v", g.Name, err)
 		}
 
 		s.sendGameUpdate(gID, &pubsub.Payload{
 			Type: pubsub.PayloadTypePlayerJoined,
 			PlayerJoined: &pubsub.PlayerJoined{
 				ID:   pID,
-				Name: name,
+				Name: player.Name,
 			},
 		})
-
-		s.Lock()
-		pch, err := s.ps.NewChannel(string(pID))
-		if err != nil {
-			log.Printf("failed to create channel for player %q: %v", pID, err)
-			s.Unlock()
-			return fmt.Errorf("failed to create channel for player %q: %v", pName, err)
-		}
-		s.playerChannels[pID] = pch
-		s.Unlock()
-	} else {
-		// Find the player in the game.
-		found := false
-		for _, p := range players {
-			if p.ID == banana.PlayerID(req.PlayerId) {
-				pID = p.ID
-				pName = p.Name
-				found = true
-				break
-			}
-		}
-		if !found {
-			return fmt.Errorf("failed to add or find player: %+v", req)
-		}
 	}
 
 	wps, err := s.wirePlayers(gID)
@@ -443,12 +473,12 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 		remainingTiles = bunch.Count()
 	}
 
-	board, err := s.db.Board(pID)
+	board, err := s.db.Board(gID, pID)
 	if err != nil {
 		return err
 	}
 
-	tiles, err := s.db.Tiles(pID)
+	tiles, err := s.db.Tiles(gID, pID)
 	if err != nil {
 		return err
 	}
@@ -534,7 +564,7 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 
 		if update != nil {
 			if err := stream.Send(update); err != nil {
-				log.Printf("stream closed for player %q: %v", pName, err)
+				log.Printf("stream closed for player %q: %v", player.Name, err)
 				return nil
 			}
 		}
@@ -573,7 +603,7 @@ func (s *Server) Spectate(req *pb.SpectateRequest, stream pb.BananaService_Spect
 
 	// Stream an initial board for each player.
 	for _, p := range ps {
-		board, err := s.db.Board(p.ID)
+		board, err := s.db.Board(gID, p.ID)
 		if err != nil {
 			return err
 		}
@@ -622,7 +652,7 @@ func (s *Server) Spectate(req *pb.SpectateRequest, stream pb.BananaService_Spect
 			continue
 		}
 
-		board, err := s.db.Board(mv.ID)
+		board, err := s.db.Board(gID, mv.ID)
 		if err != nil {
 			log.Printf("failed to load board: %v", err)
 			continue
@@ -661,6 +691,7 @@ func (s *Server) sendGameUpdate(id banana.GameID, up *pubsub.Payload) {
 }
 
 func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*pb.UpdateBoardResponse, error) {
+	gID := banana.GameID(req.Id)
 	// Convert the board to our domain format.
 	b := boardFromWire(req.Board)
 
@@ -671,12 +702,12 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 		return nil, fmt.Errorf("failed to get player %q: %v", req.PlayerId, err)
 	}
 
-	board, err := s.db.Board(pID)
+	board, err := s.db.Board(gID, pID)
 	if err != nil {
 		return nil, err
 	}
 
-	tiles, err := s.db.Tiles(pID)
+	tiles, err := s.db.Tiles(gID, pID)
 	if err != nil {
 		return nil, err
 	}
@@ -703,13 +734,13 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 		return nil, fmt.Errorf("used letters you don't have: %v", bv.ExtraLetters)
 	}
 
-	if err := s.db.UpdateBoard(pID, b); err != nil {
+	if err := s.db.UpdateBoard(gID, pID, b); err != nil {
 		log.Printf("failed to update board %q: %v", pID, err)
 		return nil, fmt.Errorf("failed to update board %q: %v", pID, err)
 	}
 
 	tilesInHand := b.Diff(tiles)
-	if err := s.db.UpdateTiles(pID, tilesInHand); err != nil {
+	if err := s.db.UpdateTiles(gID, pID, tilesInHand); err != nil {
 		log.Printf("failed to update tiles %q: %v", pID, err)
 		return nil, fmt.Errorf("failed to update tiles %q: %v", pID, err)
 	}
@@ -717,7 +748,6 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 	// A board is peelable if all the words are valid
 	peelable := len(bv.InvalidWords) == 0 && len(bv.UnusedLetters) == 0 && !bv.DetachedBoard
 
-	gID := banana.GameID(req.Id)
 	bunch, err := s.db.Bunch(gID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retreive bunch for game %q: %v", gID, err)
@@ -730,7 +760,7 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 
 	pTiles := make(map[banana.PlayerID]*banana.Tiles)
 	for _, p := range ps {
-		tiles, err := s.db.Tiles(p.ID)
+		tiles, err := s.db.Tiles(gID, p.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -754,7 +784,7 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 				}
 				pTiles[p.ID].Add(newTile)
 
-				if err := s.db.UpdateTiles(p.ID, pTiles[p.ID]); err != nil {
+				if err := s.db.UpdateTiles(gID, p.ID, pTiles[p.ID]); err != nil {
 					return nil, fmt.Errorf("failed to update player %q tiles: %v", p.ID, err)
 				}
 
@@ -809,7 +839,7 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 
 	var otus []*pubsub.OtherTileUpdate
 	for _, p := range ps {
-		board, err := s.db.Board(p.ID)
+		board, err := s.db.Board(gID, p.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -888,12 +918,12 @@ func (s *Server) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.DumpRespons
 		return nil, errors.New("not enough tiles to dump")
 	}
 
-	board, err := s.db.Board(pID)
+	board, err := s.db.Board(gID, pID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retreive board: %v", err)
 	}
 
-	tiles, err := s.db.Tiles(pID)
+	tiles, err := s.db.Tiles(gID, pID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retreive tiles: %v", err)
 	}
@@ -918,7 +948,7 @@ func (s *Server) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.DumpRespons
 	// We put their letter back in the pot after we take out their shit letter.
 	bunch.Inc(letter)
 
-	if err := s.db.UpdateTiles(pID, tiles); err != nil {
+	if err := s.db.UpdateTiles(gID, pID, tiles); err != nil {
 		return nil, err
 	}
 
@@ -972,7 +1002,7 @@ func (s *Server) wirePlayers(gID banana.GameID) ([]*pb.Player, error) {
 
 	var out []*pb.Player
 	for _, p := range players {
-		board, err := s.db.Board(p.ID)
+		board, err := s.db.Board(gID, p.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -982,7 +1012,7 @@ func (s *Server) wirePlayers(gID banana.GameID) ([]*pb.Player, error) {
 			return nil, err
 		}
 
-		tiles, err := s.db.Tiles(p.ID)
+		tiles, err := s.db.Tiles(gID, p.ID)
 		if err != nil {
 			return nil, err
 		}

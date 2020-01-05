@@ -14,20 +14,22 @@ type DB interface {
 	Game(id GameID) (*Game, error)
 	// Loads the bunch for the game with the given ID.
 	Bunch(id GameID) (*Bunch, error)
+	// Registers a player in our system.
+	RegisterPlayer(name string) (PlayerID, error)
 	// Adds a player to a not-yet-started game.
-	AddPlayer(id GameID, name string) (PlayerID, error)
+	AddPlayerToGame(gID GameID, pID PlayerID) error
 	// Get all the players for a game.
 	Players(id GameID) ([]*Player, error)
 	// Loads a player with the given ID.
 	Player(id PlayerID) (*Player, error)
-	// Loads the board for the given player ID.
-	Board(id PlayerID) (*Board, error)
-	// Loads tiles for the given player ID.
-	Tiles(id PlayerID) (*Tiles, error)
+	// Loads the board for the given game and player IDs.
+	Board(gID GameID, pID PlayerID) (*Board, error)
+	// Loads tiles for the given game and player IDs.
+	Tiles(gID GameID, pID PlayerID) (*Tiles, error)
 	// Updates a player's board.
-	UpdateBoard(id PlayerID, board *Board) error
+	UpdateBoard(gID GameID, pID PlayerID, board *Board) error
 	// Updates a player's tiles.
-	UpdateTiles(id PlayerID, tiles *Tiles) error
+	UpdateTiles(gID GameID, pID PlayerID, tiles *Tiles) error
 	// Updates the bunch for the game.
 	UpdateBunch(id GameID, bunch *Bunch) error
 	// Starts a game, and sets everyone's initial tile sets.

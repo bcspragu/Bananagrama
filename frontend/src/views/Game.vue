@@ -147,16 +147,11 @@ export default class Game extends Vue {
       return;
     }
 
-    const id = this.game.getId();
-    const name = this.$cookies.get('player-name');
+    const gameID = this.game.getId();
+    const playerID = this.$cookies.get('player-id');
     const req = new JoinGameRequest();
-    req.setId(id);
-    req.setName(name);
-
-    const playerID = this.getPlayerIDFromCookies();
-    if (playerID) {
-      req.setPlayerId(playerID);
-    }
+    req.setGameId(gameID);
+    req.setPlayerId(playerID);
 
     const stream = this.$client.joinGame(req, {});
 
@@ -242,7 +237,6 @@ export default class Game extends Vue {
 
   private handleInitialGameState(up: CurrentStatus): void {
     this.playerID = up.getYourId();
-    this.setPlayerIDInCookies(this.playerID);
     for (const p of up.getPlayersList()) {
       this.players.push({
         id: p.getId(),
@@ -341,24 +335,6 @@ export default class Game extends Vue {
 
     // Board doesn't exist yet, add it.
     this.players.push(player);
-  }
-
-  private getPlayerIDFromCookies(): string | undefined {
-    if (!this.game) {
-      return;
-    }
-
-    const id = this.game.getId();
-    return this.$cookies.get(`game/${id}/player-id`);
-  }
-
-  private setPlayerIDInCookies(playerID: string): void {
-    if (!this.game) {
-      return;
-    }
-
-    const id = this.game.getId();
-    this.$cookies.set(`game/${id}/player-id`, playerID);
   }
 
   private requiredCount(): { [s: string]: number; } {

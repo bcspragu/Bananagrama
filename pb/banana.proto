@@ -13,7 +13,6 @@ service BananaService {
   rpc JoinGame(JoinGameRequest) returns (stream GameUpdate);
   rpc StreamLogs(StreamLogsRequest) returns (stream LogEntry);
 
-
   rpc UpdateBoard(UpdateBoardRequest) returns (UpdateBoardResponse);
   rpc Dump(DumpRequest) returns (DumpResponse);
 
@@ -21,7 +20,8 @@ service BananaService {
 }
 
 message RegisterRequest {
-  // What to name the game.
+  // What the users name should be. Must be unique within the system, because
+  // why not?
   string name = 1;
 }
 
@@ -73,11 +73,8 @@ message StartGameResponse { }
 
 message JoinGameRequest {
   // The unique identifier for the game to join.
-  string id = 1;
-  // The name of the player joining the game.
-  string name = 2;
-  // This can be set if a player is re-joining a game they're already in, it'll
-  // attach the user to the same session.
+  string game_id = 1;
+  // The ID of the player joining the game.
   string player_id = 3;
 }
 

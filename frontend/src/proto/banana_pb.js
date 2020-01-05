@@ -1624,8 +1624,7 @@ proto.JoinGameRequest.prototype.toObject = function(opt_includeInstance) {
  */
 proto.JoinGameRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    name: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    gameId: jspb.Message.getFieldWithDefault(msg, 1, ""),
     playerId: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
@@ -1665,11 +1664,7 @@ proto.JoinGameRequest.deserializeBinaryFromReader = function(msg, reader) {
     switch (field) {
     case 1:
       var value = /** @type {string} */ (reader.readString());
-      msg.setId(value);
-      break;
-    case 2:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setName(value);
+      msg.setGameId(value);
       break;
     case 3:
       var value = /** @type {string} */ (reader.readString());
@@ -1704,17 +1699,10 @@ proto.JoinGameRequest.prototype.serializeBinary = function() {
  */
 proto.JoinGameRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getId();
+  f = message.getGameId();
   if (f.length > 0) {
     writer.writeString(
       1,
-      f
-    );
-  }
-  f = message.getName();
-  if (f.length > 0) {
-    writer.writeString(
-      2,
       f
     );
   }
@@ -1729,32 +1717,17 @@ proto.JoinGameRequest.serializeBinaryToWriter = function(message, writer) {
 
 
 /**
- * optional string id = 1;
+ * optional string game_id = 1;
  * @return {string}
  */
-proto.JoinGameRequest.prototype.getId = function() {
+proto.JoinGameRequest.prototype.getGameId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /** @param {string} value */
-proto.JoinGameRequest.prototype.setId = function(value) {
+proto.JoinGameRequest.prototype.setGameId = function(value) {
   jspb.Message.setProto3StringField(this, 1, value);
-};
-
-
-/**
- * optional string name = 2;
- * @return {string}
- */
-proto.JoinGameRequest.prototype.getName = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
-};
-
-
-/** @param {string} value */
-proto.JoinGameRequest.prototype.setName = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
 };
 
 

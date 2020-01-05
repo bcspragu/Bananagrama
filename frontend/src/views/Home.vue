@@ -40,6 +40,7 @@
       </div>
       <div class="column is-one-fifth"></div>
     </div>
+
     <b-modal :active.sync="showModal">
       <div class="modal-card">
         <header class="modal-card-head">
@@ -51,24 +52,26 @@
                   type="text"
                   v-model="playerName"
                   placeholder="e.g. &quot;Cave Johnson&quot;"
+                  @keyup.native.enter="registerPlayer"
                   required>
               </b-input>
           </b-field>
         </section>
         <footer class="modal-card-foot">
           <button type="button" @click="showModal = false" class="button">Close</button>
-          <button class="button is-primary" @click="setPlayerName">Set Name</button>
+          <button class="button is-primary" @click="registerPlayer">Set Name</button>
         </footer>
       </div>
     </b-modal>
+
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 
-// Import code-generated data structures.
-import {NewGameRequest, ListGamesRequest, Game as PBGame, GameStatus} from '@/proto/banana_pb';
+import {RegisterRequest, NewGameRequest, ListGamesRequest,
+        Game as PBGame, GameStatus} from '@/proto/banana_pb';
 
 interface Game {
   id: string;
@@ -86,11 +89,10 @@ export default class Home extends Vue {
   private playerName: string = '';
 
   private mounted(): void {
-    this.loadGames();
-
     const playerName = this.$cookies.get('player-name');
     if (playerName) {
       this.playerName = playerName;
+      this.loadGames();
     } else {
       // Have them set their name.
       this.showModal = true;
@@ -98,13 +100,24 @@ export default class Home extends Vue {
 
   }
 
-  private setPlayerName(): void {
+  private registerPlayer(): void {
     if (!this.playerName) {
       // If they didn't set a name, just leave the dialog open.
       return;
     }
-    this.showModal = false;
-    this.setPlayerNameInCookies(this.playerName);
+    const req = new RegisterRequest();
+    req.setName(this.playerName);
+    this.$client.register(req, {}, (err, resp) => {
+      if (err) {
+        console.log(err);
+        return;
+      }
+      this.showModal = false;
+      this.$cookies.set('player-name', this.playerName);
+      this.$cookies.set('player-id', resp.getPlayerId());
+      this.$cookies.set('player-token', resp.getToken());
+      this.loadGames();
+    });
   }
 
   private changeName(): void {
@@ -128,10 +141,6 @@ export default class Home extends Vue {
 
   private playerNameFromCookies(): string | undefined {
     return this.$cookies.get('player-name');
-  }
-
-  private setPlayerNameInCookies(name: string) {
-    this.$cookies.set('player-name', name);
   }
 
   private createGame() {
