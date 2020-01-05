@@ -143,6 +143,9 @@ export class Game extends jspb.Message {
   getPlayerCount(): number;
   setPlayerCount(value: number): void;
 
+  getCreatorId(): string;
+  setCreatorId(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Game.AsObject;
   static toObject(includeInstance: boolean, msg: Game): Game.AsObject;
@@ -157,6 +160,7 @@ export namespace Game {
     name: string,
     status: GameStatus,
     playerCount: number,
+    creatorId: string,
   }
 }
 

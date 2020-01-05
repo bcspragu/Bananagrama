@@ -26,9 +26,13 @@ import (
 )
 
 var (
-	addr        = flag.String("addr", ":8080", "http service address")
-	apiAddr     = flag.String("api_addr", ":8079", "RPC server address")
-	dictPath    = flag.String("dict", "", "path to the dictionary file to use")
+	addr     = flag.String("addr", ":8080", "http service address")
+	apiAddr  = flag.String("api_addr", ":8079", "RPC server address")
+	dictPath = flag.String("dict", "", "path to the dictionary file to use")
+
+	// TODO: Probably allow this to be set by environment variables so that
+	// deployments (like in Docker containers) can more easily change it without
+	// having to muck with the invocation.
 	authKeyPath = flag.String("auth_key_path", "auth.key", "path to the PEM-encoded ECDSA key to use for signing/verifying JWT tokens")
 )
 

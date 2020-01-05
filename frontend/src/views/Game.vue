@@ -41,7 +41,7 @@
             </tr>
           </table>
           <hr/>
-          <div class="start-game-button" v-if="waitingForPlayers">
+          <div class="start-game-button" v-if="waitingForPlayers && isCreator">
             <a class="button is-info" @click="startGame">
               Start Game
             </a>
@@ -598,6 +598,16 @@ export default class Game extends Vue {
 
   get waitingForPlayers(): boolean {
     return this.gameStatus === GameStatus.WAITING_FOR_PLAYERS;
+  }
+
+  get isCreator(): boolean {
+    if (!this.game) {
+      return false;
+    }
+    if (!this.playerID) {
+      return false;
+    }
+    return this.playerID === this.game.getCreatorId();
   }
 
   private lettersAsStringArray(): string[] {

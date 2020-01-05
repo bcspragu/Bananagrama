@@ -62,6 +62,7 @@ message Game {
   string name = 2;
   GameStatus status = 3;
   int32 player_count = 4;
+  string creator_id = 5;
 }
 
 message StartGameRequest {

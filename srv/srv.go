@@ -148,6 +148,7 @@ func (s *Server) ListGames(ctx context.Context, req *pb.ListGamesRequest) (*pb.L
 			Name:        g.Name,
 			Status:      gameStatusMap[g.Status],
 			PlayerCount: int32(len(ps)),
+			CreatorId:   string(g.Creator),
 		})
 	}
 
@@ -307,6 +308,16 @@ func (s *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (*pb.S
 	g, err := s.db.Game(gID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retreive game id %q: %v", req.Id, err)
+	}
+
+	pID, err := s.auth.PlayerIDFromContext(ctx)
+	if err != nil {
+		log.Printf("failed to load player ID from context: %v", err)
+		return nil, fmt.Errorf("failed to load player ID from context: %v", err)
+	}
+
+	if pID != g.Creator {
+		return nil, errors.New("only the game's creator can start the game")
 	}
 
 	if g.Status != banana.WaitingForPlayers {
