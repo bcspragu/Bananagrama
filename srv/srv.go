@@ -16,6 +16,8 @@ import (
 	"github.com/bcspragu/Bananagrama/memdb"
 	"github.com/bcspragu/Bananagrama/pb"
 	"github.com/bcspragu/Bananagrama/pubsub"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const (
@@ -94,10 +96,10 @@ func (s *Server) NewGame(ctx context.Context, req *pb.NewGameRequest) (*pb.NewGa
 		return nil, errors.New("must specify a game name")
 	}
 
-	pID, err := s.auth.PlayerIDFromContext(ctx)
-	if err != nil {
-		log.Printf("failed to load player ID from context: %v", err)
-		return nil, fmt.Errorf("failed to load player ID from context: %v", err)
+	pID, ok := auth.PlayerIDFromContext(ctx)
+	if !ok {
+		log.Print("no player ID in context")
+		return nil, errors.New("no player ID in context")
 	}
 
 	id, err := s.db.NewGame(name, pID)
@@ -310,10 +312,10 @@ func (s *Server) StartGame(ctx context.Context, req *pb.StartGameRequest) (*pb.S
 		return nil, fmt.Errorf("failed to retreive game id %q: %v", req.Id, err)
 	}
 
-	pID, err := s.auth.PlayerIDFromContext(ctx)
-	if err != nil {
-		log.Printf("failed to load player ID from context: %v", err)
-		return nil, fmt.Errorf("failed to load player ID from context: %v", err)
+	pID, ok := auth.PlayerIDFromContext(ctx)
+	if !ok {
+		log.Print("no player ID in context")
+		return nil, errors.New("no player ID in context")
 	}
 
 	if pID != g.Creator {
@@ -404,10 +406,10 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 		return errors.New("no player ID set in join game request")
 	}
 
-	pID, err := s.auth.PlayerIDFromContext(stream.Context())
-	if err != nil {
-		log.Printf("failed to load player ID from context: %v", err)
-		return fmt.Errorf("failed to load player ID from context: %v", err)
+	pID, ok := auth.PlayerIDFromContext(stream.Context())
+	if !ok {
+		log.Print("no player ID in context")
+		return errors.New("no player ID in context")
 	}
 
 	if string(pID) != req.PlayerId {
@@ -418,8 +420,8 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 	// Ensure the player exists in our DB.
 	player, err := s.db.Player(pID)
 	if err != nil {
-		log.Fatalf("failed to load the requesting player: %v", err)
-		return err
+		log.Printf("failed to load the requesting player: %v", err)
+		return status.Error(codes.Unauthenticated, "account not found in DB")
 	}
 
 	// Check if this player is already in this game.

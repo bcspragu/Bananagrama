@@ -12,6 +12,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
+import * as grpcWeb from 'grpc-web';
 
 import BoardView from '@/components/BoardView.vue'; // @ is an alias to /src
 import {Game as PBGame, Board as PBBoard, ListGamesRequest,
@@ -59,6 +60,9 @@ export default class Spectate extends Vue {
 
       // Board doesn't exist yet, add it.
       this.boards.push(this.toBoard(resp));
+    });
+    stream.on('error', (err: grpcWeb.Error) => {
+      this.$emit('rpcError', err);
     });
   }
 

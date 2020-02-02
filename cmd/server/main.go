@@ -51,14 +51,19 @@ func main() {
 	}
 
 	pk, err := loadOrGenerateKey(*authKeyPath)
+	if err != nil {
+		log.Fatalf("failed to load/generate key: %v", err)
+	}
 
-	authClient := auth.New(pk)
+	db := memdb.New(r)
+
+	authClient := auth.New(pk, db)
 
 	grpcSrv := grpc.NewServer(
 		grpc.UnaryInterceptor(authClient.UnaryInterceptor),
 		grpc.StreamInterceptor(authClient.StreamInterceptor),
 	)
-	server, err := srv.New(r, authClient, memdb.New(r), dict)
+	server, err := srv.New(r, authClient, db, dict)
 	if err != nil {
 		log.Fatalf("failed to init server: %v", err)
 	}

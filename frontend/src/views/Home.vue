@@ -69,6 +69,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
+import * as grpcWeb from 'grpc-web';
 
 import {RegisterRequest, NewGameRequest, ListGamesRequest,
         Game as PBGame, GameStatus} from '@/proto/banana_pb';
@@ -175,6 +176,9 @@ export default class Home extends Vue {
         // Game doesn't exist yet, add it.
         this.games.push(this.toGame(game));
       }
+    });
+    stream.on('error', (err: grpcWeb.Error) => {
+      this.$emit('rpcError', err);
     });
   }
 

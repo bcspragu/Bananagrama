@@ -181,13 +181,10 @@ export default class Game extends Vue {
       }
     });
     stream.on('status', (status: grpcWeb.Status) => {
-      console.log('status');
-      console.log(status.code);
-      console.log(status.details);
-      console.log(status.metadata);
+      console.log('status', status);
     });
     stream.on('error', (err: grpcWeb.Error) => {
-      console.log('ERROR', err);
+      this.$emit('rpcError', err);
     });
     stream.on('end', () => {
       console.log('closed');
@@ -232,6 +229,9 @@ export default class Game extends Vue {
           const peel = resp.getPlayerPeel();
           this.logs.unshift(`${peel.getPlayerName()} peeled.`);
       }
+    });
+    stream.on('error', (err: grpcWeb.Error) => {
+      this.$emit('rpcError', err);
     });
   }
 

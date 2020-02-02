@@ -12,17 +12,36 @@ import (
 	"github.com/bcspragu/Bananagrama/banana"
 	"github.com/dgrijalva/jwt-go"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
-const authMDKey = "internal-player-id"
+type playerIDKey struct{}
+
+func ContextWithPlayerID(parent context.Context, pID banana.PlayerID) context.Context {
+	return context.WithValue(parent, playerIDKey{}, pID)
+}
+
+func PlayerIDFromContext(ctx context.Context) (banana.PlayerID, bool) {
+	pID, ok := ctx.Value(playerIDKey{}).(banana.PlayerID)
+	if !ok {
+		return "", false
+	}
+	return pID, true
+}
+
+type DB interface {
+	Player(id banana.PlayerID) (*banana.Player, error)
+}
 
 type Client struct {
 	pk *ecdsa.PrivateKey
+	db DB
 }
 
-func New(pk *ecdsa.PrivateKey) *Client {
-	return &Client{pk: pk}
+func New(pk *ecdsa.PrivateKey, db DB) *Client {
+	return &Client{pk: pk, db: db}
 }
 
 func (c *Client) UnaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
@@ -35,25 +54,30 @@ func (c *Client) UnaryInterceptor(ctx context.Context, req interface{}, info *gr
 	tkn, err := tokenFromContext(ctx)
 	if err != nil {
 		log.Printf("failed to get token from context: %v", err)
-		return nil, errors.New("unauthorized")
+		return nil, status.Error(codes.Unauthenticated, "couldn't get token from context")
 	}
 
 	pID, err := c.verify(tkn)
 	if err != nil {
 		log.Printf("failed to verify token: %v", err)
-		return nil, errors.New("unauthorized")
+		return nil, status.Error(codes.Unauthenticated, "invalid token in context")
 	}
 
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		md = metadata.New(map[string]string{})
+	if _, err := c.db.Player(pID); err != nil {
+		log.Printf("failed to load player from ID in context: %v", err)
+		return nil, status.Error(codes.Unauthenticated, "player not found")
 	}
 
-	// Add the player ID to the metadata and update the context.
-	md.Set(authMDKey, string(pID))
-	ctx = metadata.NewIncomingContext(ctx, md)
+	return handler(ContextWithPlayerID(ctx, pID), req)
+}
 
-	return handler(ctx, req)
+type serverStream struct {
+	grpc.ServerStream
+	ctx context.Context
+}
+
+func (ss *serverStream) Context() context.Context {
+	return ss.ctx
 }
 
 func (c Client) StreamInterceptor(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
@@ -61,47 +85,26 @@ func (c Client) StreamInterceptor(srv interface{}, ss grpc.ServerStream, info *g
 	tkn, err := tokenFromContext(ss.Context())
 	if err != nil {
 		log.Printf("failed to get token from context: %v", err)
-		return errors.New("unauthorized")
+		return status.Error(codes.Unauthenticated, "no token in context")
 	}
 
 	pID, err := c.verify(tkn)
 	if err != nil {
 		log.Printf("failed to verify token: %v", err)
-		return errors.New("unauthorized")
+		return status.Error(codes.Unauthenticated, "invalid token in context")
 	}
 
-	md, ok := metadata.FromIncomingContext(ss.Context())
-	if !ok {
-		md = metadata.New(map[string]string{})
+	if _, err := c.db.Player(pID); err != nil {
+		log.Printf("failed to load player from ID in context: %v", err)
+		return status.Error(codes.Unauthenticated, "player not found")
 	}
 
-	// Add the player ID to the metadata and update the context.
-	md.Set(authMDKey, string(pID))
-
-	// Add the player ID to the metadata.
-	if err := ss.SendHeader(md); err != nil {
-		log.Printf("failed to add player ID to metadata: %v", err)
-		return errors.New("unauthorized")
+	newSS := &serverStream{
+		ServerStream: ss,
+		ctx:          ContextWithPlayerID(ss.Context(), pID),
 	}
 
-	return handler(srv, ss)
-}
-
-func (c *Client) PlayerIDFromContext(ctx context.Context) (banana.PlayerID, error) {
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		return "", errors.New("no metadata in context")
-	}
-
-	v := md.Get(authMDKey)
-	if len(v) == 0 {
-		return "", errors.New("no player ID in metadata")
-	}
-	if len(v) > 1 {
-		return "", fmt.Errorf("%d player IDs in metadata", len(v))
-	}
-
-	return banana.PlayerID(v[0]), nil
+	return handler(srv, newSS)
 }
 
 func tokenFromContext(ctx context.Context) (string, error) {
