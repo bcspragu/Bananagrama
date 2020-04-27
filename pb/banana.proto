@@ -33,6 +33,9 @@ message RegisterResponse {
 message NewGameRequest {
   // What to name the game.
   string name = 1;
+  // The minimum number of letters that a word needs to have to be considered
+  // valid.
+  int32 min_letters_in_word = 2;
 }
 
 message NewGameResponse {

@@ -52,7 +52,7 @@ func New(r *rand.Rand) *DB {
 }
 
 // Creates a new game with the given name.
-func (d *DB) NewGame(name string, creator banana.PlayerID) (banana.GameID, error) {
+func (d *DB) NewGame(name string, creator banana.PlayerID, config *banana.Config) (banana.GameID, error) {
 	d.Lock()
 	defer d.Unlock()
 
@@ -69,6 +69,7 @@ func (d *DB) NewGame(name string, creator banana.PlayerID) (banana.GameID, error
 			Name:      name,
 			Status:    banana.WaitingForPlayers,
 			CreatedAt: time.Now(),
+			Config:    config.Clone(),
 		}
 		d.gameToPlayers[gID] = []banana.PlayerID{}
 		d.boards[gID] = make(map[banana.PlayerID]*banana.Board)

@@ -44,6 +44,9 @@ export class NewGameRequest extends jspb.Message {
   getName(): string;
   setName(value: string): void;
 
+  getMinLettersInWord(): number;
+  setMinLettersInWord(value: number): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): NewGameRequest.AsObject;
   static toObject(includeInstance: boolean, msg: NewGameRequest): NewGameRequest.AsObject;
@@ -55,6 +58,7 @@ export class NewGameRequest extends jspb.Message {
 export namespace NewGameRequest {
   export type AsObject = {
     name: string,
+    minLettersInWord: number,
   }
 }
 

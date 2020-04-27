@@ -25,13 +25,14 @@ var (
 )
 
 func boardToWire(b *banana.Board) *pb.Board {
-	words := make([]*pb.Word, len(b.Words))
-	for i, word := range b.Words {
-		words[i] = wordToWire(word)
+	words := b.Words()
+	pbWords := make([]*pb.Word, len(words))
+	for i, word := range words {
+		pbWords[i] = wordToWire(word)
 	}
 
 	return &pb.Board{
-		Words: words,
+		Words: pbWords,
 	}
 }
 
@@ -44,13 +45,13 @@ func wordToWire(w banana.Word) *pb.Word {
 	}
 }
 
-func boardFromWire(b *pb.Board) *banana.Board {
-	words := make([]banana.Word, len(b.Words))
-	for i, word := range b.Words {
-		words[i] = wordFromWire(word)
+func boardFromWire(c *banana.Config, pbWords []*pb.Word) (*banana.Board, error) {
+	words := make([]banana.Word, len(pbWords))
+	for i, pbWord := range pbWords {
+		words[i] = wordFromWire(pbWord)
 	}
 
-	return &banana.Board{Words: words}
+	return banana.NewBoardWithWords(c, words)
 }
 
 func wordFromWire(w *pb.Word) banana.Word {

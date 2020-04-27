@@ -176,7 +176,7 @@ func TestFindWords(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		got := (&Board{Words: tc.words}).findWords()
+		got := newBoard(t, tc.words).findWords()
 
 		sort.Slice(got, func(i, j int) bool { return got[i].Word < got[j].Word })
 		sort.Slice(tc.want, func(i, j int) bool { return tc.want[i].Word < tc.want[j].Word })
@@ -217,13 +217,9 @@ func TestConnected(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		board := &Board{Words: tc.words}
-		if err := board.precompute(); err != nil {
-			t.Errorf("couldn't precompute board %v: %v", board, err)
-		}
-		got := board.connected()
+		got := newBoard(t, tc.words).connected()
 		if got != tc.want {
-			t.Errorf("connectd(%v): got %v, want %v", board, got, tc.want)
+			t.Errorf("connectd(%v): got %v, want %v", tc.words, got, tc.want)
 		}
 	}
 }
@@ -272,27 +268,22 @@ func TestContainsExactly(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		board := &Board{Words: tc.words}
-		if err := board.precompute(); err != nil {
-			t.Errorf("couldn't precompute board %v: %v", board, err)
-		}
-		got := board.containsExactly(tilesFromMap(tc.letters))
+		got := newBoard(t, tc.words).containsExactly(tilesFromMap(tc.letters))
 		if got != tc.want {
-			t.Errorf("containsExactly(%v): got %v, want %v", board, got, tc.want)
+			t.Errorf("containsExactly(%v): got %v, want %v", tc.words, got, tc.want)
 		}
 	}
 }
 
-func TestMalformedPrecompute(t *testing.T) {
-	board := &Board{
-		Words: []Word{
-			{Horizontal, "test", Loc{0, 0}},
-			{Vertical, "bad", Loc{1, 0}},
-		},
+func TestAddWordsFails(t *testing.T) {
+	board := newBoard(t, []Word{})
+
+	if err := board.AddWord(Word{Horizontal, "test", Loc{0, 0}}); err != nil {
+		t.Fatalf("Failed to add first word: %v", err)
 	}
 
-	if err := board.precompute(); err == nil {
-		t.Error("expected precompute to fail")
+	if err := board.AddWord(Word{Vertical, "bad", Loc{1, 0}}); err == nil {
+		t.Error("expected AddWord to fail")
 	}
 }
 
@@ -308,11 +299,10 @@ func TestValidate(t *testing.T) {
 		},
 	}
 	tests := []struct {
-		desc    string
-		tiles   *Tiles
-		board   *Board
-		want    *BoardValidation
-		wantErr bool
+		desc  string
+		tiles *Tiles
+		words []Word
+		want  *BoardValidation
 	}{
 		{
 			desc: "success",
@@ -326,34 +316,11 @@ func TestValidate(t *testing.T) {
 				},
 				count: 6,
 			},
-			board: &Board{
-				Words: []Word{
-					{Horizontal, "attack", Loc{0, 0}},
-					{Vertical, "cats", Loc{4, 0}},
-				},
+			words: []Word{
+				{Horizontal, "attack", Loc{0, 0}},
+				{Vertical, "cats", Loc{4, 0}},
 			},
 			want: &BoardValidation{},
-		},
-		{
-			desc: "invalid board",
-			tiles: &Tiles{
-				freq: map[Letter]int{
-					'a': 3,
-					't': 3,
-					'c': 1,
-					'b': 1,
-					'k': 1,
-					's': 1,
-				},
-				count: 6,
-			},
-			board: &Board{
-				Words: []Word{
-					{Horizontal, "attack", Loc{0, 0}},
-					{Vertical, "bats", Loc{4, 0}},
-				},
-			},
-			wantErr: true,
 		},
 		{
 			desc: "not all letters used",
@@ -368,11 +335,9 @@ func TestValidate(t *testing.T) {
 				},
 				count: 6,
 			},
-			board: &Board{
-				Words: []Word{
-					{Horizontal, "attacks", Loc{0, 0}},
-					{Vertical, "cats", Loc{4, 0}},
-				},
+			words: []Word{
+				{Horizontal, "attacks", Loc{0, 0}},
+				{Vertical, "cats", Loc{4, 0}},
 			},
 			want: &BoardValidation{
 				UnusedLetters: []string{"q", "s"},
@@ -390,11 +355,9 @@ func TestValidate(t *testing.T) {
 				},
 				count: 6,
 			},
-			board: &Board{
-				Words: []Word{
-					{Horizontal, "attacks", Loc{0, 0}},
-					{Vertical, "catsit", Loc{4, 0}},
-				},
+			words: []Word{
+				{Horizontal, "attacks", Loc{0, 0}},
+				{Vertical, "catsit", Loc{4, 0}},
 			},
 			want: &BoardValidation{
 				ExtraLetters: []string{"i", "s", "t"},
@@ -414,11 +377,9 @@ func TestValidate(t *testing.T) {
 				},
 				count: 6,
 			},
-			board: &Board{
-				Words: []Word{
-					{Horizontal, "attacked", Loc{0, 0}},
-					{Vertical, "cats", Loc{4, 0}},
-				},
+			words: []Word{
+				{Horizontal, "attacked", Loc{0, 0}},
+				{Vertical, "cats", Loc{4, 0}},
 			},
 			want: &BoardValidation{
 				InvalidWords: []CharLocs{
@@ -438,11 +399,9 @@ func TestValidate(t *testing.T) {
 				},
 				count: 6,
 			},
-			board: &Board{
-				Words: []Word{
-					{Horizontal, "attack", Loc{0, 0}},
-					{Vertical, "cats", Loc{4, 2}},
-				},
+			words: []Word{
+				{Horizontal, "attack", Loc{0, 0}},
+				{Vertical, "cats", Loc{4, 2}},
 			},
 			want: &BoardValidation{DetachedBoard: true},
 		},
@@ -457,11 +416,9 @@ func TestValidate(t *testing.T) {
 				},
 				count: 6,
 			},
-			board: &Board{
-				Words: []Word{
-					{Horizontal, "g  l", Loc{0, 0}},
-					{Horizontal, "oa", Loc{1, 0}},
-				},
+			words: []Word{
+				{Horizontal, "g  l", Loc{0, 0}},
+				{Horizontal, "oa", Loc{1, 0}},
 			},
 			want: &BoardValidation{},
 		},
@@ -469,14 +426,7 @@ func TestValidate(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			got, err := test.board.Validate(test.tiles, dict)
-			if err != nil {
-				if test.wantErr {
-					// This is what we wanted.
-					return
-				}
-				t.Errorf("ValidateBoard: %v", err)
-			}
+			got := newBoard(t, test.words).Validate(test.tiles, dict)
 			if diff := cmp.Diff(test.want, got); diff != "" {
 				t.Errorf("ValidateBoard (-want +got):\n%s", diff)
 			}
@@ -506,4 +456,15 @@ func TestStartingTileCount(t *testing.T) {
 			t.Errorf("StartingTileCount(%d, %d) = %d, want %d)", test.players, test.scale, got, test.want)
 		}
 	}
+}
+
+func newBoard(t *testing.T, words []Word) *Board {
+	t.Helper()
+
+	b, err := NewBoardWithWords(&Config{}, words)
+	if err != nil {
+		t.Fatalf("Failed to create board: %v", err)
+	}
+
+	return b
 }

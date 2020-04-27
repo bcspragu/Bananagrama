@@ -22,7 +22,9 @@ import (
 
 const (
 	DumpSize = 3
-	// TODO: Consider a MaxPlayers thing.
+	// MaxPlayers is the number of people who can join a single game. Since we
+	// scale up the number of tiles, this is mostly a DoS prevention thing.
+	MaxPlayers = 24
 )
 
 type Server struct {
@@ -96,13 +98,17 @@ func (s *Server) NewGame(ctx context.Context, req *pb.NewGameRequest) (*pb.NewGa
 		return nil, errors.New("must specify a game name")
 	}
 
+	if req.MinLettersInWord < 2 {
+		return nil, errors.New("min letters in word must be at least two")
+	}
+
 	pID, ok := auth.PlayerIDFromContext(ctx)
 	if !ok {
 		log.Print("no player ID in context")
 		return nil, errors.New("no player ID in context")
 	}
 
-	id, err := s.db.NewGame(name, pID)
+	id, err := s.db.NewGame(name, pID, &banana.Config{MinLettersInWord: int(req.MinLettersInWord)})
 	if err != nil {
 		return nil, err
 	}
@@ -438,36 +444,16 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 		}
 	}
 
-	// Add the player if they weren't already in the game.
+	// Add the player if they weren't already in the game (assuming there's
+	// space).
 	if !found {
-		if g.Status != banana.WaitingForPlayers {
-			// Can't join an in-progess or finished game.
-			return fmt.Errorf("can't join game in state %q", g.Status)
+		if len(players) >= MaxPlayers {
+			return fmt.Errorf("game is at %d-player capacity", MaxPlayers)
 		}
 
-		if err := s.db.AddPlayerToGame(gID, pID); err != nil {
+		if err := s.addPlayerToGame(g, player, len(players)+1); err != nil {
 			return err
 		}
-
-		if err := s.ps.Publish(s.gameUpdateChannel, &pubsub.Payload{
-			Type: pubsub.PayloadTypeGameUpdated,
-			GameUpdated: &pubsub.GameUpdated{
-				ID:          g.ID,
-				Name:        g.Name,
-				Status:      g.Status,
-				PlayerCount: len(players) + 1,
-			},
-		}); err != nil {
-			log.Printf("failed to publish update for game %q: %v", g.Name, err)
-		}
-
-		s.sendGameUpdate(gID, &pubsub.Payload{
-			Type: pubsub.PayloadTypePlayerJoined,
-			PlayerJoined: &pubsub.PlayerJoined{
-				ID:   pID,
-				Name: player.Name,
-			},
-		})
 	}
 
 	wps, err := s.wirePlayers(gID)
@@ -590,6 +576,39 @@ func (s *Server) JoinGame(req *pb.JoinGameRequest, stream pb.BananaService_JoinG
 	return nil
 }
 
+func (s *Server) addPlayerToGame(g *banana.Game, p *banana.Player, pc int) error {
+	if g.Status != banana.WaitingForPlayers {
+		// Can't join an in-progess or finished game.
+		return fmt.Errorf("can't join game in state %q", g.Status)
+	}
+
+	if err := s.db.AddPlayerToGame(g.ID, p.ID); err != nil {
+		return err
+	}
+
+	if err := s.ps.Publish(s.gameUpdateChannel, &pubsub.Payload{
+		Type: pubsub.PayloadTypeGameUpdated,
+		GameUpdated: &pubsub.GameUpdated{
+			ID:          g.ID,
+			Name:        g.Name,
+			Status:      g.Status,
+			PlayerCount: pc,
+		},
+	}); err != nil {
+		log.Printf("failed to publish update for game %q: %v", g.Name, err)
+	}
+
+	s.sendGameUpdate(g.ID, &pubsub.Payload{
+		Type: pubsub.PayloadTypePlayerJoined,
+		PlayerJoined: &pubsub.PlayerJoined{
+			ID:   p.ID,
+			Name: p.Name,
+		},
+	})
+
+	return nil
+}
+
 func (s *Server) toOtherTileUpdates(otus []*pubsub.OtherTileUpdate, remainingTiles int) *pb.OtherTileUpdates {
 	var out []*pb.OtherTileUpdate
 	for _, otu := range otus {
@@ -705,8 +724,16 @@ func (s *Server) sendGameUpdate(id banana.GameID, up *pubsub.Payload) {
 
 func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*pb.UpdateBoardResponse, error) {
 	gID := banana.GameID(req.Id)
+	g, err := s.db.Game(gID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retreive game id %q: %v", req.Id, err)
+	}
+
 	// Convert the board to our domain format.
-	b := boardFromWire(req.Board)
+	b, err := boardFromWire(g.Config, req.Board.Words)
+	if err != nil {
+		return nil, fmt.Errorf("malformed board given: %v", err)
+	}
 
 	pID := banana.PlayerID(req.PlayerId)
 	p, err := s.db.Player(pID)
@@ -726,19 +753,10 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 	}
 
 	// Add existing board to tiles.
-	bts, err := board.AsTiles()
-	if err != nil {
-		log.Printf("failed to get board tiles")
-		return nil, fmt.Errorf("failed to get board tiles")
-	}
-	tiles.Add(bts)
+	tiles.Add(board.AsTiles())
 
 	// Check if the board they sent is valid.
-	bv, err := b.Validate(tiles, s.dict)
-	if err != nil {
-		log.Printf("failed to validate board: %v", err)
-		return nil, fmt.Errorf("failed to validate board: %v", err)
-	}
+	bv := b.Validate(tiles, s.dict)
 
 	// We'll write the board as long as they aren't using letters they don't
 	// have.
@@ -857,15 +875,10 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 			return nil, err
 		}
 
-		bc, err := board.Count()
-		if err != nil {
-			return nil, err
-		}
-
 		otus = append(otus, &pubsub.OtherTileUpdate{
 			ID:           p.ID,
 			TilesInHand:  pTiles[p.ID].Count(),
-			TilesInBoard: bc,
+			TilesInBoard: board.Count(),
 		})
 	}
 
@@ -974,18 +987,13 @@ func (s *Server) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.DumpRespons
 		SelfTileUpdate: &pubsub.SelfTileUpdate{Tiles: tiles},
 	})
 
-	bc, err := board.Count()
-	if err != nil {
-		return nil, err
-	}
-
 	s.sendGameUpdate(gID, &pubsub.Payload{
 		Type: pubsub.PayloadTypeOtherTileUpdates,
 		OtherTileUpdates: &pubsub.OtherTileUpdates{
 			Updates: []*pubsub.OtherTileUpdate{
 				&pubsub.OtherTileUpdate{
 					ID:           pID,
-					TilesInBoard: bc,
+					TilesInBoard: board.Count(),
 					TilesInHand:  tiles.Count(),
 				},
 			},
@@ -1020,11 +1028,6 @@ func (s *Server) wirePlayers(gID banana.GameID) ([]*pb.Player, error) {
 			return nil, err
 		}
 
-		tob, err := board.Count()
-		if err != nil {
-			return nil, err
-		}
-
 		tiles, err := s.db.Tiles(gID, p.ID)
 		if err != nil {
 			return nil, err
@@ -1034,7 +1037,7 @@ func (s *Server) wirePlayers(gID banana.GameID) ([]*pb.Player, error) {
 			Id:           string(p.ID),
 			Name:         p.Name,
 			TilesInHand:  int32(tiles.Count()),
-			TilesInBoard: int32(tob),
+			TilesInBoard: int32(board.Count()),
 		})
 	}
 

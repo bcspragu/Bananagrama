@@ -7,7 +7,7 @@ type GameID string
 
 type DB interface {
 	// Creates a new game with the given name and creator.
-	NewGame(name string, creator PlayerID) (GameID, error)
+	NewGame(name string, creator PlayerID, config *Config) (GameID, error)
 	// Get all of the games.
 	Games() ([]*Game, error)
 	// Loads a game with the given ID.
@@ -66,6 +66,19 @@ type Game struct {
 	Name      string
 	Status    GameStatus
 	CreatedAt time.Time
+	Config    *Config
+}
+
+type Config struct {
+	// The minimum number of letters that a word needs to have to be considered
+	// valid.
+	MinLettersInWord int
+}
+
+func (c *Config) Clone() *Config {
+	return &Config{
+		MinLettersInWord: c.MinLettersInWord,
+	}
 }
 
 func (g *Game) Clone() *Game {
@@ -75,6 +88,7 @@ func (g *Game) Clone() *Game {
 		Name:      g.Name,
 		Status:    g.Status,
 		CreatedAt: g.CreatedAt,
+		Config:    g.Config.Clone(),
 	}
 }
 

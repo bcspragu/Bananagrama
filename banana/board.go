@@ -8,47 +8,69 @@ import (
 
 // Board represents an individual players game board.
 type Board struct {
-	Words []Word
+	config *boardConfig
 
-	// The below fields are only for caching already-computed state
+	words []Word
+
+	// The below fields are only for caching already-computed state, and are
+	// assumed to be in sync with the board.
 
 	// A map from (x,y) to where the letter is on the grid
 	letterMap map[Loc]Letter
-	// A map from (x,y) to if we've seen a letter or not
-	visitedMap map[Loc]bool
+}
+
+type boardConfig struct {
+	minLettersInWord int
+}
+
+func (b *boardConfig) Clone() *boardConfig {
+	return &boardConfig{
+		minLettersInWord: b.minLettersInWord,
+	}
+}
+
+func NewBoard(c *Config) *Board {
+	return &Board{
+		config: &boardConfig{
+			minLettersInWord: c.MinLettersInWord,
+		},
+		letterMap: make(map[Loc]Letter),
+	}
+}
+
+func NewBoardWithWords(c *Config, words []Word) (*Board, error) {
+	b := NewBoard(c)
+	if err := b.AddWords(words); err != nil {
+		return nil, err
+	}
+	return b, nil
 }
 
 func (b *Board) Clone() *Board {
-	var (
-		words      []Word
-		letterMap  map[Loc]Letter
-		visitedMap map[Loc]bool
-	)
-
-	if b.Words != nil {
-		words = make([]Word, len(b.Words))
-		copy(words, b.Words)
+	var words []Word
+	if b.words != nil {
+		words = make([]Word, len(b.words))
+		copy(words, b.words)
 	}
 
-	if b.letterMap != nil {
-		letterMap = make(map[Loc]Letter)
-		for k, v := range b.letterMap {
-			letterMap[k] = v
-		}
-	}
-
-	if b.visitedMap != nil {
-		visitedMap = make(map[Loc]bool)
-		for k, v := range b.visitedMap {
-			visitedMap[k] = v
-		}
+	letterMap := make(map[Loc]Letter)
+	for k, v := range b.letterMap {
+		letterMap[k] = v
 	}
 
 	return &Board{
-		Words:      words,
-		letterMap:  letterMap,
-		visitedMap: visitedMap,
+		words:     words,
+		letterMap: letterMap,
 	}
+}
+
+func (b *Board) Words() []Word {
+	var words []Word
+	if b.words != nil {
+		words = make([]Word, len(b.words))
+		copy(words, b.words)
+	}
+	return words
 }
 
 // Word represents the placement of a single word on a Bananagrams board.
@@ -98,49 +120,63 @@ func (w Word) CharLocs() []CharLoc {
 	return cls
 }
 
-// precompute calculates a few common data structures for later Board
-// validation steps. If the data structures can't be created, the function
-// returns false.
-func (b *Board) precompute() error {
-	b.letterMap = make(map[Loc]Letter)
-	b.visitedMap = make(map[Loc]bool)
+func (b *Board) AddWords(words []Word) error {
+	// First, attempt to add all the words to a copy of the board.
+	bb := b.Clone()
+	for _, w := range words {
+		if err := bb.AddWord(w); err != nil {
+			return fmt.Errorf("failed to add word to board: %v", err)
+		}
+	}
 
-	// Check that the player isn't claiming two different letters occupy the same
-	// space
-	for _, word := range b.Words {
-		for _, cl := range word.CharLocs() {
-			// If we've already placed a letter there, they've sent us a malformed
-			// board
-			if l, ok := b.letterMap[cl.Loc]; ok && l != cl.Letter {
-				return fmt.Errorf("can't place %q in location %+v, %q is already there", cl.Letter, cl.Loc, l)
-			} else if !ok {
-				b.letterMap[cl.Loc] = cl.Letter
-				b.visitedMap[cl.Loc] = false
-			}
+	// If we succeeded, we can now add directly to our real board.
+	for _, w := range words {
+		if err := b.AddWord(w); err != nil {
+			// Should never happen, but I'm a realist.
+			return fmt.Errorf("failed to add word to board: %v", err)
 		}
 	}
 
 	return nil
 }
 
-func (b *Board) Count() (int, error) {
-	if err := b.precompute(); err != nil {
-		return 0, err
+// AddWord attempts to add a word to the board, and calculates a few common
+// data structures for later Board validation steps. If the word doesn't fit
+// with existing words on the board, an error is returned.
+func (b *Board) AddWord(w Word) error {
+	cls := w.CharLocs()
+
+	// Do one verification loop
+	for _, cl := range cls {
+		// If we've already placed a letter there, they've sent us a malformed
+		// board
+		if l, ok := b.letterMap[cl.Loc]; ok && l != cl.Letter {
+			return fmt.Errorf("can't place %q in location %+v, %q is already there", cl.Letter, cl.Loc, l)
+		}
 	}
 
-	if b == nil {
-		return 0, nil
+	// Then do an update loop.
+	for _, cl := range cls {
+		if _, ok := b.letterMap[cl.Loc]; !ok {
+			b.letterMap[cl.Loc] = cl.Letter
+		}
 	}
-	return len(b.letterMap), nil
+
+	b.words = append(b.words, w)
+
+	return nil
 }
 
-func (b *Board) AsTiles() (*Tiles, error) {
-	if err := b.precompute(); err != nil {
-		return nil, err
-	}
-
+func (b *Board) Count() int {
 	if b == nil {
-		return NewTiles(), nil
+		return 0
+	}
+	return len(b.letterMap)
+}
+
+func (b *Board) AsTiles() *Tiles {
+	if b == nil {
+		return NewTiles()
 	}
 
 	t := NewTiles()
@@ -148,26 +184,20 @@ func (b *Board) AsTiles() (*Tiles, error) {
 		t.Inc(l)
 	}
 
-	return t, nil
+	return t
 }
 
 // Validate returns the status of the board.
-func (b *Board) Validate(tiles *Tiles, dict Dictionary) (*BoardValidation, error) {
+func (b *Board) Validate(tiles *Tiles, dict Dictionary) *BoardValidation {
 	// A board is considered valid if:
 	//   - the player used a subset of the letters in their hand
 	//   - the words given don't overlap in conflicting ways
 	//	 - the words on the grid are real Scrabble words
 	//   - any letter can be reached from any other (aka its all connected)
 
-	// If precompute failed, we weren't able to make our intermediate
-	// representation, meaning the given words can't form a valid board
-	if err := b.precompute(); err != nil {
-		return nil, err
-	}
-
 	unused, unowned := b.leftover(tiles)
 	if len(unowned) > 0 {
-		return &BoardValidation{ExtraLetters: unowned}, nil
+		return &BoardValidation{ExtraLetters: unowned}
 	}
 
 	var iws []CharLocs
@@ -182,7 +212,7 @@ func (b *Board) Validate(tiles *Tiles, dict Dictionary) (*BoardValidation, error
 		DetachedBoard: !b.connected(),
 		UnusedLetters: unused,
 		ExtraLetters:  unowned,
-	}, nil
+	}
 }
 
 func (b *Board) Diff(tiles *Tiles) *Tiles {
@@ -231,7 +261,7 @@ func (b *Board) findWords() []CharLocs {
 
 	// 1. Bucket letters by X, map to lists of (Y, letter)
 	xm := make(map[int][]CharLoc)
-	for _, word := range b.Words {
+	for _, word := range b.words {
 		for _, cl := range word.CharLocs() {
 			if _, ok := usedX[cl.Loc]; ok {
 				continue
@@ -242,7 +272,7 @@ func (b *Board) findWords() []CharLocs {
 	}
 
 	ym := make(map[int][]CharLoc)
-	for _, word := range b.Words {
+	for _, word := range b.words {
 		for _, cl := range word.CharLocs() {
 			if _, ok := usedY[cl.Loc]; ok {
 				continue
@@ -290,9 +320,11 @@ func (b *Board) findWords() []CharLocs {
 }
 
 func (b *Board) connected() bool {
-	// First, clear out the visited map, just in case.
-	for l := range b.visitedMap {
-		b.visitedMap[l] = false
+	visitedMap := make(map[Loc]bool)
+
+	// First, populate the visited map.
+	for l := range b.letterMap {
+		visitedMap[l] = false
 	}
 
 	var start Loc
@@ -300,9 +332,9 @@ func (b *Board) connected() bool {
 		start = loc
 		break
 	}
-	b.explore(start)
+	explore(start, visitedMap)
 
-	for _, visited := range b.visitedMap {
+	for _, visited := range visitedMap {
 		if !visited {
 			return false
 		}
@@ -311,11 +343,11 @@ func (b *Board) connected() bool {
 	return true
 }
 
-func (b *Board) explore(l Loc) {
-	b.visitedMap[l] = true
+func explore(l Loc, visitedMap map[Loc]bool) {
+	visitedMap[l] = true
 	for _, loc := range l.surrounding() {
-		if visited, exists := b.visitedMap[loc]; exists && !visited {
-			b.explore(loc)
+		if visited, exists := visitedMap[loc]; exists && !visited {
+			explore(loc, visitedMap)
 		}
 	}
 }
