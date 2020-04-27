@@ -72,35 +72,9 @@ The frontend is written in
 don't like polluting my local computer with JS development tools, so I run the
 frontend in a Docker container.
 
-
 #### In a Docker container
 
-To run in a Docker container, you'll need an image built similarly to the
-following Dockerfile:
-
-```Dockerfile
-# Dockerfile
-
-FROM node:alpine
-VOLUME /project
-WORKDIR /project
-
-RUN apk update
-ENV PATH="/.yarn/bin:${PATH}"
-RUN mkdir -p /.cache/yarn /.yarn /.config/yarn \
-    && touch /root/.profile \
-    && touch /.yarnrc \
-    && chmod 777 /.cache/yarn /.yarn /.config/yarn /.yarnrc \
-    && yarn config set prefix /project
-```
-
-Then, from the same directory that it's in, build it with:
-
-```
-docker build -t node-env .
-```
-
-Now you can use the `frontend/serve.sh` script to run the frontend, with live
+You can use the `frontend/serve.sh` script to run the frontend, with live
 reloading.
 
 #### Not in a Docker container
