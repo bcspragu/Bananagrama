@@ -108,7 +108,9 @@ func (s *Server) NewGame(ctx context.Context, req *pb.NewGameRequest) (*pb.NewGa
 		return nil, errors.New("no player ID in context")
 	}
 
-	id, err := s.db.NewGame(name, pID, &banana.Config{MinLettersInWord: int(req.MinLettersInWord)})
+	id, err := s.db.NewGame(name, pID, &banana.Config{
+		MinLettersInWord: int(req.MinLettersInWord),
+	})
 	if err != nil {
 		return nil, err
 	}

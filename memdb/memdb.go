@@ -160,7 +160,8 @@ func (d *DB) AddPlayerToGame(gID banana.GameID, pID banana.PlayerID) error {
 	d.Lock()
 	defer d.Unlock()
 
-	if _, ok := d.games[gID]; !ok {
+	g, ok := d.games[gID]
+	if !ok {
 		return ErrGameNotFound
 	}
 
@@ -169,7 +170,7 @@ func (d *DB) AddPlayerToGame(gID banana.GameID, pID banana.PlayerID) error {
 	}
 
 	d.gameToPlayers[gID] = append(d.gameToPlayers[gID], pID)
-	d.boards[gID][pID] = &banana.Board{}
+	d.boards[gID][pID] = banana.NewBoard(g.Config)
 	d.tiles[gID][pID] = banana.NewTiles()
 
 	return nil

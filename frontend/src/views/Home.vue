@@ -1,44 +1,87 @@
 <template>
   <div class="home">
-    <div class="columns">
-      <div class="column is-one-fifth"></div>
-      <div class="column is-three-fifths">
+    <div class="header-image">
+      <img class="logo" src="@/assets/logo.svg">
+      <h2 v-if="playerName" class="has-text-centered is-size-5">Playing as {{playerName}} <sup><a class="is-size-6" @click="changeName">(change name)</a></sup></h2>
+    </div>
+
+    <div class="columns is-gapless">
+
+      <div class="column is-two-thirds">
         <div>
-          <h1 class="has-text-centered is-size-3">Welcome to B(r)ananagrams</h1>
-          <img class="logo" src="@/assets/logo.svg">
-        </div>
-        <hr>
-        <h2 v-if="playerName" class="has-text-centered is-size-5">Playing as {{playerName}} <sup><a class="is-size-6" @click="changeName">(change name)</a></sup></h2>
-        <div class="field has-addons new-game-input">
-          <div class="control">
-            <input class="input" v-model="gameName" type="text" placeholder="New Game">
+          <h1 class="has-text-centered is-size-4">Welcome to B(r)ananagrams!</h1>
+
+          <div class="description">
+            <p>
+              <strong>What is this?</strong> Brananagrams is my internet version/discount knockoff of
+              smash-hit <a href="https://bananagrams.com/">Bananagrams</a>,
+              which itself is just <a
+              href="https://scrabble.hasbro.com/en-us">Scrabble</a> for people
+              with short attention spans.
+            </p>
+
+            <p>
+              <strong>How do I play?</strong> Create a new game, select it from the
+              game list, find at least one other friend (and up to 23 other
+              friends), and hit 'Start Game'. Tiles will be distributed. Add
+              words to your board by typing them out, entry locations will be
+              automatically suggested. If a location isn't suggested
+              automatically, you can click tiles in your hand and click to
+              place them on the grid. Double-click a tile to dump, and click
+              letters on the board to remove them.
+            </p>
+
+            <p>
+              <strong>Can I contribute?</strong> Totally! If you'd like to
+              contribute, the code for this project is <a
+                href="https://github.com/bcspragu/Bananagrama">on GitHub</a>.
+            </p>
+
+            <p>
+              <strong>Can I sue you?</strong> Definitely! If you're Hasbro or
+              whatever board game conglomerate owns Bananagrams, and would like
+              to send a cease and desist letter, my email address is: 
+            </p>
+
+            <p class="has-text-centered">
+              <a href="mailto:imshakinginmyboots@merrychristmasfuckers.com">
+                ImShakingInMyBoots@MerryChristmasFuckers.com
+              </a>
+            </p>
+            <p class="has-text-centered super-serious">
+              (legitimately though, I will receive an email if you send it there)
+            </p>
           </div>
-          <div class="control">
-            <a class="button is-info" @click="createGame">
-              Create Game
-            </a>
-          </div>
-        </div>
-        <hr>
-        <div>
-          <h2 class="has-text-centered is-size-3">Game List</h2>
-          <table class="games">
-            <tr>
-              <td>Game Name</td>
-              <td>Status</td>
-              <td>Number of Players</td>
-              <td></td>
-            </tr>
-            <tr class="game-row" v-for="game in games">
-              <td><a @click="joinGame(game.id)">{{game.name}}</a></td>
-              <td>{{gameStatus(game.stat)}}</td>
-              <td>{{game.playerCount}} players</td>
-              <td><a @click="spectate(game.id)">Spectate</a></td>
-            </tr>
-          </table>
         </div>
       </div>
-      <div class="column is-one-fifth"></div>
+
+      <div class="vertical-rule column is-narrow"></div>
+
+      <div class="column">
+        <h1 class="has-text-centered is-size-4">Create a Game</h1>
+        <NewGameForm/>
+      </div>
+
+    </div>
+
+    <hr>
+
+    <div>
+      <h2 class="has-text-centered is-size-3">Game List</h2>
+      <table class="games">
+        <tr>
+          <td>Game Name</td>
+          <td>Status</td>
+          <td>Number of Players</td>
+          <td></td>
+        </tr>
+        <tr class="game-row" v-for="game in games">
+          <td><a @click="joinGame(game.id)">{{game.name}}</a></td>
+          <td>{{gameStatus(game.stat)}}</td>
+          <td>{{game.playerCount}} players</td>
+          <td><a @click="spectate(game.id)">Spectate</a></td>
+        </tr>
+      </table>
     </div>
 
     <b-modal :active.sync="showModal">
@@ -71,6 +114,7 @@
 import { Component, Vue } from 'vue-property-decorator';
 import * as grpcWeb from 'grpc-web';
 
+import NewGameForm from '@/components/NewGameForm.vue';
 import {RegisterRequest, NewGameRequest, ListGamesRequest,
         Game as PBGame, GameStatus} from '@/proto/banana_pb';
 
@@ -81,9 +125,12 @@ interface Game {
   stat: GameStatus;
 }
 
-@Component
+@Component({
+  components: {
+    NewGameForm,
+  },
+})
 export default class Home extends Vue {
-  private gameName: string = '';
   private games: Game[] = [];
 
   private showModal = false;
@@ -144,16 +191,6 @@ export default class Home extends Vue {
     return this.$cookies.get('player-name');
   }
 
-  private createGame() {
-    const req = new NewGameRequest();
-    req.setName(this.gameName);
-    this.$client.newGame(req, {}, (err, resp) => {
-      if (err) {
-        console.log(err);
-      }
-    });
-  }
-
   private loadGames() {
     const stream = this.$client.streamGames(new ListGamesRequest(), {});
 
@@ -207,10 +244,20 @@ export default class Home extends Vue {
 </script>
 
 <style scoped>
-.new-game-input {
-  justify-content: center;
-  margin-bottom: 1rem;
+.columns.is-gapless > .column.vertical-rule {
+  background-color: whitesmoke;
+  width: 2px;
+  margin: 0.5rem 1.5rem 0 1.5rem;
 }
+
+.description {
+  margin: 0.5rem 1.5rem;
+}
+
+.description p {
+  margin-top: 0.5rem;
+}
+
 .games {
   border-collapse: collapse;
   width: 100%;
@@ -226,8 +273,13 @@ export default class Home extends Vue {
 .games tr:last-child {
   border-bottom: none;
 }
+
 .logo {
   display: block;
   margin: 0 auto;
+}
+
+.super-serious {
+  font-size: 0.5rem;
 }
 </style>
