@@ -248,6 +248,7 @@ message CharLoc {
 
 message UpdateBoardResponse {
   repeated CharLocs invalid_words = 1;
-  repeated string unused_letters = 2;
-  bool detached_board = 3;
+  repeated CharLocs short_words = 2;
+  repeated string unused_letters = 3;
+  bool detached_board = 4;
 }

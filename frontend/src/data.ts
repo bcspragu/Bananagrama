@@ -6,6 +6,7 @@ export interface Cell {
   letterLoc: LetterLoc;
   suggestion: boolean;
   invalid: boolean;
+  tooShort: boolean;
 }
 
 // LetterLoc contains metadata about a cell position on the board.

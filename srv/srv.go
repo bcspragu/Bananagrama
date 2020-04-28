@@ -778,8 +778,11 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 		return nil, fmt.Errorf("failed to update tiles %q: %v", pID, err)
 	}
 
-	// A board is peelable if all the words are valid
-	peelable := len(bv.InvalidWords) == 0 && len(bv.UnusedLetters) == 0 && !bv.DetachedBoard
+	// A board is peelable if all the words are valid by the rules of this game.
+	peelable := len(bv.InvalidWords) == 0 &&
+		len(bv.ShortWords) == 0 &&
+		len(bv.UnusedLetters) == 0 &&
+		!bv.DetachedBoard
 
 	bunch, err := s.db.Bunch(gID)
 	if err != nil {
@@ -896,6 +899,7 @@ func (s *Server) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*
 	// Convert the status to the wire format.
 	return &pb.UpdateBoardResponse{
 		InvalidWords:  charLocsListToWire(bv.InvalidWords),
+		ShortWords:    charLocsListToWire(bv.ShortWords),
 		UnusedLetters: bv.UnusedLetters,
 		DetachedBoard: bv.DetachedBoard,
 	}, nil

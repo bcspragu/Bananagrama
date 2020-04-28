@@ -7406,7 +7406,7 @@ proto.CharLoc.prototype.setY = function(value) {
  * @private {!Array<number>}
  * @const
  */
-proto.UpdateBoardResponse.repeatedFields_ = [1,2];
+proto.UpdateBoardResponse.repeatedFields_ = [1,2,3];
 
 
 
@@ -7441,8 +7441,10 @@ proto.UpdateBoardResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     invalidWordsList: jspb.Message.toObjectList(msg.getInvalidWordsList(),
     proto.CharLocs.toObject, includeInstance),
-    unusedLettersList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f,
-    detachedBoard: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
+    shortWordsList: jspb.Message.toObjectList(msg.getShortWordsList(),
+    proto.CharLocs.toObject, includeInstance),
+    unusedLettersList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f,
+    detachedBoard: jspb.Message.getBooleanFieldWithDefault(msg, 4, false)
   };
 
   if (includeInstance) {
@@ -7485,10 +7487,15 @@ proto.UpdateBoardResponse.deserializeBinaryFromReader = function(msg, reader) {
       msg.addInvalidWords(value);
       break;
     case 2:
+      var value = new proto.CharLocs;
+      reader.readMessage(value,proto.CharLocs.deserializeBinaryFromReader);
+      msg.addShortWords(value);
+      break;
+    case 3:
       var value = /** @type {string} */ (reader.readString());
       msg.addUnusedLetters(value);
       break;
-    case 3:
+    case 4:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setDetachedBoard(value);
       break;
@@ -7529,17 +7536,25 @@ proto.UpdateBoardResponse.serializeBinaryToWriter = function(message, writer) {
       proto.CharLocs.serializeBinaryToWriter
     );
   }
+  f = message.getShortWordsList();
+  if (f.length > 0) {
+    writer.writeRepeatedMessage(
+      2,
+      f,
+      proto.CharLocs.serializeBinaryToWriter
+    );
+  }
   f = message.getUnusedLettersList();
   if (f.length > 0) {
     writer.writeRepeatedString(
-      2,
+      3,
       f
     );
   }
   f = message.getDetachedBoard();
   if (f) {
     writer.writeBool(
-      3,
+      4,
       f
     );
   }
@@ -7585,11 +7600,49 @@ proto.UpdateBoardResponse.prototype.clearInvalidWordsList = function() {
 
 
 /**
- * repeated string unused_letters = 2;
+ * repeated CharLocs short_words = 2;
+ * @return {!Array<!proto.CharLocs>}
+ */
+proto.UpdateBoardResponse.prototype.getShortWordsList = function() {
+  return /** @type{!Array<!proto.CharLocs>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.CharLocs, 2));
+};
+
+
+/**
+ * @param {!Array<!proto.CharLocs>} value
+ * @return {!proto.UpdateBoardResponse} returns this
+*/
+proto.UpdateBoardResponse.prototype.setShortWordsList = function(value) {
+  return jspb.Message.setRepeatedWrapperField(this, 2, value);
+};
+
+
+/**
+ * @param {!proto.CharLocs=} opt_value
+ * @param {number=} opt_index
+ * @return {!proto.CharLocs}
+ */
+proto.UpdateBoardResponse.prototype.addShortWords = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 2, opt_value, proto.CharLocs, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.UpdateBoardResponse} returns this
+ */
+proto.UpdateBoardResponse.prototype.clearShortWordsList = function() {
+  return this.setShortWordsList([]);
+};
+
+
+/**
+ * repeated string unused_letters = 3;
  * @return {!Array<string>}
  */
 proto.UpdateBoardResponse.prototype.getUnusedLettersList = function() {
-  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 2));
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 3));
 };
 
 
@@ -7598,7 +7651,7 @@ proto.UpdateBoardResponse.prototype.getUnusedLettersList = function() {
  * @return {!proto.UpdateBoardResponse} returns this
  */
 proto.UpdateBoardResponse.prototype.setUnusedLettersList = function(value) {
-  return jspb.Message.setField(this, 2, value || []);
+  return jspb.Message.setField(this, 3, value || []);
 };
 
 
@@ -7608,7 +7661,7 @@ proto.UpdateBoardResponse.prototype.setUnusedLettersList = function(value) {
  * @return {!proto.UpdateBoardResponse} returns this
  */
 proto.UpdateBoardResponse.prototype.addUnusedLetters = function(value, opt_index) {
-  return jspb.Message.addToRepeatedField(this, 2, value, opt_index);
+  return jspb.Message.addToRepeatedField(this, 3, value, opt_index);
 };
 
 
@@ -7622,11 +7675,11 @@ proto.UpdateBoardResponse.prototype.clearUnusedLettersList = function() {
 
 
 /**
- * optional bool detached_board = 3;
+ * optional bool detached_board = 4;
  * @return {boolean}
  */
 proto.UpdateBoardResponse.prototype.getDetachedBoard = function() {
-  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 3, false));
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 4, false));
 };
 
 
@@ -7635,7 +7688,7 @@ proto.UpdateBoardResponse.prototype.getDetachedBoard = function() {
  * @return {!proto.UpdateBoardResponse} returns this
  */
 proto.UpdateBoardResponse.prototype.setDetachedBoard = function(value) {
-  return jspb.Message.setProto3BooleanField(this, 3, value);
+  return jspb.Message.setProto3BooleanField(this, 4, value);
 };
 
 

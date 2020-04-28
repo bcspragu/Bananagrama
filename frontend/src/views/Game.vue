@@ -92,6 +92,8 @@ export default class Game extends Vue {
   private notice: string[] = [];
   private board: Board = new Board();
   private activeWord: ActiveWord = new ActiveWord();
+  private invalidWords: boolean = false;
+  private shortWords: boolean = false;
   private detachedBoard: boolean = false;
 
   // The component that renders our hand.
@@ -473,6 +475,12 @@ export default class Game extends Vue {
       ];
     } else {
       this.notice = [];
+      if (this.invalidWords) {
+        this.notice.push('Invalid words on board');
+      }
+      if (this.shortWords) {
+        this.notice.push('Min word length not satisfied');
+      }
     }
   }
 
@@ -584,9 +592,12 @@ export default class Game extends Vue {
         console.log(err);
         return;
       }
-      this.board.setInvalidWordsAndDetached(
+      this.board.setValidationResults(
         resp.getInvalidWordsList(),
+        resp.getShortWordsList(),
         resp.getDetachedBoard());
+      this.invalidWords = resp.getInvalidWordsList().length > 0;
+      this.shortWords = resp.getShortWordsList().length > 0;
       this.detachedBoard = resp.getDetachedBoard();
       this.setNotice(true);
     });

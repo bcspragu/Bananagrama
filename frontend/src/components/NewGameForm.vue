@@ -45,7 +45,7 @@ export default class NewGameForm extends Vue {
   private createGame() {
     const req = new NewGameRequest();
     req.setName(this.gameName);
-    req.setMinLettersInWord(parseInt(this.minLetters));
+    req.setMinLettersInWord(parseInt(this.minLetters, 10));
     this.$client.newGame(req, {}, (err, resp) => {
       if (err) {
         console.log(err);

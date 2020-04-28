@@ -122,6 +122,7 @@ const (
 
 type BoardValidation struct {
 	InvalidWords  []CharLocs
+	ShortWords    []CharLocs
 	InvalidBoard  bool
 	DetachedBoard bool
 	UnusedLetters []string

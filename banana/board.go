@@ -193,6 +193,7 @@ func (b *Board) Validate(tiles *Tiles, dict Dictionary) *BoardValidation {
 	//   - the player used a subset of the letters in their hand
 	//   - the words given don't overlap in conflicting ways
 	//	 - the words on the grid are real Scrabble words
+	//   - the words on the grid are at least the minimum length
 	//   - any letter can be reached from any other (aka its all connected)
 
 	unused, unowned := b.leftover(tiles)
@@ -200,15 +201,20 @@ func (b *Board) Validate(tiles *Tiles, dict Dictionary) *BoardValidation {
 		return &BoardValidation{ExtraLetters: unowned}
 	}
 
-	var iws []CharLocs
+	var invalidWords, shortWords []CharLocs
 	for _, cls := range b.findWords() {
 		if !dict.HasWord(cls.Word) {
-			iws = append(iws, cls)
+			invalidWords = append(invalidWords, cls)
+			continue
+		}
+		if len(cls.Locs) < b.config.minLettersInWord {
+			shortWords = append(shortWords, cls)
 		}
 	}
 
 	return &BoardValidation{
-		InvalidWords:  iws,
+		InvalidWords:  invalidWords,
+		ShortWords:    shortWords,
 		DetachedBoard: !b.connected(),
 		UnusedLetters: unused,
 		ExtraLetters:  unowned,

@@ -36,6 +36,7 @@ export default class Board extends Vue {
 
   private placedWords: PlacedWord[] = [];
   private invalidWords: CharLocs[] = [];
+  private shortWords: CharLocs[] = [];
 
   // Temporary variables used for suggestions.
   private currentWord = '';
@@ -47,8 +48,12 @@ export default class Board extends Vue {
   private margin = 2;
   private grid: Selection<any, any, any, any> = d3.select('#grid');
 
-  public setInvalidWordsAndDetached(words: CharLocs[], detached: boolean): void {
-    this.invalidWords = words;
+  public setValidationResults(
+    invalidWords: CharLocs[],
+    shortWords: CharLocs[],
+    detached: boolean): void {
+    this.invalidWords = invalidWords;
+    this.shortWords = shortWords;
     const grid = document.getElementById('grid');
     if (grid) {
       if (detached) {
@@ -175,6 +180,24 @@ export default class Board extends Vue {
       pWord.y += offsetY;
     }
 
+    for (const iw of this.invalidWords) {
+      const locsList = iw.getLocsList();
+      for (const ll of locsList) {
+        ll.setX(ll.getX() + offsetX);
+        ll.setY(ll.getY() + offsetY);
+      }
+      iw.setLocsList(locsList);
+    }
+
+    for (const sw of this.shortWords) {
+      const locsList = sw.getLocsList();
+      for (const ll of locsList) {
+        ll.setX(ll.getX() + offsetX);
+        ll.setY(ll.getY() + offsetY);
+      }
+      sw.setLocsList(locsList);
+    }
+
     if (!word.suggestion) {
       this.sendBoard(word);
     }
@@ -205,6 +228,24 @@ export default class Board extends Vue {
     for (const word of this.placedWords) {
       word.x -= offsetX;
       word.y -= offsetY;
+    }
+
+    for (const iw of this.invalidWords) {
+      const locsList = iw.getLocsList();
+      for (const ll of locsList) {
+        ll.setX(ll.getX() - offsetX);
+        ll.setY(ll.getY() - offsetY);
+      }
+      iw.setLocsList(locsList);
+    }
+
+    for (const sw of this.shortWords) {
+      const locsList = sw.getLocsList();
+      for (const ll of locsList) {
+        ll.setX(ll.getX() - offsetX);
+        ll.setY(ll.getY() - offsetY);
+      }
+      sw.setLocsList(locsList);
     }
 
     if (!suggestion) {
@@ -735,6 +776,9 @@ export default class Board extends Vue {
         if (d.invalid) {
           return '#fcc';
         }
+        if (d.tooShort) {
+          return '#ccf';
+        }
         return '#fff';
       })
       .style('stroke', '#222');
@@ -802,6 +846,7 @@ export default class Board extends Vue {
           column: y,
           suggestion: false,
           invalid: false,
+          tooShort: false,
         });
 
         // Increment the Y position.
@@ -822,6 +867,18 @@ export default class Board extends Vue {
           continue;
         }
         data[cl.getX() + 1][cl.getY() + 1].invalid = true;
+      }
+    }
+
+    for (const sw of this.shortWords) {
+      for (const cl of sw.getLocsList()) {
+        if (cl.getX() + 1 >= data.length) {
+          continue;
+        }
+        if (cl.getY() + 1 >= data[cl.getX() + 1].length) {
+          continue;
+        }
+        data[cl.getX() + 1][cl.getY() + 1].tooShort = true;
       }
     }
 

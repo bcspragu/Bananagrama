@@ -895,6 +895,11 @@ export class UpdateBoardResponse extends jspb.Message {
   clearInvalidWordsList(): void;
   addInvalidWords(value?: CharLocs, index?: number): CharLocs;
 
+  getShortWordsList(): Array<CharLocs>;
+  setShortWordsList(value: Array<CharLocs>): void;
+  clearShortWordsList(): void;
+  addShortWords(value?: CharLocs, index?: number): CharLocs;
+
   getUnusedLettersList(): Array<string>;
   setUnusedLettersList(value: Array<string>): void;
   clearUnusedLettersList(): void;
@@ -914,6 +919,7 @@ export class UpdateBoardResponse extends jspb.Message {
 export namespace UpdateBoardResponse {
   export type AsObject = {
     invalidWordsList: Array<CharLocs.AsObject>,
+    shortWordsList: Array<CharLocs.AsObject>,
     unusedLettersList: Array<string>,
     detachedBoard: boolean,
   }
