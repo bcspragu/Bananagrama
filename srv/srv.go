@@ -1003,6 +1003,7 @@ func (s *Server) Dump(ctx context.Context, req *pb.DumpRequest) (*pb.DumpRespons
 					TilesInHand:  tiles.Count(),
 				},
 			},
+			RemainingTiles: bunch.Count(),
 		},
 	})
 
